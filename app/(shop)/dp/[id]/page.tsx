@@ -17,6 +17,8 @@ import { PdpProvider } from "@/components/product/PdpContext";
 import { Reviews } from "@/components/product/Reviews";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { RecordView } from "@/components/product/RecordView";
+import { FrequentlyBoughtTogether } from "@/components/product/FrequentlyBoughtTogether";
+import { getBundle } from "@/lib/bundles";
 
 /** All 120 products are known at build time, so every PDP is prerendered. */
 export function generateStaticParams() {
@@ -44,6 +46,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const category = getCategory(product.categoryId);
   const related = getRelatedProducts(product, 10);
+  const bundle = getBundle(product);
   const alsoViewed = getRelatedProducts(product, 18).slice(8);
 
   return (
@@ -130,6 +133,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
           {/* details */}
           <div className="mt-10 space-y-8">
+            <FrequentlyBoughtTogether bundle={bundle} />
+
             <section className="border-t border-line-soft pt-6">
               <h2 className="text-[21px] font-bold text-ink">Product information</h2>
               <dl className="mt-3 max-w-[760px] divide-y divide-line-soft rounded-[8px] border border-line">

@@ -148,27 +148,27 @@ await page.goto(BASE, { waitUntil: "domcontentloaded", timeout: 60000 });
 await settle(page);
 
 // search via Enter
-await page.locator('input[name="k"]').first().fill("laptop");
-await page.locator('input[name="k"]').first().press("Enter");
+await page.locator('input[name="q"]').first().fill("laptop");
+await page.locator('input[name="q"]').first().press("Enter");
 await page.waitForURL(/\/s\?/, { timeout: 30000 });
 await page.waitForTimeout(900);
 const searchUrl = page.url();
 const searchResultCount = await page.locator("article").count();
-const inputRetained = await page.locator('input[name="k"]').first().inputValue();
+const inputRetained = await page.locator('input[name="q"]').first().inputValue();
 await page.screenshot({ path: path.join(OUT, "desktop-1440-search.png"), fullPage: false });
 
 // search via button
 let buttonSearchUrl = "(not attempted)";
 try {
-  await page.locator('input[name="k"]').first().fill("dog bed");
+  await page.locator('input[name="q"]').first().fill("dog bed");
   await page.waitForTimeout(200);
-  const typed = await page.locator('input[name="k"]').first().inputValue();
+  const typed = await page.locator('input[name="q"]').first().inputValue();
   await page.locator('button[aria-label="Go"]').first().click();
-  await page.waitForURL(/k=dog/, { timeout: 15000 });
+  await page.waitForURL(/q=dog/, { timeout: 15000 });
   buttonSearchUrl = page.url();
   void typed;
 } catch {
-  buttonSearchUrl = `FAILED (field held "${await page.locator('input[name="k"]').first().inputValue()}", url ${page.url()})`;
+  buttonSearchUrl = `FAILED (field held "${await page.locator('input[name="q"]').first().inputValue()}", url ${page.url()})`;
   problems.push(`[behaviour] button search did not navigate: ${buttonSearchUrl}`);
 }
 await page.waitForTimeout(400);

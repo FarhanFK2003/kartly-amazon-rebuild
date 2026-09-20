@@ -25,11 +25,18 @@ export default function Home() {
             120 products across {categories.length} departments. Browse as a guest &mdash; no account needed.
           </p>
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {categories.map((c) => (
+            {categories.map((c, i) => (
               <Link key={c.id} href={`/s?i=${c.id}`} className="group">
                 <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[4px] bg-white">
                   {c.image && (
-                    <Image src={c.image} alt="" fill sizes="(max-width: 640px) 45vw, 200px" className="object-contain" />
+                    <Image
+                      src={c.image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 45vw, 200px"
+                      className="object-contain"
+                      priority={i < 5}
+                    />
                   )}
                 </div>
                 <p className="mt-2 text-[13px] font-bold text-ink group-hover:text-link-hover group-hover:underline">
@@ -44,8 +51,8 @@ export default function Home() {
         <section className="card p-5">
           <SectionHeader title="Best Sellers" actionLabel="See all" actionHref="/s" className="mb-4" />
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
-            {bestSellers.map((p, i) => (
-              <ProductCard key={p.id} product={p} priority={i < 3} />
+            {bestSellers.map((p) => (
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
         </section>

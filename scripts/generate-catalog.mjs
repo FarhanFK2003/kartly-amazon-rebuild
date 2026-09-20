@@ -62,23 +62,55 @@ const POSITIVE_BODIES = [
   "Genuinely good. I ordered one, then ordered a second a fortnight later because the first worked so well. That is the most honest recommendation I can give.",
   "Straightforward, well built and it does the one thing it is supposed to do properly. No app to install, no account to make, it just works. More things should be like this.",
   "Replaced a much more expensive item with this and honestly cannot tell the difference in day to day use. Very happy with the decision.",
+  "Bought this as a gift and ended up ordering another for myself before the week was out. It photographs well but it is better in the hand.",
+  "I was sceptical at the price, assuming something had been cut somewhere. After {weeks} weeks I still have not found where. No complaints at all.",
+  "Packaging was recyclable, the instructions were one page, and it worked first time. Exactly the sort of purchase you forget about because it never causes trouble.",
+  "The detail I did not expect: it is quiet. The previous one I owned buzzed constantly and I had stopped noticing until this arrived.",
+  "Third one of these I have bought over the years, for different rooms. That should tell you everything. Nothing has gone wrong with any of them.",
+  "Ordered on a Sunday, arrived Tuesday, set up in minutes. It has handled daily use for {weeks} weeks without a single issue worth reporting.",
 ];
 const MIXED_BODIES = [
   "Mostly very good. The build and finish are excellent for the money. My only complaint is that the instructions are thin, so the first setup involved more guesswork than it needed to. Once it was going, no issues at all.",
   "Does what it says and I use it daily. Knocked a star off because it is slightly bigger than I pictured from the listing photos. Measure first and you will be fine.",
   "Quality is there, no question. I would have liked a carry case included at this price, and the cable is a little short for my setup. Neither is a dealbreaker.",
   "Works well and feels durable. Took a week to get used to after the one I had before, which is on me rather than the product, but worth mentioning if you are switching.",
+  "Solid for the price. The finish picks up fingerprints more than I would like, which is cosmetic rather than functional, but you will be wiping it down.",
+  "Does the job. I would buy it again, though I would wait for a discount rather than paying full price, because there is nothing here you could not find elsewhere.",
+  "Good product, slow delivery. That is not the seller's fault and I have not marked it down for that, but set your expectations if you need it quickly.",
+  "Works exactly as described after {weeks} weeks. Four stars only because a spare part is not sold separately, so a single failure means replacing the whole thing.",
 ];
 const NEGATIVE_BODIES = [
   "It is not badly made, it just was not right for what I needed. That is partly my fault for not reading the dimensions carefully. Returns were painless at least.",
   "Worked well for the first month and then developed a fault. Support replaced it quickly, which I appreciate, but I would have preferred it to simply keep working.",
   "Fine, but I think there are better options at this price now. Nothing actively wrong with it, it just did not stand out.",
+  "Smaller than the photos suggest. The dimensions are in the listing so this is on me, but the images are flattering enough to be worth a warning.",
+  "Arrived with a scuff on one corner. Support offered a partial refund which I accepted, so this is two stars for the item rather than the service.",
+  "Did not last. Fine for about six weeks and then it stopped holding a charge properly. Possibly unlucky, but I would not order it again.",
 ];
+
+/**
+ * Draws from a pool without repeating until the pool is exhausted. Sampling
+ * with replacement puts the same review body on one product twice, which is
+ * immediately obvious on the page and destroys the illusion.
+ */
+function makeDrawer(rnd) {
+  const used = new Map();
+  return (pool, key) => {
+    let remaining = used.get(key);
+    if (!remaining || remaining.length === 0) {
+      remaining = [...pool];
+      used.set(key, remaining);
+    }
+    const idx = Math.floor(rnd() * remaining.length);
+    return remaining.splice(idx, 1)[0];
+  };
+}
 
 function buildReviews(rnd, productId, rating, reviewCount) {
   const n = intBetween(rnd, 4, 7);
   const out = [];
   const now = Date.UTC(2026, 8, 20);
+  const draw = makeDrawer(rnd);
   for (let i = 0; i < n; i++) {
     // Skew the sample towards the product's real rating so the list and the
     // histogram tell the same story.
@@ -89,14 +121,16 @@ function buildReviews(rnd, productId, rating, reviewCount) {
     else stars = roll < 0.3 ? 5 : roll < 0.58 ? 4 : roll < 0.82 ? 3 : roll < 0.94 ? 2 : 1;
 
     const bucket = stars >= 5 ? "pos" : stars >= 3 ? "mix" : "neg";
-    const title = pick(rnd, bucket === "pos" ? POSITIVE_TITLES : bucket === "mix" ? MIXED_TITLES : NEGATIVE_TITLES);
-    const body = pick(rnd, bucket === "pos" ? POSITIVE_BODIES : bucket === "mix" ? MIXED_BODIES : NEGATIVE_BODIES)
-      .replace("{weeks}", String(intBetween(rnd, 3, 14)));
+    const titlePool = bucket === "pos" ? POSITIVE_TITLES : bucket === "mix" ? MIXED_TITLES : NEGATIVE_TITLES;
+    const bodyPool = bucket === "pos" ? POSITIVE_BODIES : bucket === "mix" ? MIXED_BODIES : NEGATIVE_BODIES;
+
+    const title = draw(titlePool, `title-${bucket}`);
+    const body = draw(bodyPool, `body-${bucket}`).replace("{weeks}", String(intBetween(rnd, 3, 14)));
 
     const daysAgo = intBetween(rnd, 3, 420);
     out.push({
       id: `${productId}-r${i + 1}`,
-      author: `${pick(rnd, FIRST_NAMES)} ${pick(rnd, LAST_INITIALS)}`,
+      author: `${draw(FIRST_NAMES, "first")} ${draw(LAST_INITIALS, "last")}`,
       rating: stars,
       title,
       body,

@@ -109,30 +109,49 @@ function GridCard({ product, showCta, priority, className }: Required<Pick<Produ
 /* ---------- row: search results ---------- */
 
 function RowCard({ product, showCta, priority, className }: Required<Pick<ProductCardProps, "product">> & { showCta?: boolean; priority?: boolean; className?: string }) {
+  /*
+    Mobile is a genuine re-layout, not a squeezed desktop row: the image shrinks
+    to a 128px square and stays beside the text so the list keeps its scannable
+    rhythm, while the secondary lines (subtitle, social proof, variant link)
+    drop away rather than wrapping into a wall of text.
+  */
   return (
-    <article className={cn("flex flex-col gap-4 py-5 sm:flex-row", className)}>
+    <article className={cn("flex gap-3 py-4 sm:gap-4 sm:py-5", className)}>
       <Link href={`/dp/${product.slug}`} className="shrink-0">
         <Thumb
           product={product}
-          sizes="(max-width: 640px) 90vw, 232px"
+          sizes="(max-width: 640px) 128px, 232px"
           priority={priority}
-          className="h-[180px] w-full sm:h-[232px] sm:w-[232px]"
+          className="h-[128px] w-[128px] sm:h-[232px] sm:w-[232px]"
         />
       </Link>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
+      <div className="flex min-w-0 flex-1 flex-col gap-[4px] sm:gap-[6px]">
         {product.badges.includes("sponsored") && <SponsoredBadge />}
 
         <div className="flex flex-wrap gap-1 empty:hidden">
           <TopBadge product={product} />
         </div>
 
-        <Link href={`/dp/${product.slug}`} className="clamp-2 text-[18px] leading-6 text-ink hover:text-link-hover hover:underline">
+        <Link
+          href={`/dp/${product.slug}`}
+          className="clamp-2 text-[15px] leading-5 text-ink hover:text-link-hover hover:underline sm:clamp-2 sm:text-[18px] sm:leading-6"
+        >
           {product.title}
         </Link>
 
-        <p className="clamp-1 text-[13px] text-muted">{product.bullets[0]}</p>
+        <p className="clamp-1 hidden text-[13px] text-muted sm:block">{product.bullets[0]}</p>
 
+        <StarRating
+          rating={product.rating}
+          count={product.reviewCount}
+          size="sm"
+          showValue
+          showCaret
+          parenthesised
+          href={`/dp/${product.slug}#reviews`}
+          className="sm:hidden"
+        />
         <StarRating
           rating={product.rating}
           count={product.reviewCount}
@@ -141,15 +160,29 @@ function RowCard({ product, showCta, priority, className }: Required<Pick<Produc
           showCaret
           parenthesised
           href={`/dp/${product.slug}#reviews`}
+          className="hidden sm:inline-flex"
         />
 
         {product.boughtLastMonth > 0 && (
-          <p className="text-[13px] text-muted">
+          <p className="hidden text-[13px] text-muted sm:block">
             {product.boughtLastMonth.toLocaleString("en-US")}+ bought in past month
           </p>
         )}
 
-        <PriceBlock cents={product.price} listPrice={product.listPrice} dealPercent={product.dealPercent} size="lg" className="mt-1" />
+        <PriceBlock
+          cents={product.price}
+          listPrice={product.listPrice}
+          dealPercent={product.dealPercent}
+          size="md"
+          className="mt-[2px] sm:hidden"
+        />
+        <PriceBlock
+          cents={product.price}
+          listPrice={product.listPrice}
+          dealPercent={product.dealPercent}
+          size="lg"
+          className="mt-1 hidden sm:block"
+        />
 
         <DeliveryPromise days={product.deliveryDays} />
 
@@ -157,12 +190,17 @@ function RowCard({ product, showCta, priority, className }: Required<Pick<Produc
 
         {showCta && (
           <div className="mt-2">
-            <AddToCartButton productId={product.id} size="md" outOfStock={product.stock <= 0} className="w-[220px] max-w-full" />
+            <AddToCartButton
+              productId={product.id}
+              size="sm"
+              outOfStock={product.stock <= 0}
+              className="w-full sm:w-[220px]"
+            />
           </div>
         )}
 
         {product.variants.length > 1 && (
-          <Link href={`/dp/${product.slug}`} className="link mt-1 w-fit text-[13px] underline">
+          <Link href={`/dp/${product.slug}`} className="link mt-1 hidden w-fit text-[13px] underline sm:block">
             +{product.variants.length - 1} other {product.variants[0].type === "color" ? "colours" : "options"}
           </Link>
         )}

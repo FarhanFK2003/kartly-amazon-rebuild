@@ -28,7 +28,8 @@ export function SearchBar({ categories, className, autoFocusOnMount }: SearchBar
   const params = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const urlQuery = params.get("k") ?? "";
+  // "k" is accepted as a legacy alias so older links keep working.
+  const urlQuery = params.get("q") ?? params.get("k") ?? "";
   const urlScope = params.get("i") ?? "all";
 
   const [query, setQuery] = useState(urlQuery);
@@ -46,7 +47,7 @@ export function SearchBar({ categories, className, autoFocusOnMount }: SearchBar
     e.preventDefault();
     const trimmed = query.trim();
     const search = new URLSearchParams();
-    if (trimmed) search.set("k", trimmed);
+    if (trimmed) search.set("q", trimmed);
     if (scope && scope !== "all") search.set("i", scope);
     router.push(`/s${search.toString() ? `?${search}` : ""}`);
   }
@@ -95,7 +96,7 @@ export function SearchBar({ categories, className, autoFocusOnMount }: SearchBar
 
       <input
         ref={inputRef}
-        name="k"
+        name="q"
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}

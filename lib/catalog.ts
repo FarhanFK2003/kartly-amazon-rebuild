@@ -45,6 +45,19 @@ export function getProductById(id: string): Product | undefined {
   return catalog.products.find((p) => p.id === id);
 }
 
+/**
+ * The PDP route is /dp/[id] but links use the descriptive slug, which already
+ * ends in the id. Accepting either keeps short ids like /dp/computers-01
+ * working as a stable permalink without giving up readable URLs.
+ */
+export function getProductByIdOrSlug(key: string): Product | undefined {
+  const decoded = decodeURIComponent(key);
+  return (
+    catalog.products.find((p) => p.slug === decoded) ??
+    catalog.products.find((p) => p.id === decoded)
+  );
+}
+
 export function getProductsByCategory(categoryId: string): Product[] {
   return catalog.products.filter((p) => p.categoryId === categoryId);
 }

@@ -1,79 +1,124 @@
-import { getAllProducts, getCategory } from "@/lib/catalog";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { getCategory } from "@/lib/catalog";
+import { searchCatalog, type SearchParamsShape } from "@/lib/search";
 import { ProductCard } from "@/components/product/ProductCard";
+import { FilterRail } from "@/components/search/FilterRail";
+import { SortSelect } from "@/components/search/SortSelect";
+import { Pagination } from "@/components/search/Pagination";
+import { ButtonLink } from "@/components/ui/Button";
 
-/*
-  PLACEHOLDER search route (P0 #4).
+type RawParams = SearchParamsShape & { k?: string };
 
-  Only enough to prove the header wiring: the query and department arrive from
-  the URL and something sensible renders. Real matching, the filter rail, sort
-  and pagination are P1 #11, and autocomplete is P1 #10.
-*/
+/** "k" is the legacy alias the header used before the switch to "q". */
+function normalise(raw: RawParams): SearchParamsShape {
+  const { k, ...rest } = raw;
+  return { ...rest, q: rest.q ?? k ?? "" };
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<RawParams>;
+}): Promise<Metadata> {
+  const params = normalise(await searchParams);
+  const dept = params.i ? getCategory(params.i) : undefined;
+  if (params.q) return { title: `${params.q}` };
+  if (dept) return { title: dept.name };
+  return { title: "All products" };
+}
 
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ k?: string; i?: string; deals?: string }>;
+  searchParams: Promise<RawParams>;
 }) {
-  const { k = "", i = "", deals } = await searchParams;
-  const query = k.trim();
-  // "all" arrives from the department select when the form posts without JS.
-  const department = i && i !== "all" ? i : "";
+  const params = normalise(await searchParams);
+  const { items, total, page, pageCount, query, sort, browsing } = searchCatalog(params);
+  const department = params.i && params.i !== "all" ? getCategory(params.i) : undefined;
 
-  let results = getAllProducts();
-  if (department) results = results.filter((p) => p.categoryId === department);
-  if (deals) results = results.filter((p) => p.dealPercent > 0);
-  if (query) {
-    const needle = query.toLowerCase();
-    results = results.filter(
-      (p) =>
-        p.title.toLowerCase().includes(needle) ||
-        p.brand.toLowerCase().includes(needle) ||
-        p.imageQuery.toLowerCase().includes(needle)
-    );
-  }
-
-  const shown = results.slice(0, 16);
-  const departmentInfo = department ? getCategory(department) : undefined;
+  const first = (page - 1) * 16 + 1;
+  const last = (page - 1) * 16 + items.length;
 
   return (
-    <div className="shell pb-8">
-      <div className="-mx-4 border-b border-line bg-white px-4 py-3 sm:mx-0">
-        <p className="text-[14px] text-ink">
-          {results.length === 0 ? (
-            <>
-              No results for <span className="font-bold text-[#c7511f]">&quot;{query}&quot;</span>
-            </>
-          ) : (
-            <>
-              1-{shown.length} of {results.length > 999 ? "over 1,000" : results.length} results
-              {query && (
-                <>
-                  {" "}
-                  for <span className="font-bold text-[#c7511f]">&quot;{query}&quot;</span>
-                </>
-              )}
-              {departmentInfo && <> in <span className="font-bold">{departmentInfo.name}</span></>}
-            </>
-          )}
-        </p>
+    <div className="bg-white">
+      {/* results toolbar */}
+      <div className="border-b border-line bg-white">
+        <div className="shell flex flex-wrap items-center justify-between gap-3 py-3">
+          <p className="text-[14px] text-ink">
+            {total === 0 ? (
+              <>No results{query && <> for <Query>{query}</Query></>}</>
+            ) : (
+              <>
+                {first}-{last} of {total > 999 ? "over 1,000" : total}{" "}
+                {total === 1 ? "result" : "results"}
+                {query && <> for <Query>{query}</Query></>}
+                {department && (
+                  <>
+                    {" "}
+                    in <span className="font-bold">{department.name}</span>
+                  </>
+                )}
+              </>
+            )}
+          </p>
+          <SortSelect params={params} sort={sort} />
+        </div>
       </div>
 
-      <div className="card mt-4 px-4">
-        <h1 className="pt-4 text-[21px] font-bold">Results</h1>
-        <p className="text-[13px] text-muted">Check each product page for other buying options.</p>
+      <div className="shell flex flex-col gap-6 lg:flex-row lg:gap-8">
+        <FilterRail params={params} />
 
-        {shown.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-[18px] font-bold">No results found</p>
-            <p className="mt-1 text-[13px] text-muted">Try a different search term or department.</p>
+        <div className="min-w-0 flex-1 pb-4">
+          <div className="pt-4">
+            <h1 className="text-[21px] font-bold text-ink">
+              {query ? "Results" : department ? department.name : "All products"}
+            </h1>
+            <p className="text-[13px] text-muted">
+              {browsing
+                ? "Browse the full catalogue, or search for something specific."
+                : "Check each product page for other buying options."}
+            </p>
           </div>
-        ) : (
-          <div className="divide-y divide-line-soft">
-            {shown.map((p, idx) => (
-              <ProductCard key={p.id} product={p} variant="row" priority={idx < 2} />
-            ))}
-          </div>
-        )}
+
+          {items.length === 0 ? (
+            <NoResults query={query} />
+          ) : (
+            <>
+              <div className="divide-y divide-line-soft">
+                {items.map((p, idx) => (
+                  <ProductCard key={p.id} product={p} variant="row" priority={idx < 2} />
+                ))}
+              </div>
+              <Pagination params={params} page={page} pageCount={pageCount} />
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Query({ children }: { children: React.ReactNode }) {
+  return <span className="font-bold text-[#c7511f]">&quot;{children}&quot;</span>;
+}
+
+function NoResults({ query }: { query: string }) {
+  return (
+    <div className="py-16 text-center">
+      <p className="text-[21px] font-bold text-ink">
+        No results for {query ? <Query>{query}</Query> : "those filters"}.
+      </p>
+      <p className="mx-auto mt-2 max-w-[460px] text-[14px] text-muted">
+        Try checking your spelling, using fewer or more general words, or clearing a filter.
+      </p>
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <ButtonLink href="/s" variant="primary" size="md">
+          Browse all products
+        </ButtonLink>
+        <Link href="/" className="link text-[14px]">
+          Go to the homepage
+        </Link>
       </div>
     </div>
   );

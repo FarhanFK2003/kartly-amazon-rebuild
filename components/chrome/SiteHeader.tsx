@@ -2,10 +2,12 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { MapPin, ChevronDown, Globe } from "lucide-react";
 import { getCategories } from "@/lib/catalog";
+import { getNavDepartments, getNavGroups } from "@/lib/navigation";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { SearchBar } from "@/components/chrome/SearchBar";
 import { CartButton } from "@/components/chrome/CartButton";
-import { MobileMenu } from "@/components/chrome/MobileMenu";
+import { DepartmentDrawer } from "@/components/chrome/DepartmentDrawer";
+import { DrawerTrigger } from "@/components/chrome/DrawerTrigger";
 import { SubNav } from "@/components/chrome/SubNav";
 
 /*
@@ -77,7 +79,7 @@ export function SiteHeader() {
       {/* ---------------- mobile / tablet ---------------- */}
       <div className="bg-header text-white lg:hidden">
         <div className="flex h-[50px] items-center gap-2 px-3">
-          <MobileMenu categories={categories} />
+          <DrawerTrigger ariaLabel="Open all departments" />
           <Link href="/" className="flex items-center" aria-label="Kartly home">
             <Wordmark height={24} />
           </Link>
@@ -97,6 +99,18 @@ export function SiteHeader() {
       </div>
 
       <SubNav categories={categories} />
+
+      {/*
+        Rendered once for the whole app; both triggers open this instance.
+
+        Suspense is required, not decorative: the drawer reads useSearchParams
+        to highlight the active department, and without a boundary that opts
+        every statically prerendered page - all 120 PDPs - out of static
+        rendering and fails the build.
+      */}
+      <Suspense fallback={null}>
+        <DepartmentDrawer departments={getNavDepartments()} groups={getNavGroups()} />
+      </Suspense>
     </header>
   );
 }

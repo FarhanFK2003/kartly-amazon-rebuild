@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Category } from "@/lib/types";
-import { MobileMenu } from "@/components/chrome/MobileMenu";
+import { DrawerTrigger } from "@/components/chrome/DrawerTrigger";
 
 const SHORTCUTS = [
   { label: "Today's Deals", href: "/s?deals=1" },
@@ -19,7 +19,7 @@ export function SubNav({ categories }: { categories: Category[] }) {
     <nav className="bg-subnav text-white" aria-label="Departments and shortcuts">
       <div className="shell flex h-[39px] items-center gap-1 overflow-x-auto no-scrollbar">
         <div className="hidden lg:block">
-          <MobileMenu categories={categories} label="All" />
+          <DrawerTrigger label="All" ariaLabel="All departments" />
         </div>
 
         {SHORTCUTS.map((item) => (

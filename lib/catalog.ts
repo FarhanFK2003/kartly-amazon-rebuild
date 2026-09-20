@@ -7,12 +7,30 @@ const catalog = catalogJson as unknown as Catalog;
 
 export const CURRENCY = catalog.currency;
 
+/**
+ * Category tiles show the department's most-reviewed product rather than a
+ * separate stock photo.
+ *
+ * Generic terms like "clothing apparel" return documentary photography from an
+ * openly-licensed pool - buildings, street scenes, people - which reads as a
+ * photo library rather than a shop, and is not imagery a storefront should be
+ * putting in front of shoppers. A real product from the department is always on
+ * topic, and it is what marketplaces actually show.
+ */
+function withRepresentativeImage(category: Category): Category {
+  const hero = catalog.products
+    .filter((p) => p.categoryId === category.id)
+    .sort((a, b) => b.reviewCount - a.reviewCount)[0];
+  return { ...category, image: hero?.image ?? category.image };
+}
+
 export function getCategories(): Category[] {
-  return catalog.categories;
+  return catalog.categories.map(withRepresentativeImage);
 }
 
 export function getCategory(id: string): Category | undefined {
-  return catalog.categories.find((c) => c.id === id);
+  const found = catalog.categories.find((c) => c.id === id);
+  return found ? withRepresentativeImage(found) : undefined;
 }
 
 export function getAllProducts(): Product[] {

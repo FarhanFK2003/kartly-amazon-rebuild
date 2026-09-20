@@ -8,7 +8,7 @@
       "blurb": "Audio, video and everyday tech",
       "slug": "electronics",
       "imageQuery": "consumer electronics",
-      "image": "/products/category-electronics.jpg"
+      "image": null
     },
     {
       "id": "computers",
@@ -16,7 +16,7 @@
       "blurb": "Laptops, desktops and accessories",
       "slug": "computers",
       "imageQuery": "laptop computer",
-      "image": "/products/category-computers.jpg"
+      "image": null
     },
     {
       "id": "home-kitchen",
@@ -24,7 +24,7 @@
       "blurb": "Cookware, appliances and decor",
       "slug": "home-kitchen",
       "imageQuery": "kitchen cookware",
-      "image": "/products/category-home-kitchen.jpg"
+      "image": null
     },
     {
       "id": "fashion",
@@ -32,7 +32,7 @@
       "blurb": "Everyday essentials and outerwear",
       "slug": "fashion",
       "imageQuery": "clothing apparel",
-      "image": "/products/category-fashion.jpg"
+      "image": null
     },
     {
       "id": "sports",
@@ -40,7 +40,7 @@
       "blurb": "Training, camping and recovery",
       "slug": "sports",
       "imageQuery": "outdoor camping gear",
-      "image": "/products/category-sports.jpg"
+      "image": null
     },
     {
       "id": "beauty",
@@ -48,7 +48,7 @@
       "blurb": "Skincare, haircare and grooming",
       "slug": "beauty",
       "imageQuery": "cosmetics skincare",
-      "image": "/products/category-beauty.jpg"
+      "image": null
     },
     {
       "id": "toys",
@@ -56,7 +56,7 @@
       "blurb": "Building sets, board games and puzzles",
       "slug": "toys",
       "imageQuery": "toys children",
-      "image": "/products/category-toys.jpg"
+      "image": null
     },
     {
       "id": "books",
@@ -64,7 +64,7 @@
       "blurb": "Fiction, reference and design",
       "slug": "books",
       "imageQuery": "stack of books",
-      "image": "/products/category-books.jpg"
+      "image": null
     },
     {
       "id": "office",
@@ -72,7 +72,7 @@
       "blurb": "Desks, chairs and stationery",
       "slug": "office",
       "imageQuery": "office desk supplies",
-      "image": "/products/category-office.jpg"
+      "image": null
     },
     {
       "id": "pets",
@@ -80,7 +80,7 @@
       "blurb": "Beds, bowls and enrichment",
       "slug": "pets",
       "imageQuery": "pet dog supplies",
-      "image": "/products/category-pets.jpg"
+      "image": null
     }
   ],
   "products": [

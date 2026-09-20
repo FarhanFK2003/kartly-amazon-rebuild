@@ -8,10 +8,11 @@
 // Images are downloaded once and committed, so the deployed site never depends
 // on a third-party host at runtime.
 //
-// Fallback chain per product: Openverse -> loremflickr -> generated SVG.
+// Fallback chain per product: Openverse -> loremflickr -> generated PNG.
 // Re-running is cheap: anything already on disk and recorded is skipped.
 
 import fs from "node:fs";
+import zlib from "node:zlib";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,20 +50,88 @@ async function download(url, dest) {
   if (!type.startsWith("image/")) throw new Error(`not an image (${type})`);
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length < 2000) throw new Error(`suspiciously small (${buf.length}b)`);
+
+  // Content-type alone is not enough: Openverse serves some SVG assets, which
+  // pass an "image/*" check but are not raster data. Written to a .jpg path they
+  // break Next's image optimizer at request time rather than at build time, so
+  // verify the actual magic bytes.
+  if (!isRaster(buf)) throw new Error(`not raster data (${type})`);
+
   fs.writeFileSync(dest, buf);
   return buf.length;
 }
 
-/** Last-resort placeholder so the grid never shows a broken image. */
-function writePlaceholder(dest, label) {
-  const initials = label.replace(/[^a-zA-Z ]/g, "").split(/\s+/).slice(0, 2).map((w) => w[0] || "").join("").toUpperCase();
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
-  <rect width="600" height="600" fill="#f3f4f4"/>
-  <circle cx="300" cy="258" r="96" fill="#e2e5e5"/>
-  <text x="300" y="286" font-family="Inter,Arial,sans-serif" font-size="72" font-weight="600" fill="#9aa0a0" text-anchor="middle">${initials}</text>
-  <text x="300" y="420" font-family="Inter,Arial,sans-serif" font-size="24" fill="#9aa0a0" text-anchor="middle">Product image</text>
-</svg>`;
-  fs.writeFileSync(dest.replace(/\.jpg$/, ".svg"), svg);
+function isRaster(buf) {
+  if (buf.length < 12) return false;
+  const jpeg = buf[0] === 0xff && buf[1] === 0xd8;
+  const png = buf[0] === 0x89 && buf.subarray(1, 4).toString("ascii") === "PNG";
+  const gif = buf.subarray(0, 3).toString("ascii") === "GIF";
+  const webp =
+    buf.subarray(0, 4).toString("ascii") === "RIFF" && buf.subarray(8, 12).toString("ascii") === "WEBP";
+  return jpeg || png || gif || webp;
+}
+
+/* ---------- raster placeholder ---------- */
+
+const CRC_TABLE = (() => {
+  const t = new Int32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c;
+  }
+  return t;
+})();
+
+function crc32(buf) {
+  let c = -1;
+  for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ -1) >>> 0;
+}
+
+function pngChunk(type, data) {
+  const len = Buffer.alloc(4);
+  len.writeUInt32BE(data.length);
+  const body = Buffer.concat([Buffer.from(type, "ascii"), data]);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(body));
+  return Buffer.concat([len, body, crc]);
+}
+
+/**
+ * Last-resort placeholder, written as a real PNG.
+ *
+ * It used to be an SVG with a .jpg extension, which sailed past every check and
+ * then failed inside Next's image optimizer at request time. A raster fallback
+ * cannot poison the pipeline that way.
+ */
+function writePlaceholder(dest) {
+  const size = 600;
+  const stride = size * 3 + 1;
+  const raw = Buffer.alloc(size * stride);
+  for (let y = 0; y < size; y++) {
+    raw[y * stride] = 0; // filter: none
+    for (let x = 0; x < size; x++) {
+      const inBox = x > 170 && x < 430 && y > 170 && y < 430;
+      const [r, g, b] = inBox ? [226, 229, 229] : [243, 244, 244];
+      const o = y * stride + 1 + x * 3;
+      raw[o] = r;
+      raw[o + 1] = g;
+      raw[o + 2] = b;
+    }
+  }
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(size, 0);
+  ihdr.writeUInt32BE(size, 4);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 2; // colour type: truecolour
+  const png = Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    pngChunk("IHDR", ihdr),
+    pngChunk("IDAT", zlib.deflateSync(raw, { level: 9 })),
+    pngChunk("IEND", Buffer.alloc(0)),
+  ]);
+  fs.writeFileSync(dest.replace(/\.jpg$/, ".png"), png);
 }
 
 /* ---------- group products by search term ---------- */
@@ -71,11 +140,6 @@ const byQuery = new Map();
 for (const p of catalog.products) {
   if (!byQuery.has(p.imageQuery)) byQuery.set(p.imageQuery, []);
   byQuery.get(p.imageQuery).push(p);
-}
-for (const c of catalog.categories) {
-  const key = `__category__${c.imageQuery}`;
-  if (!byQuery.has(key)) byQuery.set(key, []);
-  byQuery.get(key).push({ id: `category-${c.id}`, slug: `category-${c.id}`, title: c.name, imageQuery: c.imageQuery, isCategory: true });
 }
 
 // Some product terms return nothing usable under a CC0-only filter. These are
@@ -89,8 +153,36 @@ const QUERY_FALLBACKS = {
   "cat litter mat": "cat",
   "lint roller": "cleaning brush",
   "outdoor camping gear": "camping",
+  "thermal clothing": "wool sweater",
   "consumer electronics": "electronics",
 };
+
+/**
+ * Openverse ranks by its own relevance, which under a CC0-only filter surfaces a
+ * lot of documentary photography that merely mentions the term. Re-rank locally:
+ * a result whose title or tags actually contain the search words, and whose
+ * framing is roughly square, is far more likely to depict the product.
+ */
+function scoreHit(hit, query) {
+  const words = query.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
+  const title = (hit.title || "").toLowerCase();
+  const tags = (hit.tags || []).map((t) => (typeof t === "string" ? t : t.name || "")).join(" ").toLowerCase();
+
+  let score = 0;
+  for (const w of words) {
+    if (title.includes(w)) score += 3;
+    else if (tags.includes(w)) score += 2;
+  }
+  // A title that is *only* the product term is the strongest signal there is.
+  if (words.length && words.every((w) => title.includes(w)) && title.length < 40) score += 3;
+
+  if (hit.width && hit.height) {
+    const ratio = hit.width / hit.height;
+    if (ratio > 0.7 && ratio < 1.45) score += 2;
+    else if (ratio > 0.55 && ratio < 1.9) score += 1;
+  }
+  return score;
+}
 
 let openverseDead = false;
 const stats = { cached: 0, openverse: 0, flickr: 0, placeholder: 0 };
@@ -99,8 +191,7 @@ const stats = { cached: 0, openverse: 0, flickr: 0, placeholder: 0 };
 
 const queries = [...byQuery.entries()];
 for (let qi = 0; qi < queries.length; qi++) {
-  const [rawQuery, items] = queries[qi];
-  const query = rawQuery.replace("__category__", "");
+  const [query, items] = queries[qi];
 
   const pending = items.filter((p) => {
     const rec = sources[p.id];
@@ -112,16 +203,20 @@ for (let qi = 0; qi < queries.length; qi++) {
 
   // One API call per distinct term, asking for enough results to give every
   // product sharing that term a different photo.
+  // Results from the primary and fallback terms are pooled together rather than
+  // the fallback only firing when the primary returns too few. A term can return
+  // plenty of results that are all unusable (vector data), and a count check
+  // cannot see that.
   let results = [];
   const attempts = [query, QUERY_FALLBACKS[query]].filter(Boolean);
   for (const term of attempts) {
-    if (openverseDead || results.length >= pending.length) break;
+    if (openverseDead) break;
     const url =
       `https://api.openverse.org/v1/images/?q=${encodeURIComponent(term)}` +
-      `&license=cc0,pdm&size=medium&mature=false&page_size=${Math.max(6, pending.length + 4)}`;
+      `&license=cc0,pdm&size=medium&mature=false&page_size=${Math.min(40, Math.max(20, pending.length + 12))}`;
     try {
       const data = await getJson(url);
-      results = data.results || [];
+      results = results.concat(data.results || []);
       await sleep(350); // stay well inside the anonymous rate limit
     } catch (err) {
       if (String(err.message).includes("RATE_LIMIT")) {
@@ -134,14 +229,22 @@ for (let qi = 0; qi < queries.length; qi++) {
     }
   }
 
+  // Shared pool: a result that fails (vector data, dead link, too small) is
+  // discarded and the next product takes the one after it, rather than every
+  // product being locked to a single fixed index.
+  const pool = [...results]
+    .map((hit) => ({ hit, score: scoreHit(hit, query) }))
+    .sort((a, b) => b.score - a.score)
+    .map((x) => x.hit);
+
   for (let i = 0; i < pending.length; i++) {
     const product = pending[i];
     const file = `${product.slug}.jpg`;
     const dest = path.join(OUT_DIR, file);
-    const hit = results[i];
     let done = false;
 
-    if (hit) {
+    while (!done && pool.length > 0) {
+      const hit = pool.shift();
       for (const candidate of [hit.thumbnail, hit.url].filter(Boolean)) {
         try {
           const bytes = await download(candidate, dest);
@@ -160,7 +263,7 @@ for (let qi = 0; qi < queries.length; qi++) {
           done = true;
           break;
         } catch {
-          /* try the next candidate URL */
+          /* try the next candidate URL, then the next result */
         }
       }
     }
@@ -179,7 +282,7 @@ for (let qi = 0; qi < queries.length; qi++) {
 
     if (!done) {
       writePlaceholder(dest, product.title);
-      sources[product.id] = { file: file.replace(/\.jpg$/, ".svg"), query, license: "Generated placeholder", source: "local" };
+      sources[product.id] = { file: file.replace(/\.jpg$/, ".png"), query, license: "Generated placeholder", source: "local" };
       stats.placeholder++;
     }
   }
@@ -195,10 +298,6 @@ fs.writeFileSync(SOURCES, JSON.stringify(sources, null, 2) + "\n");
 for (const p of catalog.products) {
   const rec = sources[p.id];
   p.image = rec ? `/products/${rec.file}` : null;
-}
-for (const c of catalog.categories) {
-  const rec = sources[`category-${c.id}`];
-  c.image = rec ? `/products/${rec.file}` : null;
 }
 fs.writeFileSync(CATALOG, JSON.stringify(catalog, null, 2) + "\n");
 

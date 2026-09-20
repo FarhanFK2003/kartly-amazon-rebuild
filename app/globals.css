@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/*
+  Kartly design tokens.
+
+  Values were read off the recon screenshots in /recon rather than guessed, so
+  the palette, type scale and spacing rhythm match a real dense marketplace.
+  Branding (wordmark, accent) is our own; the layout language is the familiar
+  marketplace convention.
+*/
+@theme {
+  /* surfaces */
+  --color-page: #eaeded;
+  --color-surface: #ffffff;
+  --color-header: #131921;
+  --color-subnav: #232f3e;
+  --color-footer: #232f3e;
+  --color-footer-deep: #131a22;
+
+  /* text */
+  --color-ink: #0f1111;
+  --color-muted: #565959;
+  --color-faint: #888c8c;
+
+  /* lines */
+  --color-line: #d5d9d9;
+  --color-line-soft: #e7e7e7;
+
+  /* accents */
+  --color-link: #007185;
+  --color-link-hover: #c7511f;
+  --color-star: #de7921;
+  --color-deal: #cc0c39;
+  --color-success: #007600;
+
+  /* calls to action */
+  --color-cta: #ffd814;
+  --color-cta-hover: #f7ca00;
+  --color-cta-border: #fcd200;
+  --color-buy: #ffa41c;
+  --color-buy-hover: #fa8900;
+  --color-buy-border: #ff8f00;
+  --color-search: #febd69;
+  --color-search-hover: #f3a847;
+
+  /* brand */
+  --color-brand: #ff9900;
+  --color-brand-deep: #e88b00;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Marketplace density: a 1500px shell with tight gutters. */
+  --spacing-shell: 1500px;
+
+  --radius-card: 8px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  /* Amazon-style focus: a soft orange glow rather than a hard outline. */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(228, 121, 17, 0.5);
+    border-radius: 2px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@layer components {
+  /* The standard blue action link used throughout the marketplace UI. */
+  .link {
+    color: var(--color-link);
+  }
+  .link:hover {
+    color: var(--color-link-hover);
+    text-decoration: underline;
+  }
+
+  .shell {
+    max-width: var(--spacing-shell);
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+  }
+
+  /* Clamp helpers: product titles must truncate predictably or the grid breaks. */
+  .clamp-1,
+  .clamp-2,
+  .clamp-3,
+  .clamp-4 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .clamp-1 {
+    -webkit-line-clamp: 1;
+  }
+  .clamp-2 {
+    -webkit-line-clamp: 2;
+  }
+  .clamp-3 {
+    -webkit-line-clamp: 3;
+  }
+  .clamp-4 {
+    -webkit-line-clamp: 4;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbars on horizontal carousels without losing scrollability. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

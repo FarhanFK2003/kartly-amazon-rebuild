@@ -69,11 +69,15 @@ npm run images       # download any missing product imagery (idempotent)
 Ratings, review counts, deals, stock and delivery windows are derived from a PRNG seeded on each
 product id. Rating histograms are solved so the bars always agree with the headline star value.
 
-**Imagery** is sourced from [Openverse](https://openverse.org), filtered to CC0 / Public Domain
-Mark, downloaded at build time and committed — the deployed site makes no runtime request to any
-third-party image host. See [ATTRIBUTION.md](ATTRIBUTION.md). Because openly-licensed pools contain
-little true product photography, some images are only loosely related to the product they
-illustrate. This is a known, accepted tradeoff for this exercise.
+**Imagery** is sourced from [Openverse](https://openverse.org), downloaded at build time and
+committed — the deployed site makes no runtime request to any third-party image host. 108 of the
+120 images are CC0 or Public Domain Mark; 12 high-visibility slots use CC-BY / CC-BY-SA, each
+credited in [ATTRIBUTION.md](ATTRIBUTION.md) with creator, licence and source page.
+
+Openly-licensed pools contain little true product photography, so some images remain only loosely
+related to the product they illustrate. The homepage department tiles were repaired specifically,
+since they are the largest images on the first screen; deeper in the catalogue some mismatches
+remain. This is a known, accepted tradeoff for this exercise.
 
 ## Routes
 

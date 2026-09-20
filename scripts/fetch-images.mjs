@@ -1,9 +1,10 @@
 // Downloads one product image per catalog entry into public/products/.
 //
-// Source: the Openverse API, filtered to license=cc0,pdm (CC0 and Public Domain
-// Mark) so nothing in the repo carries an attribution obligation. We still record
-// full provenance in data/image-sources.json and render ATTRIBUTION.md from it,
-// because crediting the photographer is the decent thing to do regardless.
+// Source: the Openverse API. Defaults to license=cc0,pdm so most of the repo
+// carries no attribution obligation; a small, explicitly listed set of
+// high-visibility products widens to CC-BY where the public-domain pool has no
+// usable photograph of the product. Full provenance is recorded in
+// data/image-sources.json and rendered into ATTRIBUTION.md.
 //
 // Images are downloaded once and committed, so the deployed site never depends
 // on a third-party host at runtime.
@@ -134,12 +135,71 @@ function writePlaceholder(dest) {
   fs.writeFileSync(dest.replace(/\.jpg$/, ".png"), png);
 }
 
+/*
+  Per-product image query overrides.
+
+  A product's imageQuery doubles as a search keyword, so it cannot be edited to
+  suit the photo pool. These overrides change only what we search Openverse for.
+
+  Each entry is here because the product's natural term returns nothing usable
+  under a CC0-only filter, and the product occupies a high-visibility slot: the
+  homepage department tiles and the four-up card rows. Verified by eye on a
+  contact sheet, not by filename.
+*/
+const IMAGE_OVERRIDES = {
+  // department tiles (largest images on the homepage)
+  "home-kitchen-05": "kitchen knife",      // was a fridge interior
+  "fashion-08": "wristwatch",              // was an art-deco building
+  "beauty-11": "cosmetics makeup",        // was a tropical island
+  "toys-12": "crayons",           // was an empty studio room
+  "books-06": "book",            // was a classical painting
+  "office-09": "office stationery",        // was cardboard boxes
+
+  // four-up card row tiles
+  "electronics-02": "earbuds",           // was a charging dock
+  "electronics-06": "loudspeaker",         // was an indistinct wall
+  "computers-03": "personal computer",        // was abstract wallpaper
+  "home-kitchen-10": "skillet",            // was a bear
+  "sports-10": "cooler",            // was a bee
+  "sports-05": "headlamp",               // was a phone screenshot
+  "beauty-02": "cosmetic cream jar",              // was a bee
+  "beauty-08": "makeup mirror",            // was a monochrome bedroom
+  "books-01": "open book pages",                 // was an abstract sculpture
+  "toys-04": "jigsaw puzzle pieces",                     // was a tablet landscape
+  "pets-05": "pet bowl",              // was a fish pond
+  "pets-03": "dog leash",                  // was a grey sculpture
+  "fashion-02": "sneakers",                // was shoes on an overhead wire
+};
+
+/*
+  Products allowed to draw on attribution-required licences.
+
+  CC0 and Public Domain Mark carry no attribution obligation, which is why they
+  are the default. But the CC0 pool contains almost no product photography for
+  some terms, and for these slots a wrong image costs more than a credit line:
+  the CC0 results for "earphones" and "art supplies" were anime fan art and a
+  Lorem ipsum graphic.
+
+  These fall back to CC-BY / CC-BY-SA, which are legally fine to redistribute in
+  a public repository provided the creator is credited - and every image's
+  creator and licence is already recorded in ATTRIBUTION.md.
+*/
+const LICENCE_WIDENED = new Set([
+  "beauty-11", "toys-12", "books-06",                       // department tiles
+  "electronics-02", "electronics-06", "computers-03",
+  "sports-10", "sports-05", "beauty-02", "books-01",
+  "toys-04", "pets-05",
+]);
+
+const queryFor = (product) => IMAGE_OVERRIDES[product.id] ?? product.imageQuery;
+
 /* ---------- group products by search term ---------- */
 
 const byQuery = new Map();
 for (const p of catalog.products) {
-  if (!byQuery.has(p.imageQuery)) byQuery.set(p.imageQuery, []);
-  byQuery.get(p.imageQuery).push(p);
+  const key = queryFor(p);
+  if (!byQuery.has(key)) byQuery.set(key, []);
+  byQuery.get(key).push(p);
 }
 
 // Some product terms return nothing usable under a CC0-only filter. These are
@@ -211,9 +271,10 @@ for (let qi = 0; qi < queries.length; qi++) {
   const attempts = [query, QUERY_FALLBACKS[query]].filter(Boolean);
   for (const term of attempts) {
     if (openverseDead) break;
+    const licences = pending.some((p) => LICENCE_WIDENED.has(p.id)) ? "cc0,pdm,by,by-sa" : "cc0,pdm";
     const url =
       `https://api.openverse.org/v1/images/?q=${encodeURIComponent(term)}` +
-      `&license=cc0,pdm&size=medium&mature=false&page_size=${Math.min(40, Math.max(20, pending.length + 12))}`;
+      `&license=${licences}&size=medium&mature=false&page_size=${Math.min(40, Math.max(20, pending.length + 12))}`;
     try {
       const data = await getJson(url);
       results = results.concat(data.results || []);
@@ -303,25 +364,55 @@ fs.writeFileSync(CATALOG, JSON.stringify(catalog, null, 2) + "\n");
 
 /* ---------- attribution ---------- */
 
-const rows = Object.entries(sources)
-  .filter(([, r]) => r.source !== "local")
-  .map(([id, r]) => `| ${id} | ${r.title || "-"} | ${r.creator || "-"} | ${r.license} | ${r.source} |`)
-  .join("\n");
+const entries = Object.entries(sources).filter(([, r]) => r.source !== "local");
+const requiresAttribution = (r) => /^(by|by-sa|by-nc|by-nd)/.test(r.license || "");
+const attributed = entries.filter(([, r]) => requiresAttribution(r));
+const publicDomain = entries.filter(([, r]) => !requiresAttribution(r));
+
+const row = ([id, r]) => {
+  const licence = r.licenseUrl ? `[${r.license}](${r.licenseUrl})` : r.license;
+  const title = r.landingUrl ? `[${r.title || "untitled"}](${r.landingUrl})` : r.title || "-";
+  return `| ${id} | ${title} | ${r.creator || "-"} | ${licence} | ${r.source} |`;
+};
+
+const HEAD = "| Product | Title | Creator | Licence | Source |\n|---|---|---|---|---|";
 
 fs.writeFileSync(
   path.join(ROOT, "ATTRIBUTION.md"),
   `# Image attribution
 
-Kartly is a demo storefront. Product photography is sourced from [Openverse](https://openverse.org)
-filtered to **CC0 / Public Domain Mark**, which carries no attribution requirement. Credits are
-listed here anyway.
+Kartly is a demo storefront. Product photography comes from [Openverse](https://openverse.org).
 
-Images are downloaded at catalog build time and committed, so the deployed site makes no
-runtime requests to any third-party image host.
+Images are downloaded at catalogue build time and committed to this repository, so the deployed
+site makes no runtime request to any third-party image host.
 
-| Product | Title | Creator | License | Source |
-|---|---|---|---|---|
-${rows}
+## Licensing
+
+| | Count |
+|---|---|
+| CC0 / Public Domain Mark (no attribution required) | ${publicDomain.length} |
+| CC-BY / CC-BY-SA (**attribution required**, credited below) | ${attributed.length} |
+
+Most imagery is CC0 or Public Domain Mark. A small number of slots - mainly the homepage
+department tiles - had no usable public-domain photograph of the actual product, and a clearly
+wrong image costs more than a credit line, so those draw on CC-BY and CC-BY-SA instead. Every
+one is credited below with its creator, licence and original page.
+
+## Attribution required
+
+These ${attributed.length} images are used under CC-BY or CC-BY-SA. Credit is given to the
+creator; the licence link states the terms, and CC-BY-SA works are redistributed unmodified
+under the same licence.
+
+${HEAD}
+${attributed.map(row).join("\n")}
+
+## Public domain / CC0
+
+No attribution is required for these; they are credited anyway.
+
+${HEAD}
+${publicDomain.map(row).join("\n")}
 `
 );
 

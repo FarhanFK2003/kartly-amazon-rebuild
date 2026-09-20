@@ -17,7 +17,14 @@ export interface HomeCard {
 
 /**
  * The four-up white card row that gives a marketplace homepage its texture:
- * a bold title, either one large image or a 2x2 grid of labelled tiles, and a
+ *
+ * These tiles are editorial rather than catalogue entries, so their images are
+ * cropped to fill. Letterboxing mixed-ratio photography inside small squares
+ * leaves ragged white gaps and makes the row look unfinished. Product imagery
+ * everywhere else stays object-contain, because there the whole item must be
+ * visible.
+ *
+ * A bold title, either one large image or a 2x2 grid of labelled tiles, and a
  * blue link anchored at the bottom. Taken straight from the recon homepage.
  */
 export function CardRow({ cards }: { cards: HomeCard[] }) {
@@ -36,7 +43,7 @@ export function CardRow({ cards }: { cards: HomeCard[] }) {
                     alt=""
                     fill
                     sizes="(max-width: 640px) 90vw, 300px"
-                    className="object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+                    className="object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                   />
                 )}
               </div>
@@ -52,7 +59,7 @@ export function CardRow({ cards }: { cards: HomeCard[] }) {
                         alt=""
                         fill
                         sizes="150px"
-                        className="object-contain transition-transform duration-200 group-hover:scale-[1.04]"
+                        className="object-cover transition-transform duration-200 group-hover:scale-[1.04]"
                       />
                     )}
                   </div>

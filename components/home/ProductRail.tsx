@@ -60,7 +60,7 @@ export function ProductRail({
   if (products.length === 0) return null;
 
   return (
-    <section className="card p-4 sm:p-5">
+    <section className="card p-4">
       <SectionHeader
         title={title}
         subtitle={subtitle}
@@ -75,7 +75,7 @@ export function ProductRail({
           className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1"
         >
           {products.map((p) => (
-            <div key={p.id} className="w-[150px] shrink-0 snap-start sm:w-[180px]">
+            <div key={p.id} className="w-[148px] shrink-0 snap-start sm:w-[164px]">
               <ProductCard product={p} variant="grid" showCta={showCta} />
             </div>
           ))}

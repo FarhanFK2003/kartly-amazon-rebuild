@@ -26,7 +26,7 @@ const LEGAL = ["Conditions of Use", "Privacy Notice", "Consumer Health Data Poli
 
 export function SiteFooter() {
   return (
-    <footer className="mt-8">
+    <footer className="mt-4">
       <BackToTop />
 
       <div className="bg-footer text-white">

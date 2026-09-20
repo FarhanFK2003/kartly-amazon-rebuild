@@ -115,7 +115,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="pb-10">
+    <div className="pb-4">
       <div className="shell space-y-4 pt-3">
         <HeroCarousel slides={HERO_SLIDES} />
 
@@ -147,7 +147,7 @@ export default function Home() {
                       alt=""
                       fill
                       sizes="(max-width: 640px) 45vw, 200px"
-                      className="object-contain transition-transform duration-200 group-hover:scale-[1.04]"
+                      className="object-cover transition-transform duration-200 group-hover:scale-[1.04]"
                       priority={i < 3}
                     />
                   )}

@@ -81,25 +81,40 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
             className="w-full shrink-0"
             style={{ background: slide.background }}
           >
-            <div className="mx-auto flex h-[220px] max-w-[1100px] items-center gap-4 px-10 sm:h-[260px] sm:px-14 lg:h-[300px]">
+            {/*
+              Heights are deliberately short. Measured against the reference
+              homepage, its promo banner is roughly 218px at a 1520px viewport;
+              a 300px band with a 38px headline reads as a landing page and
+              pushes the departments below the fold, which is the opposite of
+              what a marketplace homepage is for.
+
+              The horizontal padding clears the side arrows and the bottom
+              padding clears the indicator dots. Without both, a short band puts
+              the CTA underneath the previous-slide arrow on a phone, where the
+              tap targets sit closest together and a mis-tap costs the most.
+            */}
+            <div className="mx-auto flex h-[190px] max-w-[1100px] items-center gap-5 px-11 pb-8 sm:h-[210px] sm:px-14 sm:pb-6 lg:h-[240px] lg:pb-4">
               <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-bold uppercase tracking-wider text-ink/60">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ink/60">
                   {slide.eyebrow}
                 </p>
-                <h2 className="mt-1 text-[24px] font-bold leading-tight text-ink sm:text-[32px] lg:text-[38px]">
+                <h2 className="mt-[2px] text-[21px] font-bold leading-[1.15] text-ink sm:text-[26px] lg:text-[31px]">
                   {slide.headline}
                 </h2>
-                <p className="mt-1 max-w-[380px] text-[13px] text-ink/70 sm:text-[15px]">{slide.sub}</p>
+                <p className="clamp-2 mt-1 max-w-[400px] text-[13px] leading-[18px] text-ink/70 sm:text-[14px] sm:leading-5">
+                  {slide.sub}
+                </p>
                 <Link
                   href={slide.href}
                   tabIndex={i === index ? 0 : -1}
-                  className="mt-4 inline-flex h-9 items-center rounded-full border border-cta-border bg-cta px-5 text-[14px] font-medium text-ink shadow-[0_2px_5px_rgba(0,0,0,.12)] hover:bg-cta-hover"
+                  className="mt-3 inline-flex h-9 items-center rounded-full border border-cta-border bg-cta px-5 text-[14px] font-medium text-ink shadow-[0_2px_5px_rgba(0,0,0,.12)] hover:bg-cta-hover"
                 >
                   {slide.cta}
                 </Link>
               </div>
 
-              <div className="relative hidden h-[170px] w-[230px] shrink-0 sm:block lg:h-[220px] lg:w-[300px]">
+              {/* The art fills more of the shorter band rather than floating in it. */}
+              <div className="relative hidden h-[150px] w-[210px] shrink-0 sm:block md:h-[170px] md:w-[250px] lg:h-[200px] lg:w-[300px]">
                 {slide.image && (
                   <Image
                     src={slide.image}

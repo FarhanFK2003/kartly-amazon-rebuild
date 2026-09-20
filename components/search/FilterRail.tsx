@@ -1,139 +1,138 @@
 import Link from "next/link";
-import { getCategories } from "@/lib/catalog";
-import { buildSearchHref, PRICE_BRACKETS, type SearchParamsShape } from "@/lib/search";
+import {
+  facetsToHref,
+  toggleFacet,
+  setFacet,
+  type FacetModel,
+  type FacetOption,
+  type Facets,
+} from "@/lib/search";
 import { StarRating } from "@/components/ui/StarRating";
 import { cn } from "@/lib/utils";
 
 /*
   Filter rail.
 
-  Filters are links that rewrite the querystring, not form controls. Every
-  filtered view therefore has a real URL that can be shared and that the back
-  button understands. Single-select for now; multi-select facets with live
-  counts are P1 #11.
+  Every control is a link that rewrites the querystring rather than a form
+  control, so each filtered view has a real shareable URL, the back button
+  works, and the whole rail keeps working with JavaScript off. The checkbox is
+  drawn, not an <input>.
 */
 
-export function FilterRail({ params }: { params: SearchParamsShape }) {
-  const categories = getCategories();
-  const activeDept = params.i && params.i !== "all" ? params.i : "";
-  const activeRating = Number(params.rating ?? 0);
-  const activeMin = Number(params.min ?? 0);
-  const activeMax = Number(params.max ?? 0);
-
+export function FilterRail({ facets, model }: { facets: Facets; model: FacetModel }) {
   return (
-    <aside className="w-full lg:w-[240px] lg:shrink-0" aria-label="Filters">
+    <div className="pb-6">
       <Group title="Department">
-        <ul>
-          <RailLink href={buildSearchHref(params, { i: null })} active={!activeDept} bold>
-            Any Department
-          </RailLink>
-          {categories.map((c) => (
-            <RailLink
-              key={c.id}
-              href={buildSearchHref(params, { i: activeDept === c.id ? null : c.id })}
-              active={activeDept === c.id}
-            >
-              {c.name}
-            </RailLink>
-          ))}
-        </ul>
+        {model.categories.map((o) => (
+          <CheckRow key={o.value} option={o} href={facetsToHref(toggleFacet(facets, "categories", o.value))} />
+        ))}
       </Group>
+
+      {model.brands.length > 1 && (
+        <Group title="Brand">
+          {model.brands.map((o) => (
+            <CheckRow key={o.value} option={o} href={facetsToHref(toggleFacet(facets, "brands", o.value))} />
+          ))}
+        </Group>
+      )}
 
       <Group title="Customer Reviews">
-        <ul>
-          {[4, 3, 2, 1].map((stars) => (
-            <li key={stars}>
-              <Link
-                href={buildSearchHref(params, { rating: activeRating === stars ? null : stars })}
-                className={cn(
-                  "flex items-center gap-2 py-[5px] text-[14px] hover:text-link-hover hover:underline",
-                  activeRating === stars ? "font-bold text-ink" : "text-ink"
-                )}
-              >
-                <StarRating rating={stars} size="sm" />
-                <span className="text-[13px]">&amp; Up</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {model.ratings.map((o) => (
+          <li key={o.value}>
+            <Link
+              href={facetsToHref(setFacet(facets, "rating", o.selected ? 0 : Number(o.value)))}
+              className="flex items-center gap-2 py-[5px] text-[14px] hover:text-link-hover hover:underline"
+              aria-pressed={o.selected}
+            >
+              <StarRating rating={Number(o.value)} size="sm" />
+              <span className={cn("text-[13px]", o.selected ? "font-bold text-ink" : "text-ink")}>
+                &amp; Up
+              </span>
+              <span className="text-[12px] text-muted">({o.count})</span>
+            </Link>
+          </li>
+        ))}
       </Group>
 
-      <Group title="Price">
-        <ul>
-          {PRICE_BRACKETS.map((b) => {
-            const active = activeMin === b.min && activeMax === b.max;
-            return (
-              <RailLink
-                key={b.label}
-                href={buildSearchHref(params, {
-                  min: active || !b.min ? null : b.min,
-                  max: active || !b.max ? null : b.max,
-                })}
-                active={active}
-              >
-                {b.label}
-              </RailLink>
-            );
-          })}
-        </ul>
+      {model.prices.length > 1 && (
+        <Group title="Price">
+          {model.prices.map((o) => (
+            <CheckRow key={o.value} option={o} href={facetsToHref(toggleFacet(facets, "prices", o.value))} />
+          ))}
+        </Group>
+      )}
+
+      {model.attributes.map((attr) => (
+        <Group key={attr.key} title={attr.key}>
+          {attr.options.map((o) => (
+            <CheckRow key={o.value} option={o} href={facetsToHref(toggleFacet(facets, "attrs", o.value))} />
+          ))}
+        </Group>
+      ))}
+
+      <Group title="Availability">
+        <CheckRow
+          option={{
+            value: "avail",
+            label: "In stock only",
+            count: model.availability[0]?.count ?? 0,
+            selected: facets.inStockOnly,
+          }}
+          href={facetsToHref(setFacet(facets, "inStockOnly", !facets.inStockOnly))}
+        />
       </Group>
 
       <Group title="Deals &amp; Discounts" last>
-        <ul>
-          <RailLink
-            href={buildSearchHref(params, { deals: params.deals === "1" ? null : "1" })}
-            active={params.deals === "1"}
-          >
-            All Discounts
-          </RailLink>
-        </ul>
+        <CheckRow
+          option={{
+            value: "deals",
+            label: "All discounts",
+            count: model.deals[0]?.count ?? 0,
+            selected: facets.dealsOnly,
+          }}
+          href={facetsToHref(setFacet(facets, "dealsOnly", !facets.dealsOnly))}
+        />
       </Group>
-    </aside>
+    </div>
   );
 }
 
-function Group({
-  title,
-  children,
-  last,
-}: {
-  title: string;
-  children: React.ReactNode;
-  last?: boolean;
-}) {
+function Group({ title, children, last }: { title: string; children: React.ReactNode; last?: boolean }) {
   return (
     <section className={cn("py-4", !last && "border-b border-line-soft")}>
-      <h2
-        className="mb-1 text-[15px] font-bold text-ink"
-        dangerouslySetInnerHTML={{ __html: title }}
-      />
-      {children}
+      <h3 className="mb-1 text-[15px] font-bold text-ink" dangerouslySetInnerHTML={{ __html: title }} />
+      <ul>{children}</ul>
     </section>
   );
 }
 
-function RailLink({
-  href,
-  active,
-  bold,
-  children,
-}: {
-  href: string;
-  active?: boolean;
-  bold?: boolean;
-  children: React.ReactNode;
-}) {
+function CheckRow({ option, href }: { option: FacetOption; href: string }) {
   return (
     <li>
       <Link
         href={href}
-        className={cn(
-          "block py-[5px] text-[14px] hover:text-link-hover hover:underline",
-          active || bold ? "font-bold text-ink" : "text-ink"
-        )}
-        aria-current={active ? "true" : undefined}
+        aria-pressed={option.selected}
+        className="group flex items-center gap-2 py-[5px] text-[14px] text-ink hover:text-link-hover"
       >
-        {children}
+        <span
+          aria-hidden
+          className={cn(
+            "flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[2px] border",
+            option.selected
+              ? "border-[#007185] bg-[#007185] text-white"
+              : "border-[#888c8c] bg-white group-hover:border-[#007185]"
+          )}
+        >
+          {option.selected && (
+            <svg viewBox="0 0 12 12" className="h-3 w-3">
+              <path d="M2.5 6.2 4.8 8.5 9.5 3.8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </span>
+        <span className={cn("min-w-0 flex-1 truncate group-hover:underline", option.selected && "font-bold")}>
+          {option.label}
+        </span>
+        <span className="shrink-0 text-[12px] text-muted">({option.count})</span>
       </Link>
     </li>
   );

@@ -1,78 +1,81 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCategory } from "@/lib/catalog";
-import { searchCatalog, type SearchParamsShape } from "@/lib/search";
+import {
+  activeFilterCount,
+  parseFacets,
+  searchCatalog,
+  PAGE_SIZE,
+  type RawSearchParams,
+} from "@/lib/search";
 import { ProductCard } from "@/components/product/ProductCard";
 import { FilterRail } from "@/components/search/FilterRail";
+import { FilterShell } from "@/components/search/FilterShell";
+import { ActiveFilters } from "@/components/search/ActiveFilters";
 import { SortSelect } from "@/components/search/SortSelect";
 import { Pagination } from "@/components/search/Pagination";
 import { ButtonLink } from "@/components/ui/Button";
 
-type RawParams = SearchParamsShape & { k?: string };
-
-/** "k" is the legacy alias the header used before the switch to "q". */
-function normalise(raw: RawParams): SearchParamsShape {
-  const { k, ...rest } = raw;
-  return { ...rest, q: rest.q ?? k ?? "" };
-}
-
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<RawParams>;
+  searchParams: Promise<RawSearchParams>;
 }): Promise<Metadata> {
-  const params = normalise(await searchParams);
-  const dept = params.i ? getCategory(params.i) : undefined;
-  if (params.q) return { title: `${params.q}` };
-  if (dept) return { title: dept.name };
+  const facets = parseFacets(await searchParams);
+  if (facets.q) return { title: facets.q };
+  if (facets.categories.length === 1) {
+    return { title: getCategory(facets.categories[0])?.name ?? "Search" };
+  }
   return { title: "All products" };
 }
 
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<RawParams>;
+  searchParams: Promise<RawSearchParams>;
 }) {
-  const params = normalise(await searchParams);
-  const { items, total, page, pageCount, query, sort, browsing } = searchCatalog(params);
-  const department = params.i && params.i !== "all" ? getCategory(params.i) : undefined;
+  const facets = parseFacets(await searchParams);
+  const { items, total, page, pageCount, facets: model, browsing } = searchCatalog(facets);
 
-  const first = (page - 1) * 16 + 1;
-  const last = (page - 1) * 16 + items.length;
+  const department = facets.categories.length === 1 ? getCategory(facets.categories[0]) : undefined;
+  const first = (page - 1) * PAGE_SIZE + 1;
+  const last = (page - 1) * PAGE_SIZE + items.length;
+  const activeCount = activeFilterCount(facets);
 
   return (
     <div className="bg-white">
       {/* results toolbar */}
       <div className="border-b border-line bg-white">
         <div className="shell flex flex-wrap items-center justify-between gap-3 py-3">
-          <p className="text-[14px] text-ink">
+          <p className="order-1 text-[13px] text-ink sm:text-[14px]">
             {total === 0 ? (
-              <>No results{query && <> for <Query>{query}</Query></>}</>
+              <>No results{facets.q && <> for <Query>{facets.q}</Query></>}</>
             ) : (
               <>
                 {first}-{last} of {total > 999 ? "over 1,000" : total}{" "}
                 {total === 1 ? "result" : "results"}
-                {query && <> for <Query>{query}</Query></>}
-                {department && (
-                  <>
-                    {" "}
-                    in <span className="font-bold">{department.name}</span>
-                  </>
-                )}
+                {facets.q && <> for <Query>{facets.q}</Query></>}
+                {department && <> in <span className="font-bold">{department.name}</span></>}
               </>
             )}
           </p>
-          <SortSelect params={params} sort={sort} />
+          <div className="order-3 w-full sm:order-2 sm:w-auto">
+            <SortSelect facets={facets} />
+          </div>
         </div>
       </div>
 
-      <div className="shell flex flex-col gap-6 lg:flex-row lg:gap-8">
-        <FilterRail params={params} />
+      <div className="shell flex flex-col gap-4 lg:flex-row lg:gap-8">
+        <FilterShell activeCount={activeCount} resultCount={total}>
+          <FilterRail facets={facets} model={model} />
+        </FilterShell>
 
         <div className="min-w-0 flex-1 pb-4">
-          <div className="pt-4">
-            <h1 className="text-[21px] font-bold text-ink">
-              {query ? "Results" : department ? department.name : "All products"}
+          <ActiveFilters facets={facets} />
+
+          <div className="pt-1">
+            <h1 className="text-[19px] font-bold text-ink sm:text-[21px]">
+              {facets.q ? "Results" : department ? department.name : "All products"}
             </h1>
             <p className="text-[13px] text-muted">
               {browsing
@@ -82,7 +85,7 @@ export default async function SearchPage({
           </div>
 
           {items.length === 0 ? (
-            <NoResults query={query} />
+            <NoResults query={facets.q} hasFilters={activeCount > 0} />
           ) : (
             <>
               <div className="divide-y divide-line-soft">
@@ -90,7 +93,7 @@ export default async function SearchPage({
                   <ProductCard key={p.id} product={p} variant="row" priority={idx < 2} />
                 ))}
               </div>
-              <Pagination params={params} page={page} pageCount={pageCount} />
+              <Pagination facets={facets} page={page} pageCount={pageCount} />
             </>
           )}
         </div>
@@ -103,18 +106,20 @@ function Query({ children }: { children: React.ReactNode }) {
   return <span className="font-bold text-[#c7511f]">&quot;{children}&quot;</span>;
 }
 
-function NoResults({ query }: { query: string }) {
+function NoResults({ query, hasFilters }: { query: string; hasFilters: boolean }) {
   return (
-    <div className="py-16 text-center">
-      <p className="text-[21px] font-bold text-ink">
-        No results for {query ? <Query>{query}</Query> : "those filters"}.
+    <div className="py-14 text-center sm:py-20">
+      <p className="text-[19px] font-bold text-ink sm:text-[21px]">
+        No results {query ? <>for <Query>{query}</Query></> : "for those filters"}
       </p>
-      <p className="mx-auto mt-2 max-w-[460px] text-[14px] text-muted">
-        Try checking your spelling, using fewer or more general words, or clearing a filter.
+      <p className="mx-auto mt-2 max-w-[460px] px-4 text-[14px] text-muted">
+        {hasFilters
+          ? "Try removing a filter, or search for something more general."
+          : "Try checking your spelling, or use fewer and more general words."}
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <ButtonLink href="/s" variant="primary" size="md">
-          Browse all products
+          {hasFilters ? "Clear all filters" : "Browse all products"}
         </ButtonLink>
         <Link href="/" className="link text-[14px]">
           Go to the homepage

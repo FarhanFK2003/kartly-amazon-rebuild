@@ -1,0 +1,33 @@
+"use client";
+
+import { useIsMounted } from "@/lib/store/cart";
+import { useRecentlyViewed } from "@/lib/store/recentlyViewed";
+import { ProductRail } from "@/components/home/ProductRail";
+import type { Product } from "@/lib/types";
+
+/**
+ * Renders nothing until something has actually been viewed, so a first-time
+ * visitor never sees an empty shelf. Ids come from localStorage and are joined
+ * against the catalogue the server already sent.
+ */
+export function RecentlyViewed({ catalog }: { catalog: Product[] }) {
+  const mounted = useIsMounted();
+  const ids = useRecentlyViewed((s) => s.ids);
+
+  if (!mounted || ids.length === 0) return null;
+
+  const products = ids
+    .map((id) => catalog.find((p) => p.id === id))
+    .filter((p): p is Product => Boolean(p));
+
+  if (products.length === 0) return null;
+
+  return (
+    <ProductRail
+      title="Your recently viewed items"
+      subtitle="Pick up where you left off"
+      products={products}
+      showCta={false}
+    />
+  );
+}

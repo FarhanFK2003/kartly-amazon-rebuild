@@ -16,6 +16,7 @@ import { VariantPicker } from "@/components/product/VariantPicker";
 import { PdpProvider } from "@/components/product/PdpContext";
 import { Reviews } from "@/components/product/Reviews";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { RecordView } from "@/components/product/RecordView";
 
 /** All 120 products are known at build time, so every PDP is prerendered. */
 export function generateStaticParams() {
@@ -47,6 +48,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   return (
     <PdpProvider product={product}>
+      <RecordView productId={product.id} />
       <div className="bg-white">
         <div className="shell pb-10">
           {/* breadcrumbs */}

@@ -31,8 +31,8 @@ export function CardRow({ cards }: { cards: HomeCard[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
-        <section key={card.title} className="card flex flex-col p-5">
-          <h2 className="mb-3 text-[19px] font-bold leading-6 text-ink">{card.title}</h2>
+        <section key={card.title} className="card flex flex-col p-4 sm:p-5">
+          <h2 className="mb-3 text-[18px] font-bold leading-6 text-ink">{card.title}</h2>
 
           {card.tiles.length === 1 ? (
             <Link href={card.tiles[0].href} className="group block">

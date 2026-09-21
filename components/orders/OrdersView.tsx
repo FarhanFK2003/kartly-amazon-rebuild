@@ -25,7 +25,7 @@ export function OrdersView({ recommended }: { recommended: Product[] }) {
 
   return (
     <div className="shell py-4">
-      <h1 className="text-[24px] font-bold text-ink sm:text-[28px]">Your Orders</h1>
+      <h1 className="text-[24px] font-normal leading-9 text-ink sm:text-[28px]">Your Orders</h1>
       <p className="mt-1 text-[13px] text-muted">
         {orders.length} simulated {pluralize(orders.length, "order")} stored in this browser.
       </p>
@@ -162,7 +162,7 @@ function NoOrders({ recommended }: { recommended: Product[] }) {
           <Package className="h-12 w-12 text-[#b9bdbd]" strokeWidth={1.4} />
         </div>
         <div>
-          <h1 className="text-[22px] font-bold text-ink sm:text-[24px]">No orders yet</h1>
+          <h1 className="text-[22px] font-normal leading-8 text-ink sm:text-[24px]">No orders yet</h1>
           <p className="mt-2 max-w-[460px] text-[14px] text-muted">
             Orders you place are simulated and stored in this browser, so they appear here on this
             device only. Place one and it will show up immediately.

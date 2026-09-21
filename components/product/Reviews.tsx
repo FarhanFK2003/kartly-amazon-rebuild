@@ -46,7 +46,7 @@ export function Reviews({ product }: { product: Product }) {
 
   return (
     <section id="reviews" className="scroll-mt-[120px] border-t border-line-soft pt-6">
-      <h2 className="text-[19px] font-bold text-ink sm:text-[21px]">Customer reviews</h2>
+      <h2 className="text-[18px] font-bold text-ink sm:text-[21px]">Customer reviews</h2>
 
       <div className="mt-4 flex flex-col gap-8 lg:flex-row">
         {/* ---------- summary ---------- */}
@@ -118,7 +118,7 @@ export function Reviews({ product }: { product: Product }) {
         {/* ---------- reviews ---------- */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-[16px] font-bold text-ink sm:text-[17px]">
+            <h3 className="text-[16px] font-bold text-ink">
               {starFilter ? `${starFilter}-star reviews` : "Reviews"}
               <span className="ml-1 font-normal text-muted">({visible.length})</span>
             </h3>
@@ -130,7 +130,7 @@ export function Reviews({ product }: { product: Product }) {
                   value={sort}
                   onChange={(e) => setSort(e.target.value as ReviewSort)}
                   aria-label="Sort reviews by"
-                  className="h-8 cursor-pointer appearance-none rounded-[8px] border border-[#8d9096] bg-gradient-to-b from-white to-[#e7e9ec] pl-3 pr-8 text-[13px] text-ink focus:outline-none"
+                  className="h-[33px] cursor-pointer appearance-none rounded-[8px] border border-[#888c8c] bg-gradient-to-b from-white to-[#e7e9ec] pl-3 pr-8 text-[13px] text-ink focus:outline-none"
                 >
                   {SORTS.map((s) => (
                     <option key={s.value} value={s.value}>

@@ -74,7 +74,7 @@ export default async function SearchPage({
           <ActiveFilters facets={facets} />
 
           <div className="pt-1">
-            <h1 className="text-[19px] font-bold text-ink sm:text-[21px]">
+            <h1 className="text-[18px] font-bold text-ink sm:text-[21px]">
               {facets.q ? "Results" : department ? department.name : "All products"}
             </h1>
             <p className="text-[13px] text-muted">
@@ -109,7 +109,7 @@ function Query({ children }: { children: React.ReactNode }) {
 function NoResults({ query, hasFilters }: { query: string; hasFilters: boolean }) {
   return (
     <div className="py-14 text-center sm:py-20">
-      <p className="text-[19px] font-bold text-ink sm:text-[21px]">
+      <p className="text-[18px] font-bold text-ink sm:text-[21px]">
         No results {query ? <>for <Query>{query}</Query></> : "for those filters"}
       </p>
       <p className="mx-auto mt-2 max-w-[460px] px-4 text-[14px] text-muted">

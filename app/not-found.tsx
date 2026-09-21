@@ -36,7 +36,7 @@ export default function NotFound() {
             <div className="shell py-10 sm:py-16">
               <div className="card mx-auto max-w-[760px] px-6 py-10 text-center">
                 <p className="text-[56px] font-bold leading-none text-[#e3e6e6] sm:text-[72px]">404</p>
-                <h1 className="mt-2 text-[22px] font-bold text-ink sm:text-[26px]">
+                <h1 className="mt-2 text-[24px] font-normal leading-8 text-ink sm:text-[28px]">
                   We can&apos;t find that page
                 </h1>
                 <p className="mx-auto mt-2 max-w-[460px] text-[14px] text-muted">

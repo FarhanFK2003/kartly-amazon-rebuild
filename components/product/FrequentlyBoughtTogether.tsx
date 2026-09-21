@@ -47,7 +47,7 @@ export function FrequentlyBoughtTogether({ bundle }: { bundle: Product[] }) {
 
   return (
     <section className="border-t border-line-soft pt-6" aria-labelledby="fbt-heading">
-      <h2 id="fbt-heading" className="text-[19px] font-bold text-ink sm:text-[21px]">
+      <h2 id="fbt-heading" className="text-[18px] font-bold text-ink sm:text-[21px]">
         Frequently bought together
       </h2>
 

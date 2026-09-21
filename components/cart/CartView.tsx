@@ -165,7 +165,9 @@ function EmptyCart({ recommended }: { recommended: Product[] }) {
           <ShoppingCart className="h-14 w-14 text-[#b9bdbd]" strokeWidth={1.4} />
         </div>
         <div>
-          <h1 className="text-[24px] font-bold text-ink">Your Kartly cart is empty</h1>
+          <h1 className="text-[22px] font-normal leading-8 text-ink sm:text-[24px]">
+            Your Kartly cart is empty
+          </h1>
           <p className="mt-2 max-w-[460px] text-[14px] text-muted">
             Nothing here yet. Browse the departments or search for something specific, and anything
             you add will stay in your cart on this device.

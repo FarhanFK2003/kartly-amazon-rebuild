@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -104,13 +104,20 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 <p className="clamp-2 mt-1 max-w-[400px] text-[13px] leading-[18px] text-ink/70 sm:text-[14px] sm:leading-5">
                   {slide.sub}
                 </p>
-                <Link
+                {/* Routed through the Button primitive so the hero CTA shares
+                    one definition of the yellow call to action - colour,
+                    border, shadow, hover, pressed and focus - with every other
+                    CTA in the store. Only the height is tuned, to keep the
+                    short band's clearances intact. */}
+                <ButtonLink
                   href={slide.href}
+                  variant="primary"
+                  size="md"
                   tabIndex={i === index ? 0 : -1}
-                  className="mt-3 inline-flex h-9 items-center rounded-full border border-cta-border bg-cta px-5 text-[14px] font-medium text-ink shadow-[0_2px_5px_rgba(0,0,0,.12)] hover:bg-cta-hover"
+                  className="mt-3 h-9 px-5 text-[14px]"
                 >
                   {slide.cta}
-                </Link>
+                </ButtonLink>
               </div>
 
               {/* The art fills more of the shorter band rather than floating in it. */}
@@ -149,7 +156,10 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
         <ChevronRight className="h-7 w-7" />
       </button>
 
-      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
+      {/* The dot stays small because a large one would compete with the art,
+          but the button around it is a real 24px target. Sizing the button to
+          the dot made a 7px tap target, which is a miss on a phone. */}
+      <div className="absolute bottom-1 left-1/2 flex -translate-x-1/2 items-center">
         {slides.map((slide, i) => (
           <button
             key={slide.id}
@@ -157,11 +167,15 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
             onClick={() => go(i)}
             aria-label={`Go to slide ${i + 1}`}
             aria-current={i === index}
-            className={cn(
-              "h-[7px] rounded-full transition-all",
-              i === index ? "w-6 bg-ink/70" : "w-[7px] bg-ink/25 hover:bg-ink/40"
-            )}
-          />
+            className="group flex h-6 items-center justify-center px-1"
+          >
+            <span
+              className={cn(
+                "block h-[7px] rounded-full transition-all",
+                i === index ? "w-6 bg-ink/70" : "w-[7px] bg-ink/25 group-hover:bg-ink/40"
+              )}
+            />
+          </button>
         ))}
       </div>
 

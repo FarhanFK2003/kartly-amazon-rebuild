@@ -68,10 +68,18 @@ export function FilterShell({
         aria-label="Filters"
         className={cn(
           // mobile: drawer
-          "fixed inset-y-0 left-0 z-[61] flex w-[86vw] max-w-[340px] flex-col bg-white transition-transform duration-200 ease-out",
-          open ? "translate-x-0" : "-translate-x-full",
+          // Visibility is part of the transition on purpose. A panel parked
+          // off-canvas with a transform is still in the tab order and still in
+          // the accessibility tree, so on a phone a keyboard or screen-reader
+          // user walking the toolbar falls into a rail of filters they cannot
+          // see. visibility:hidden removes it; because visibility interpolates
+          // discretely at the end of a transition, the panel still slides out
+          // before it disappears. Doing it in CSS keeps this one instance
+          // serving both the mobile drawer and the desktop rail.
+          "fixed inset-y-0 left-0 z-[61] flex w-[86vw] max-w-[340px] flex-col bg-white transition-[transform,visibility] duration-200 ease-out",
+          open ? "visible translate-x-0" : "invisible -translate-x-full",
           // desktop: static rail
-          "lg:static lg:z-auto lg:w-[240px] lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:bg-transparent lg:transition-none"
+          "lg:visible lg:static lg:z-auto lg:w-[240px] lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:bg-transparent lg:transition-none"
         )}
       >
         <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-line px-4 lg:hidden">

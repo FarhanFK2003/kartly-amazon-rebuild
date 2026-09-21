@@ -33,8 +33,8 @@ export function BuyBox() {
 
   function buyNow() {
     add(product.id, qty, variant?.id ?? null);
-    // Checkout is P0 #8; until then Buy Now hands off to the cart, which is the
-    // next step of the same flow.
+    // Buy Now routes through the cart rather than jumping straight to payment,
+    // so the shopper can see what they are about to buy before committing.
     router.push("/cart");
   }
 
@@ -72,7 +72,7 @@ export function BuyBox() {
                 value={qty}
                 onChange={(e) => setQty(Number(e.target.value))}
                 aria-label="Quantity"
-                className="w-[76px] rounded-[8px] pr-7"
+                className="w-[76px] pr-7"
               >
                 {Array.from({ length: Math.min(10, product.stock) }, (_, i) => i + 1).map((n) => (
                   <option key={n} value={n}>

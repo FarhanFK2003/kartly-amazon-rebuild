@@ -31,7 +31,7 @@ export default async function HelpPage({
     <div className="shell py-4">
       {/* heading and search */}
       <section className="card px-5 py-7 text-center sm:px-8 sm:py-9">
-        <h1 className="text-[24px] font-bold text-ink sm:text-[28px]">Kartly Help Centre</h1>
+        <h1 className="text-[24px] font-normal leading-9 text-ink sm:text-[28px]">Kartly Help Centre</h1>
         <p className="mx-auto mt-2 max-w-[560px] text-[14px] text-muted">
           Answers about orders, delivery, payments and what is simulated in this demo.
         </p>
@@ -40,7 +40,7 @@ export default async function HelpPage({
           action="/help"
           method="get"
           role="search"
-          className="mx-auto mt-5 flex h-11 max-w-[520px] overflow-hidden rounded-[8px] border border-[#888c8c] bg-white focus-within:shadow-[0_0_0_3px_rgba(228,121,17,.4)]"
+          className="mx-auto mt-5 flex h-10 max-w-[520px] overflow-hidden rounded-[8px] border border-[#888c8c] bg-white focus-within:shadow-[0_0_0_3px_rgba(228,121,17,.4)]"
         >
           <label htmlFor="help-q" className="sr-only">
             Search help topics
@@ -91,7 +91,7 @@ export default async function HelpPage({
           {/* all topics */}
           {HELP_TOPICS.map((topic) => (
             <section key={topic.id} id={topic.id} className="card mt-4 scroll-mt-[120px] p-5">
-              <h2 className="text-[18px] font-bold text-ink sm:text-[19px]">{topic.title}</h2>
+              <h2 className="text-[18px] font-bold text-ink">{topic.title}</h2>
               <p className="mt-[2px] text-[13px] text-muted">{topic.blurb}</p>
               <div className="mt-3 divide-y divide-line-soft border-t border-line-soft">
                 {articlesByTopic(topic.id).map((article) => (
@@ -113,7 +113,7 @@ function SearchResults({ query, results }: { query: string; results: HelpArticle
     return (
       <>
         <section className="card mt-4 px-5 py-14 text-center">
-          <p className="text-[19px] font-bold text-ink sm:text-[21px]">
+          <p className="text-[18px] font-bold text-ink sm:text-[21px]">
             No help articles match <span className="text-[#c7511f]">&quot;{query}&quot;</span>
           </p>
           <p className="mx-auto mt-2 max-w-[460px] text-[14px] text-muted">

@@ -434,7 +434,7 @@ export function CheckoutView({ index }: { index: CartIndex }) {
               </p>
             )}
 
-            <h2 className="mt-4 border-t border-line-soft pt-3 text-[17px] font-bold text-ink">
+            <h2 className="mt-4 border-t border-line-soft pt-3 text-[18px] font-bold text-ink">
               Order summary
             </h2>
             <dl className="mt-2 space-y-1 text-[13px]">

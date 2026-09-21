@@ -60,7 +60,7 @@ export function ProductRail({
   if (products.length === 0) return null;
 
   return (
-    <section className="card p-4">
+    <section className="card p-4 sm:p-5">
       <SectionHeader
         title={title}
         subtitle={subtitle}

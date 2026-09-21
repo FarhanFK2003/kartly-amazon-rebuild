@@ -87,7 +87,7 @@ export default function NotFound() {
                 <div className="no-scrollbar mt-3 flex gap-4 overflow-x-auto pb-1">
                   {picks.map((p) => (
                     <Link key={p.id} href={`/dp/${p.slug}`} className="w-[120px] shrink-0 group">
-                      <div className="relative aspect-square w-full bg-white">
+                      <div className="relative aspect-square w-full overflow-hidden rounded-[4px] bg-white">
                         {p.image && (
                           <Image src={p.image} alt="" fill sizes="120px" className="object-contain" />
                         )}

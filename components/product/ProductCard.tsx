@@ -63,7 +63,7 @@ function Thumb({
   className?: string;
 }) {
   return (
-    <div className={cn("relative overflow-hidden bg-white", className)}>
+    <div className={cn("relative overflow-hidden rounded-[4px] bg-white", className)}>
       {product.image && (
         <Image
           src={product.image}
@@ -95,7 +95,7 @@ function GridCard({ product, showCta, priority, className }: Required<Pick<Produ
           sizes="(max-width: 640px) 45vw, 200px"
           priority={priority}
           fit="cover"
-          className="mb-2 aspect-square w-full rounded-[4px]"
+          className="mb-2 aspect-square w-full"
         />
       </Link>
 

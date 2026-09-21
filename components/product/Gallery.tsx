@@ -68,7 +68,7 @@ export function Gallery({ product }: { product: Product }) {
       {/* main image */}
       <div
         ref={frameRef}
-        className="relative aspect-square min-w-0 flex-1 cursor-zoom-in overflow-hidden bg-white"
+        className="relative aspect-square min-w-0 flex-1 cursor-zoom-in overflow-hidden rounded-[4px] bg-white"
         onMouseMove={(e) => {
           const r = frameRef.current?.getBoundingClientRect();
           if (!r) return;

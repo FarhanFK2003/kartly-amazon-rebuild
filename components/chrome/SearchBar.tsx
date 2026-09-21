@@ -306,7 +306,7 @@ function ProductRow({ suggestion }: { suggestion: Extract<Suggestion, { type: "p
   const { symbol, whole, fraction } = splitPrice(suggestion.price);
   return (
     <>
-      <span className="relative h-8 w-8 shrink-0 bg-white">
+      <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-[4px] bg-white">
         {suggestion.image && (
           <Image src={suggestion.image} alt="" fill sizes="32px" className="object-contain" />
         )}

@@ -383,7 +383,7 @@ export function CheckoutView({ index }: { index: CartIndex }) {
               <ul className="divide-y divide-line-soft">
                 {active.map((r) => (
                   <li key={`${r.line.productId}-${r.line.variantId ?? "base"}`} className="flex gap-3 py-3">
-                    <div className="relative h-[64px] w-[64px] shrink-0 bg-white">
+                    <div className="relative h-[64px] w-[64px] shrink-0 overflow-hidden rounded-[4px] bg-white">
                       {r.product.image && (
                         <Image src={r.product.image} alt={r.product.title} fill sizes="64px" className="object-contain" />
                       )}

@@ -36,7 +36,7 @@ export function CardRow({ cards }: { cards: HomeCard[] }) {
 
           {card.tiles.length === 1 ? (
             <Link href={card.tiles[0].href} className="group block">
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-white">
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[4px] bg-white">
                 {card.tiles[0].image && (
                   <Image
                     src={card.tiles[0].image}
@@ -52,7 +52,7 @@ export function CardRow({ cards }: { cards: HomeCard[] }) {
             <div className="grid grid-cols-2 gap-x-3 gap-y-2">
               {card.tiles.slice(0, 4).map((tile) => (
                 <Link key={tile.label} href={tile.href} className="group block">
-                  <div className="relative aspect-square w-full overflow-hidden bg-white">
+                  <div className="relative aspect-square w-full overflow-hidden rounded-[4px] bg-white">
                     {tile.image && (
                       <Image
                         src={tile.image}

@@ -120,7 +120,7 @@ function OrderCard({ order }: { order: Order }) {
           <ul className="mt-3 divide-y divide-line-soft border-t border-line-soft">
             {order.items.map((item) => (
               <li key={`${item.productId}-${item.variantLabel ?? "base"}-row`} className="flex gap-3 py-3">
-                <div className="relative h-[56px] w-[56px] shrink-0 bg-white">
+                <div className="relative h-[56px] w-[56px] shrink-0 overflow-hidden rounded-[4px] bg-white">
                   {item.image && (
                     <Image src={item.image} alt="" fill sizes="56px" className="object-contain" />
                   )}

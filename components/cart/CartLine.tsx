@@ -26,7 +26,7 @@ export function CartLineRow({ resolved, saved = false }: { resolved: ResolvedLin
   return (
     <div className="flex gap-3 py-4 sm:gap-4">
       <Link href={`/dp/${product.slug}`} className="shrink-0">
-        <div className="relative h-[110px] w-[110px] bg-white sm:h-[150px] sm:w-[150px]">
+        <div className="relative h-[110px] w-[110px] overflow-hidden rounded-[4px] bg-white sm:h-[150px] sm:w-[150px]">
           {product.image && (
             <Image src={product.image} alt={product.title} fill sizes="150px" className="object-contain" />
           )}

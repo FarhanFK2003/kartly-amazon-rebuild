@@ -102,7 +102,7 @@ export function OrderConfirmation({ orderId }: { orderId: string }) {
               {order.items.map((item) => (
                 <li key={`${item.productId}-${item.variantLabel ?? "base"}`} className="flex gap-3 py-3">
                   <Link href={`/dp/${item.slug}`} className="shrink-0">
-                    <div className="relative h-[80px] w-[80px] bg-white">
+                    <div className="relative h-[80px] w-[80px] overflow-hidden rounded-[4px] bg-white">
                       {item.image && (
                         <Image src={item.image} alt={item.title} fill sizes="80px" className="object-contain" />
                       )}

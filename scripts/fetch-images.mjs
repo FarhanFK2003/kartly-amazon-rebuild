@@ -219,6 +219,25 @@ const PINNED = {
   "fashion-03": "7e40b7d4-5c22-4554-9b40-1e1e6cb1d423",
 };
 
+/*
+  Image filename overrides.
+
+  A filename normally follows the product slug, which keeps the directory
+  readable. That filename is also the image URL, and Next serves optimised
+  images with a four hour max-age keyed on it. Replacing a file in place leaves
+  every browser, proxy and deployment image cache serving the old bytes at the
+  same URL until it expires - there is nothing in the request for a cache to
+  notice.
+
+  For a merely wrong photo that is a nuisance you can wait out. For an
+  inappropriate one it is not acceptable, because the old image stays reachable
+  and keeps being shown. Changing the filename changes the URL, so every cache
+  misses and the previous bytes cannot come back.
+*/
+const IMAGE_FILE_OVERRIDES = {
+  "fashion-03": "orvan-everyday-merino-wool-crew-t-shirt-fashion-03-v2.jpg",
+};
+
 async function fetchPinned(id) {
   return getJson(`https://api.openverse.org/v1/images/${id}/`);
 }
@@ -332,7 +351,7 @@ for (let qi = 0; qi < queries.length; qi++) {
 
   for (let i = 0; i < pending.length; i++) {
     const product = pending[i];
-    const file = `${product.slug}.jpg`;
+    const file = IMAGE_FILE_OVERRIDES[product.id] ?? `${product.slug}.jpg`;
     const dest = path.join(OUT_DIR, file);
     let done = false;
 

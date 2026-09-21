@@ -64,7 +64,11 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export function Select({ className, invalid, children, ...props }: SelectProps) {
   return (
     <select
-      className={cn(CONTROL, "h-[34px] cursor-pointer appearance-none bg-[#f0f2f2] pr-8", invalid && "border-deal", className)}
+      // No grey fill: #f0f2f2 is the disabled background this same base class
+      // sets, so an enabled select was wearing the app's disabled colour - most
+      // visibly in the checkout address row, where State sat between two white
+      // inputs and read as switched off.
+      className={cn(CONTROL, "h-[34px] cursor-pointer appearance-none pr-8", invalid && "border-deal", className)}
       aria-invalid={invalid || undefined}
       {...props}
     >

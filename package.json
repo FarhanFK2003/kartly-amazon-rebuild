@@ -6,7 +6,6 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "catalog": "node scripts/generate-catalog.mjs",
     "images": "node scripts/fetch-images.mjs"

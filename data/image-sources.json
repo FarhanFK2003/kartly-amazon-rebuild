@@ -846,17 +846,6 @@
     "landingUrl": "https://www.flickr.com/photos/97123293@N07/16822919202",
     "bytes": 39026
   },
-  "books-10": {
-    "file": "nightjar-crime-thriller-books-10.jpg",
-    "query": "thriller book",
-    "title": "Manga Magnetic Man in Tokio Japan",
-    "creator": "Miroslaw Magola alias Magneticman",
-    "license": "pdm 1.0",
-    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-    "source": "flickr",
-    "landingUrl": "https://www.flickr.com/photos/62608635@N04/54896977274",
-    "bytes": 64286
-  },
   "books-11": {
     "file": "everyday-physics-explained-100-questions-about-how-things-wo-books-11.jpg",
     "query": "science book",
@@ -1154,17 +1143,6 @@
     "landingUrl": "https://www.flickr.com/photos/160361120@N02/47519524381",
     "bytes": 17286
   },
-  "office-09": {
-    "file": "kestrel-sort-a4-laminator-office-09.jpg",
-    "query": "office stationery",
-    "title": "Colorful sketch pens on white background",
-    "creator": "www.readyelements.com",
-    "license": "cc0 1.0",
-    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-    "source": "flickr",
-    "landingUrl": "https://www.flickr.com/photos/155753322@N06/43712542771",
-    "bytes": 23617
-  },
   "pets-03": {
     "file": "kestrel-trail-no-pull-dog-harness-pets-03.jpg",
     "query": "dog leash",
@@ -1318,5 +1296,27 @@
     "source": "rawpixel",
     "landingUrl": "https://www.rawpixel.com/image/11515802/stack-folded-t-shirts",
     "bytes": 42031
+  },
+  "books-10": {
+    "file": "nightjar-crime-thriller-books-10-v2.jpg",
+    "query": "thriller book",
+    "title": "Coffe and books",
+    "creator": "freestocks.org",
+    "license": "cc0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "flickr",
+    "landingUrl": "https://www.flickr.com/photos/135396164@N05/29183443693",
+    "bytes": 31057
+  },
+  "office-09": {
+    "file": "kestrel-sort-a4-laminator-office-09-v2.jpg",
+    "query": "office stationery",
+    "title": "Writing in Notebook at Desk",
+    "creator": "Image Catalog",
+    "license": "cc0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "flickr",
+    "landingUrl": "https://www.flickr.com/photos/132795455@N08/18692128651",
+    "bytes": 24679
   }
 }

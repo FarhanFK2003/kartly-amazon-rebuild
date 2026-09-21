@@ -121,7 +121,6 @@ No attribution is required for these; they are credited anyway.
 | books-07 | [2017 Traverse City Children's Book Festival](https://www.flickr.com/photos/132949138@N02/26690542939) | jimbarnesIPPY | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
 | books-08 | [PLEH FLES (A muddle of self help books)](https://www.flickr.com/photos/89918055@N05/51538541262) | JOHN K THORNE | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
 | books-09 | [Blue pimpernel, Italian pimpernel. Anagallis monelli (1807)](https://www.flickr.com/photos/97123293@N07/16822919202) | Swallowtail Garden Seeds | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
-| books-10 | [Manga Magnetic Man in Tokio Japan](https://www.flickr.com/photos/62608635@N04/54896977274) | Miroslaw Magola alias Magneticman | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | books-11 | [Natural science book](https://www.flickr.com/photos/129394535@N04/38151919004) | iam_pbernardo | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | books-12 | [Writing in Notebook at Desk](https://www.flickr.com/photos/132795455@N08/18692128651) | Image Catalog | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
 | office-01 | [Office chairs, patterned fabric, green, blue, Microsoft building 5, Redmond Town Center, Washington, USA](https://www.flickr.com/photos/71401718@N00/8189158766) | Wonderlane | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
@@ -149,6 +148,7 @@ No attribution is required for these; they are credited anyway.
 | fashion-02 | [Found Item Mud Sneakers](https://www.flickr.com/photos/18946008@N06/46617090735) | Larry He's So Fine | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | fashion-08 | [Taylor-cole-lady-bracelet-wristwatch](https://www.flickr.com/photos/150219019@N03/34548716452) | Johnson Watch Co | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | beauty-08 | [makeup mirrors](https://www.flickr.com/photos/160361120@N02/47519524381) | roycheng28 | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
-| office-09 | [Colorful sketch pens on white background](https://www.flickr.com/photos/155753322@N06/43712542771) | www.readyelements.com | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
 | pets-03 | [Woman with Dog on Leash, Medano Creek](https://www.flickr.com/photos/94707653@N06/12661002583) | Great Sand Dunes National Park and Preserve | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | fashion-03 | [Stack of folded t-shirts](https://www.rawpixel.com/image/11515802/stack-folded-t-shirts) | - | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | rawpixel |
+| books-10 | [Coffe and books](https://www.flickr.com/photos/135396164@N05/29183443693) | freestocks.org | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
+| office-09 | [Writing in Notebook at Desk](https://www.flickr.com/photos/132795455@N08/18692128651) | Image Catalog | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |

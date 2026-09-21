@@ -217,6 +217,22 @@ const PINNED = {
   // Verified by eye: a fanned stack of folded jersey tees, no people, no
   // third-party branding, CC0. Replaces a celebrity beach candid.
   "fashion-03": "7e40b7d4-5c22-4554-9b40-1e1e6cb1d423",
+
+  /*
+    Both of these replace photographs carrying another site's watermark across
+    the frame, which is the most placeholder-looking thing a storefront can
+    show. office-09 also supplies the Office Products tile on the homepage,
+    because the tile takes the most-reviewed product of its department - so one
+    watermarked product photo was being shown twice, once above the fold.
+
+    Openverse's CC0 pool has a lot of this: several stock sites publish
+    watermarked previews under a free licence, and the licence filter cannot
+    see a watermark. Both replacements were checked by eye.
+  */
+  // was "Colorful sketch pens" stamped with readysetimages.com
+  "office-09": "630f3294-687d-4c41-ac35-9c314698294c",
+  // was a man in a Tokyo manga shop stamped with magneticman.com
+  "books-10": "a558706e-e4f3-47d7-a03b-ae94de86edf1",
 };
 
 /*
@@ -236,6 +252,8 @@ const PINNED = {
 */
 const IMAGE_FILE_OVERRIDES = {
   "fashion-03": "orvan-everyday-merino-wool-crew-t-shirt-fashion-03-v2.jpg",
+  "office-09": "kestrel-sort-a4-laminator-office-09-v2.jpg",
+  "books-10": "nightjar-crime-thriller-books-10-v2.jpg",
 };
 
 async function fetchPinned(id) {

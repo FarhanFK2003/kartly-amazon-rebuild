@@ -86,7 +86,16 @@ for (const width of [1440, 390]) {
   const sub3 = money(await drawer.getByText(/^\$[\d,]+\.\d\d$/).last().textContent());
   check(`${w} D subtotal returns on decrease`, sub3 === sub1, `${sub3} vs ${sub1}`);
 
-  /* close predictably */
+  /* close predictably, and stay open across ordinary navigation */
+  // A client-side link, not page.goto: a hard load resets the in-memory store,
+  // which is not what a shopper following a link experiences. Desktop only -
+  // at phone width the panel covers the header it would be clicking through.
+  if (width > 480) {
+    await page.getByRole("link", { name: "Kartly home" }).first().click();
+    await page.waitForTimeout(900);
+    check(`${w} panel stands open across navigation`, await drawer.isVisible());
+  }
+
   await page.keyboard.press("Escape");
   await page.waitForTimeout(400);
   check(`${w} Escape closes the drawer`, !(await drawer.isVisible()));
@@ -110,7 +119,9 @@ for (const width of [1440, 390]) {
   await page.waitForURL("**/cart");
   await settle(page);
   check(`${w} F Go to Cart navigates`, page.url().endsWith("/cart"));
-  check(`${w} F drawer closed after navigating`, !(await drawer.isVisible()));
+  // The panel stands open across navigation, but not on the cart page itself,
+  // where it would cover the summary rail carrying Proceed to checkout.
+  check(`${w} F panel steps aside on the cart page`, !(await drawer.isVisible()));
 
   /* G: back to shopping, add again */
   await page.goto(`${BASE}/dp/nordvik-field-4k-action-camera-electronics-03`, { waitUntil: "domcontentloaded" });

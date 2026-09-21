@@ -91,3 +91,39 @@ export const US_STATES = [
   "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT",
   "VA", "WA", "WV", "WI", "WY", "DC",
 ];
+
+/* ---------- simulated sign-in ---------- */
+
+export interface CredentialsDraft {
+  identifier: string;
+  password: string;
+  name: string;
+}
+
+/**
+ * Shape checks only. Nothing is authenticated and the password is never stored
+ * or transmitted - this exists so the form behaves like a real one.
+ */
+export function validateCredentials(
+  c: CredentialsDraft,
+  mode: "signin" | "register"
+): Errors<CredentialsDraft> {
+  const e: Errors<CredentialsDraft> = {};
+  const id = c.identifier.trim();
+  const digits = id.replace(/\D/g, "");
+
+  if (!id) {
+    e.identifier = "Enter your email or mobile phone number.";
+  } else if (id.includes("@")) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(id)) e.identifier = "Enter a valid email address.";
+  } else if (digits.length < 10) {
+    e.identifier = "Enter a valid email address or a 10-digit phone number.";
+  }
+
+  if (!c.password) e.password = "Enter your password.";
+  else if (c.password.length < 6) e.password = "Passwords must be at least 6 characters.";
+
+  if (mode === "register" && !c.name.trim()) e.name = "Enter your name.";
+
+  return e;
+}

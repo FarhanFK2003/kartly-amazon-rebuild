@@ -8,6 +8,7 @@ import { SearchBar } from "@/components/chrome/SearchBar";
 import { CartButton } from "@/components/chrome/CartButton";
 import { DepartmentDrawer } from "@/components/chrome/DepartmentDrawer";
 import { DrawerTrigger } from "@/components/chrome/DrawerTrigger";
+import { AccountArea } from "@/components/chrome/AccountArea";
 import { SubNav } from "@/components/chrome/SubNav";
 
 /*
@@ -59,13 +60,7 @@ export function SiteHeader() {
             <ChevronDown className="h-3 w-3 text-[#ccc]" />
           </button>
 
-          <Link href="/signin" className={`${HOVER_BOX} leading-tight`}>
-            <span className="block text-[12px]">Hello, sign in</span>
-            <span className="flex items-center gap-[2px] text-[14px] font-bold leading-[15px]">
-              Account &amp; Lists
-              <ChevronDown className="h-3 w-3 text-[#ccc]" />
-            </span>
-          </Link>
+          <AccountArea />
 
           <Link href="/orders" className={`${HOVER_BOX} leading-tight`}>
             <span className="block text-[12px]">Returns</span>
@@ -84,9 +79,7 @@ export function SiteHeader() {
             <Wordmark height={24} />
           </Link>
           <div className="ml-auto flex items-center gap-1">
-            <Link href="/signin" className={`${HOVER_BOX} text-[13px] font-bold`}>
-              Sign in
-            </Link>
+            <AccountArea compact />
             <CartButton compact />
           </div>
         </div>

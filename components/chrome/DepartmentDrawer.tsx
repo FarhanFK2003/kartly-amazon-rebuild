@@ -6,6 +6,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { X, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavDrawer } from "@/lib/store/navDrawer";
+import { useAuth } from "@/lib/store/auth";
+import { useIsMounted } from "@/lib/store/cart";
 import type { NavDepartment, NavGroup } from "@/lib/navigation";
 
 /**
@@ -35,6 +37,11 @@ export function DepartmentDrawer({
   const closeRef = useRef<HTMLButtonElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  const mounted = useIsMounted();
+  const user = useAuth((s) => s.user);
+  const signOut = useAuth((s) => s.signOut);
+  const signedIn = mounted && !!user;
 
   const pathname = usePathname();
   const params = useSearchParams();
@@ -114,7 +121,9 @@ export function DepartmentDrawer({
       >
         {/* header */}
         <div className="flex h-[54px] shrink-0 items-center justify-between bg-subnav pl-5 pr-2 text-white">
-          <span className="text-[17px] font-bold">Hello, sign in</span>
+          <span className="truncate text-[17px] font-bold">
+            {signedIn ? `Hello, ${user!.name.split(" ")[0]}` : "Hello, sign in"}
+          </span>
           <button
             ref={closeRef}
             type="button"
@@ -207,6 +216,36 @@ export function DepartmentDrawer({
               </ul>
             </Section>
           ))}
+
+          <Section title="Account">
+            <ul>
+              {signedIn ? (
+                <li>
+                  <button
+                    type="button"
+                    tabIndex={open ? 0 : -1}
+                    onClick={() => {
+                      signOut();
+                      close();
+                    }}
+                    className="block w-full px-5 py-[9px] text-left text-[14px] text-ink hover:bg-[#f0f2f2]"
+                  >
+                    Sign out
+                  </button>
+                </li>
+              ) : (
+                <li>
+                  <Link
+                    href="/signin"
+                    tabIndex={open ? 0 : -1}
+                    className="block px-5 py-[9px] text-[14px] text-ink hover:bg-[#f0f2f2]"
+                  >
+                    Sign in
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </Section>
 
           <p className="px-5 pt-4 text-[12px] leading-4 text-muted">
             Kartly is a demo storefront. Every link here leads to real catalogue results.

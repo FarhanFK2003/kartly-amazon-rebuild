@@ -137,8 +137,13 @@ for (const width of [1440, 390]) {
   await page.getByRole("button", { name: "Add to cart" }).first().click();
   await page.waitForTimeout(400);
   check(`${w} quick add does not open the drawer`, !(await drawer.isVisible()));
-  check(`${w} quick add confirms on the button`,
-    await page.getByRole("button", { name: "Added" }).first().isVisible());
+  // The control becomes a quantity stepper reading "N in cart" - a confirmation
+  // that stays put rather than a flash that times out.
+  const inCartLabels = await page.evaluate(() =>
+    [...document.querySelectorAll("span")].filter((e) => /\d+ in cart/.test(e.textContent || "")).length
+  );
+  check(`${w} quick add turns the control into an in-cart stepper`, inCartLabels >= 1,
+    `${inCartLabels} labels`);
 
   // the real point: a second add still works with nothing to dismiss first
   await page.getByRole("button", { name: "Add to cart" }).nth(1).click({ timeout: 5000 });

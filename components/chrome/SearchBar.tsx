@@ -183,14 +183,31 @@ export function SearchBar({ categories, className, autoFocusOnMount }: SearchBar
         onSubmit={submit}
         className="flex h-10 w-full items-stretch overflow-hidden rounded-[8px] bg-white focus-within:shadow-[0_0_0_3px_#f90]"
       >
-        {/* department scope */}
+        {/*
+          Department scope.
+
+          A native select takes its width from its widest option, so a list
+          containing "Clothing & Accessories" made this 171px wide even while it
+          read "All" - nearly a quarter of the search bar spent on one word. The
+          reference sizes the control to the current selection instead.
+
+          The hidden span carries the selected label and sets the width; the
+          select is laid over it. Capped so a long department name cannot eat
+          the field, and the label truncates rather than pushing it wider.
+        */}
         <div className="relative hidden shrink-0 sm:block">
+          <span
+            aria-hidden
+            className="invisible block max-w-[150px] truncate pl-3 pr-7 text-[12px] leading-10"
+          >
+            {activeCategory ? activeCategory.name : "All"}
+          </span>
           <select
             name="i"
             value={scope}
             onChange={(e) => setScope(e.target.value)}
             aria-label="Search in department"
-            className="h-full cursor-pointer appearance-none rounded-l-[8px] border-r border-[#cdcdcd] bg-[#e6e6e6] pl-3 pr-6 text-[12px] text-[#555] hover:bg-[#dadada] focus:outline-none"
+            className="absolute inset-0 h-full w-full cursor-pointer appearance-none truncate rounded-l-[8px] border-r border-[#cdcdcd] bg-[#e6e6e6] pl-3 pr-6 text-[12px] text-[#555] hover:bg-[#dadada] focus:outline-none"
           >
             <option value="all">All</option>
             {categories.map((c) => (

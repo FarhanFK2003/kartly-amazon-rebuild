@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button, type ButtonSize } from "@/components/ui/Button";
-import { useCart } from "@/lib/store/cart";
-import { ADD_FEEDBACK_MS } from "@/lib/store/cartDrawer";
+import { QuantityStepper } from "@/components/ui/QuantityStepper";
+import { useCart, useIsMounted } from "@/lib/store/cart";
 
 interface AddToCartButtonProps {
   productId: string;
@@ -12,25 +11,26 @@ interface AddToCartButtonProps {
   qty?: number;
   size?: ButtonSize;
   outOfStock?: boolean;
+  maxQty?: number;
   label?: string;
   className?: string;
 }
 
 /**
  * Listing surfaces carry their own add-to-cart, which is what the reference does
- * and what keeps a demo walkthrough to one click per item. The brief confirmation
- * flash is deliberate: shoppers need to see that the click landed without being
- * navigated away from the results they are still scanning.
+ * and what keeps a demo walkthrough to one click per item.
+ *
+ * Once the product is in the cart the control becomes a quantity stepper
+ * reading "N in cart", as the reference does. That replaces the old approach -
+ * a green "Added" flash that timed out after 1400ms and reverted to "Add to
+ * cart", leaving the card looking exactly like one that had never been touched.
+ * The stepper is a better confirmation precisely because it does not expire:
+ * a shopper scanning back up a results page can still see what they picked, and
+ * can change their mind without going to the cart.
  *
  * This one deliberately does not open the mini-cart. A quick add from a grid is
- * a glance-and-move-on action - someone scanning ten results and adding three
- * of them would have to dismiss a modal panel three times, and a drawer that
- * has to be cleared before the next add is in the way rather than helpful. The
- * confirmation here is the button state plus the cart badge counting up.
- *
- * The buy box and frequently-bought-together do open it, because those are
- * deliberate, one-at-a-time adds where seeing the cart and a subtotal is the
- * natural next thing to want.
+ * a glance-and-move-on action; the buy box and frequently-bought-together open
+ * it because those are deliberate, one-at-a-time adds.
  */
 export function AddToCartButton({
   productId,
@@ -38,12 +38,24 @@ export function AddToCartButton({
   qty = 1,
   size = "sm",
   outOfStock = false,
+  maxQty = 30,
   label = "Add to cart",
   className,
 }: AddToCartButtonProps) {
+  const mounted = useIsMounted();
   const add = useCart((s) => s.add);
-  const [added, setAdded] = useState(false);
-  const [, startTransition] = useTransition();
+  const setQty = useCart((s) => s.setQty);
+  const remove = useCart((s) => s.remove);
+
+  // Only the active line counts: something saved for later is out of the cart,
+  // so the control has to offer to add it again rather than to change it.
+  const inCart = useCart(
+    (s) =>
+      s.lines.find(
+        (l) =>
+          l.productId === productId && (l.variantId ?? null) === (variantId ?? null) && !l.saved
+      )?.qty ?? 0
+  );
 
   if (outOfStock) {
     return (
@@ -53,27 +65,34 @@ export function AddToCartButton({
     );
   }
 
+  // The cart is read from localStorage, so it cannot be known during the server
+  // render. Showing the plain button until mount keeps the markup identical
+  // across hydration.
+  if (mounted && inCart > 0) {
+    return (
+      <QuantityStepper
+        value={inCart}
+        label={`${inCart} in cart`}
+        size={size === "lg" ? "md" : "sm"}
+        max={maxQty}
+        // Keeps the yellow of the CTA it replaced, so an added card still reads
+        // as acted on from across the grid. A grey stepper made a card that had
+        // been added look quieter than one that had not.
+        className={cn("border-cta-border", className)}
+        onChange={(next) => setQty(productId, variantId, next)}
+        onRemove={() => remove(productId, variantId)}
+      />
+    );
+  }
+
   return (
     <Button
       variant="primary"
       size={size}
       className={className}
-      onClick={() => {
-        add(productId, qty, variantId);
-        setAdded(true);
-        startTransition(() => {
-          window.setTimeout(() => setAdded(false), ADD_FEEDBACK_MS);
-        });
-      }}
+      onClick={() => add(productId, qty, variantId)}
     >
-      {added ? (
-        <>
-          <Check className="h-4 w-4" />
-          Added
-        </>
-      ) : (
-        label
-      )}
+      {label}
     </Button>
   );
 }

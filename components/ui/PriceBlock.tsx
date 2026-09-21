@@ -1,10 +1,19 @@
 import { cn, splitPrice, formatPrice } from "@/lib/utils";
 
+/*
+  The symbol and the decimals are raised by being small text top-aligned inside
+  a tall line box - that alone is the effect. They used to carry an extra
+  negative offset of about 0.6em on top of that, which lifted the "$" a further
+  8px and left it floating clear above the digits instead of sitting against
+  them. Measured against the reference, the symbol's top sits at or just below
+  the top of the whole number, so the offset is gone and only the alignment
+  does the work.
+*/
 const SIZES = {
-  xs: { whole: "text-[15px]", small: "text-[10px]", top: "-top-[0.45em]" },
-  sm: { whole: "text-[18px]", small: "text-[11px]", top: "-top-[0.5em]" },
-  md: { whole: "text-[21px]", small: "text-[12px]", top: "-top-[0.55em]" },
-  lg: { whole: "text-[28px]", small: "text-[13px]", top: "-top-[0.6em]" },
+  xs: { whole: "text-[15px]", small: "text-[10px]" },
+  sm: { whole: "text-[18px]", small: "text-[11px]" },
+  md: { whole: "text-[21px]", small: "text-[12px]" },
+  lg: { whole: "text-[28px]", small: "text-[13px]" },
 } as const;
 
 interface PriceBlockProps {
@@ -44,9 +53,9 @@ export function PriceBlock({
           </span>
         )}
         <span className="inline-flex items-start leading-none">
-          <span className={cn("relative", s.small, s.top)}>{symbol}</span>
+          <span className={cn(s.small)}>{symbol}</span>
           <span className={cn("font-medium leading-none tracking-tight", s.whole)}>{whole}</span>
-          <span className={cn("relative", s.small, s.top)}>{fraction}</span>
+          <span className={cn(s.small)}>{fraction}</span>
         </span>
       </div>
 

@@ -12,6 +12,10 @@ interface QuantityStepperProps {
   max?: number;
   disabled?: boolean;
   size?: "sm" | "md";
+  /** Replaces the bare number in the middle, e.g. "2 in cart". */
+  label?: string;
+  /** Stretches to the width of its container, for use in place of a button. */
+  fullWidth?: boolean;
   className?: string;
 }
 
@@ -28,6 +32,8 @@ export function QuantityStepper({
   max = 30,
   disabled = false,
   size = "md",
+  label,
+  fullWidth = false,
   className,
 }: QuantityStepperProps) {
   const atMin = value <= min;
@@ -43,6 +49,7 @@ export function QuantityStepper({
         "inline-flex items-center rounded-full border border-[#d5d9d9] bg-white",
         "shadow-[0_2px_5px_rgba(213,217,217,.5)]",
         disabled && "opacity-55",
+        fullWidth && "flex w-full",
         box,
         className
       )}
@@ -62,10 +69,13 @@ export function QuantityStepper({
       </button>
 
       <span
-        className="min-w-[28px] select-none border-x border-line px-1 text-center font-medium leading-none"
+        className={cn(
+          "select-none border-x border-line px-1 text-center font-medium leading-none",
+          label ? "flex-1 whitespace-nowrap" : "min-w-[28px]"
+        )}
         aria-live="polite"
       >
-        {value}
+        {label ?? value}
       </span>
 
       <button

@@ -98,7 +98,12 @@ function GridCard({ product, showCta, priority, className }: Required<Pick<Produ
 
         {showCta && (
           <div className="mt-auto pt-2">
-            <AddToCartButton productId={product.id} size="sm" outOfStock={product.stock <= 0} />
+            <AddToCartButton
+              productId={product.id}
+              size="sm"
+              outOfStock={product.stock <= 0}
+              maxQty={Math.max(1, Math.min(30, product.stock))}
+            />
           </div>
         )}
       </div>
@@ -194,6 +199,7 @@ function RowCard({ product, showCta, priority, className }: Required<Pick<Produc
               productId={product.id}
               size="sm"
               outOfStock={product.stock <= 0}
+              maxQty={Math.max(1, Math.min(30, product.stock))}
               className="w-full sm:w-[220px]"
             />
           </div>

@@ -33,8 +33,12 @@ export function Badge({ variant, children, className }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex w-fit items-center gap-1 whitespace-nowrap text-[11px] leading-4",
-        BOXED.includes(variant) && "rounded-[4px] px-[6px] py-[2px]",
+        "inline-flex w-fit items-center gap-1 text-[11px] leading-4",
+        // Only the boxed chips refuse to wrap. The text-only variants are
+        // sentences - "Only 2 left in stock - order soon." is wider than a
+        // 160px carousel card, so nowrap pushed it straight out of the card and
+        // into the one beside it.
+        BOXED.includes(variant) && "whitespace-nowrap rounded-[4px] px-[6px] py-[2px]",
         !BOXED.includes(variant) && "text-[12px]",
         VARIANTS[variant],
         className

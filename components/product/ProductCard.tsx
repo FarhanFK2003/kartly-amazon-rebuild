@@ -37,19 +37,33 @@ export function ProductCard({
 
 /* ---------- shared pieces ---------- */
 
+/**
+ * Product thumbnail.
+ *
+ * fit is "contain" by default, which is right where the product needs to be
+ * read in full - a search row, the buy box, the cart.
+ *
+ * Carousels and grids pass "cover". The catalogue is photographs rather than
+ * cut-outs on white, so contained inside a square box every one rendered at a
+ * different size: a wide shot sat short and letterboxed, a tall one narrow, and
+ * a row of cards had no common edge to scan down. Filling the square makes the
+ * row uniform, which is the whole point of a grid.
+ */
 function Thumb({
   product,
   sizes,
   priority,
+  fit = "contain",
   className,
 }: {
   product: Product;
   sizes: string;
   priority?: boolean;
+  fit?: "contain" | "cover";
   className?: string;
 }) {
   return (
-    <div className={cn("relative bg-white", className)}>
+    <div className={cn("relative overflow-hidden bg-white", className)}>
       {product.image && (
         <Image
           src={product.image}
@@ -57,7 +71,7 @@ function Thumb({
           fill
           sizes={sizes}
           priority={priority}
-          className="object-contain"
+          className={fit === "cover" ? "object-cover" : "object-contain"}
         />
       )}
     </div>
@@ -76,7 +90,13 @@ function GridCard({ product, showCta, priority, className }: Required<Pick<Produ
   return (
     <div className={cn("flex h-full flex-col", className)}>
       <Link href={`/dp/${product.slug}`} className="block">
-        <Thumb product={product} sizes="(max-width: 640px) 45vw, 200px" priority={priority} className="mb-2 aspect-square w-full" />
+        <Thumb
+          product={product}
+          sizes="(max-width: 640px) 45vw, 200px"
+          priority={priority}
+          fit="cover"
+          className="mb-2 aspect-square w-full rounded-[4px]"
+        />
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">

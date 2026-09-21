@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button, type ButtonSize } from "@/components/ui/Button";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { useCart, useIsMounted } from "@/lib/store/cart";
+import { useCartDrawer } from "@/lib/store/cartDrawer";
 
 interface AddToCartButtonProps {
   productId: string;
@@ -28,9 +29,9 @@ interface AddToCartButtonProps {
  * a shopper scanning back up a results page can still see what they picked, and
  * can change their mind without going to the cart.
  *
- * This one deliberately does not open the mini-cart. A quick add from a grid is
- * a glance-and-move-on action; the buy box and frequently-bought-together open
- * it because those are deliberate, one-at-a-time adds.
+ * Adding opens the mini-cart here too, as the reference does. That is only
+ * workable because the panel is not modal - it leaves the grid clickable, so
+ * the next add needs nothing dismissed first.
  */
 export function AddToCartButton({
   productId,
@@ -44,6 +45,7 @@ export function AddToCartButton({
 }: AddToCartButtonProps) {
   const mounted = useIsMounted();
   const add = useCart((s) => s.add);
+  const openDrawer = useCartDrawer((s) => s.openDrawer);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
 
@@ -90,7 +92,10 @@ export function AddToCartButton({
       variant="primary"
       size={size}
       className={className}
-      onClick={() => add(productId, qty, variantId)}
+      onClick={() => {
+        add(productId, qty, variantId);
+        openDrawer(productId);
+      }}
     >
       {label}
     </Button>

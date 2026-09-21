@@ -136,23 +136,28 @@ for (const width of [1440, 390]) {
   );
   await page.getByRole("button", { name: "Add to cart" }).first().click();
   await page.waitForTimeout(400);
-  check(`${w} quick add does not open the drawer`, !(await drawer.isVisible()));
-  // The control becomes a quantity stepper reading "N in cart" - a confirmation
-  // that stays put rather than a flash that times out.
+  check(`${w} quick add opens the panel`, await drawer.isVisible());
+  // The control also becomes a quantity stepper reading "N in cart" - a
+  // confirmation on the card itself that stays put.
   const inCartLabels = await page.evaluate(() =>
     [...document.querySelectorAll("span")].filter((e) => /\d+ in cart/.test(e.textContent || "")).length
   );
   check(`${w} quick add turns the control into an in-cart stepper`, inCartLabels >= 1,
     `${inCartLabels} labels`);
 
-  // the real point: a second add still works with nothing to dismiss first
-  await page.getByRole("button", { name: "Add to cart" }).nth(1).click({ timeout: 5000 });
-  await page.waitForTimeout(400);
-  const afterQuick = Number(
-    (/Cart, (\d+)/.exec((await badge.getAttribute("aria-label")) || "") || [0, "0"])[1]
-  );
-  check(`${w} consecutive quick adds both land`, afterQuick === beforeQuick + 2,
-    `${beforeQuick} -> ${afterQuick}`);
+  // The point of the panel being non-modal: on desktop a second add still works
+  // with nothing dismissed first, even while the panel is open. At phone width
+  // the panel covers the viewport, so there the shopper closes it first - the
+  // same as the reference.
+  if (width > 480) {
+    await page.getByRole("button", { name: "Add to cart" }).nth(1).click({ timeout: 8000 });
+    await page.waitForTimeout(400);
+    const afterQuick = Number(
+      (/Cart, (\d+)/.exec((await badge.getAttribute("aria-label")) || "") || [0, "0"])[1]
+    );
+    check(`${w} a second quick add lands with the panel still open`,
+      afterQuick === beforeQuick + 2, `${beforeQuick} -> ${afterQuick}`);
+  }
 
   check(`${w} no console errors`, consoleErrors.length === 0, consoleErrors.join(" | "));
   await ctx.close();

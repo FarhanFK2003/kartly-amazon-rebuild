@@ -25,10 +25,9 @@ import { FreeShippingMeter } from "@/components/cart/FreeShippingMeter";
  * full cart page, which is what stops the drawer and /cart from ever disagreeing
  * about a subtotal. The drawer owns no cart logic of its own; it is a view.
  *
- * Modal semantics match the department drawer: aria-modal, focus moved in,
- * Tab cycled within, Escape and scrim to dismiss, focus restored on close, and
- * visibility transitioned alongside the transform so the panel leaves the tab
- * order when it is parked off-canvas.
+ * It is a non-modal side panel rather than a dialog that blocks the page: see
+ * the note on the effect below. Visibility transitions alongside the transform
+ * so the panel leaves the tab order when it is parked off-canvas.
  */
 export function CartDrawer({ index }: { index: CartIndex }) {
   const open = useCartDrawer((s) => s.open);
@@ -41,52 +40,43 @@ export function CartDrawer({ index }: { index: CartIndex }) {
   const remove = useCart((s) => s.remove);
 
   const panelRef = useRef<HTMLDivElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const restoreRef = useRef<HTMLElement | null>(null);
   const pathname = usePathname();
 
   const resolved = resolveLines(lines, index).filter((r) => !r.line.saved);
   const totals = computeTotals(resolved);
 
-  /* focus management, body lock, Escape - mirrors DepartmentDrawer */
+  /*
+    Deliberately not modal.
+
+    The panel opens on every add, including a quick add from a results grid,
+    so it cannot take the page hostage: someone adding three items in a row
+    would have to dismiss it twice in between. So there is no scrim, no body
+    scroll lock and no focus trap, and it does not steal focus - the page stays
+    fully visible and clickable behind it, which is how the large marketplaces
+    behave. Escape, the close button, an outside click and navigation all
+    dismiss it.
+  */
   useEffect(() => {
     if (!open) return;
-
-    restoreRef.current = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 60);
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
         close();
-        return;
       }
-      if (e.key !== "Tab") return;
-
-      const focusables = panelRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      if (!focusables || focusables.length === 0) return;
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) close();
     };
 
     window.addEventListener("keydown", onKeyDown);
+    // Deferred: the click that opened the panel would otherwise close it again.
+    const t = window.setTimeout(() => document.addEventListener("pointerdown", onPointerDown), 0);
+
     return () => {
-      window.clearTimeout(focusTimer);
+      window.clearTimeout(t);
       window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
-      restoreRef.current?.focus?.();
+      document.removeEventListener("pointerdown", onPointerDown);
     };
   }, [open, close]);
 
@@ -98,22 +88,13 @@ export function CartDrawer({ index }: { index: CartIndex }) {
   return (
     <>
       <div
-        className={cn(
-          "fixed inset-0 z-[60] bg-black/60 transition-opacity duration-200",
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        )}
-        onClick={close}
-        aria-hidden
-      />
-
-      <div
         ref={panelRef}
         role="dialog"
-        aria-modal={open || undefined}
         aria-label="Shopping cart"
         aria-hidden={!open || undefined}
         className={cn(
           "fixed inset-y-0 right-0 z-[61] flex w-[92vw] max-w-[380px] flex-col bg-white",
+          "shadow-[-8px_0_28px_rgba(0,0,0,.22)]",
           "transition-[transform,visibility] duration-200 ease-out sm:max-w-[400px]",
           open ? "visible translate-x-0" : "invisible translate-x-full"
         )}
@@ -128,7 +109,6 @@ export function CartDrawer({ index }: { index: CartIndex }) {
               : "Your cart"}
           </span>
           <button
-            ref={closeRef}
             type="button"
             onClick={close}
             aria-label="Close cart"

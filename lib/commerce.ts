@@ -1,4 +1,5 @@
 import { getAllProducts } from "./catalog";
+import { CURRENCY } from "./utils";
 import type { CartLine } from "./store/cart";
 
 /*
@@ -12,7 +13,7 @@ export const COMMERCE = {
   freeShippingThreshold: 3500,
   standardShippingCents: 599,
   taxRate: 0.0825,
-  currency: "USD",
+  currency: CURRENCY.code,
   /** Upper bound on a single line, matching the quantity selectors. */
   maxLineQty: 30,
 } as const;

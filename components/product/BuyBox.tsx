@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/Field";
 import { PriceBlock } from "@/components/ui/PriceBlock";
 import { DeliveryPromise } from "@/components/ui/Badge";
 import { useCart } from "@/lib/store/cart";
+import { ADD_FEEDBACK_MS, useCartDrawer } from "@/lib/store/cartDrawer";
 import { usePdp } from "@/components/product/PdpContext";
 import { deliveryDate } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ import { deliveryDate } from "@/lib/utils";
 export function BuyBox() {
   const { product, variant, qty, setQty, effectivePrice } = usePdp();
   const add = useCart((s) => s.add);
+  const openDrawer = useCartDrawer((s) => s.openDrawer);
   const router = useRouter();
   const [added, setAdded] = useState(false);
 
@@ -28,7 +30,10 @@ export function BuyBox() {
   function addToCart() {
     add(product.id, qty, variant?.id ?? null);
     setAdded(true);
-    window.setTimeout(() => setAdded(false), 1600);
+    // Same drawer, same confirmation and same timing as a listing card: the buy
+    // box used to run its own 1600ms flash with its own wording.
+    openDrawer(product.id);
+    window.setTimeout(() => setAdded(false), ADD_FEEDBACK_MS);
   }
 
   function buyNow() {
@@ -94,7 +99,7 @@ export function BuyBox() {
             <Button variant="primary" size="lg" fullWidth onClick={addToCart}>
               {added ? (
                 <>
-                  <Check className="h-4 w-4" /> Added to cart
+                  <Check className="h-4 w-4" /> Added
                 </>
               ) : (
                 "Add to Cart"

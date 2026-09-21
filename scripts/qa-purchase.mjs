@@ -82,6 +82,13 @@ await page.locator("button", { hasText: /^Add to Cart$/i }).first().click();
 await page.waitForTimeout(800);
 check("add to cart updates header badge", (await cartCount(page)) === 1, `count ${await cartCount(page)}`);
 
+// A buy-box add now opens the mini-cart, which is modal - so it covers the
+// header while it is up, by design. Dismiss it so this suite goes on testing
+// what it was written to test: reaching the cart from the header.
+await page.keyboard.press("Escape");
+await page.waitForTimeout(400);
+check("mini-cart dismisses with Escape", !(await page.locator('div[role="dialog"][aria-label="Shopping cart"]').isVisible()));
+
 /* ---- 6. open cart ---- */
 await page.locator('a[href="/cart"]').first().click();
 await page.waitForURL(/\/cart/);

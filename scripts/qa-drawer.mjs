@@ -48,13 +48,18 @@ for (const w of WIDTHS) {
   await settle(page);
 
   /* ---- single instance ---- */
+  // Scoped per drawer by label. The guarantee being tested is that a drawer is
+  // not duplicated across breakpoints - not that the app owns a single dialog.
+  // The mini-cart is a second, legitimate dialog, and it must be single too.
   const counts = await page.evaluate(() => ({
-    dialogs: document.querySelectorAll('[role="dialog"]').length,
+    dialogs: document.querySelectorAll('[role="dialog"][aria-label="Shop by department"]').length,
+    cartDialogs: document.querySelectorAll('[role="dialog"][aria-label="Shopping cart"]').length,
     triggers: document.querySelectorAll('button[aria-haspopup="dialog"]').length,
     visibleTriggers: [...document.querySelectorAll('button[aria-haspopup="dialog"]')]
       .filter((b) => b.getClientRects().length > 0).length,
   }));
-  check(`w${w}: exactly one dialog in the DOM`, counts.dialogs === 1, `${counts.dialogs}`);
+  check(`w${w}: exactly one department dialog in the DOM`, counts.dialogs === 1, `${counts.dialogs}`);
+  check(`w${w}: exactly one cart dialog in the DOM`, counts.cartDialogs === 1, `${counts.cartDialogs}`);
   check(`w${w}: exactly one visible trigger`, counts.visibleTriggers === 1, `${counts.visibleTriggers} of ${counts.triggers}`);
 
   /* ---- closed state is hidden from AT ---- */

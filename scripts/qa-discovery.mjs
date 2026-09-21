@@ -191,6 +191,11 @@ check(
   `${cartLabelBefore} -> ${cartLabelAfter}`
 );
 
+// The buy-box add opens the modal mini-cart, so dismiss it before carrying on
+// down the page - browsing on is exactly what Escape is there for.
+await page.keyboard.press("Escape");
+await page.waitForTimeout(400);
+
 /* 12-13. related product opens a different PDP */
 const relatedHref = await page
   .locator("section a[href^='/dp/']")

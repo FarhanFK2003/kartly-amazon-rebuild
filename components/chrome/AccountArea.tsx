@@ -7,9 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/store/auth";
 import { useIsMounted } from "@/lib/store/cart";
-
-const HOVER_BOX =
-  "rounded-[2px] border border-transparent px-2 py-1 hover:border-white transition-colors";
+import { HEADER_HOVER_BOX as HOVER_BOX } from "@/components/chrome/styles";
 
 /**
  * Header account control.

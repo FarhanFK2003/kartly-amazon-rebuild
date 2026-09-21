@@ -1,3 +1,6 @@
+import { COMMERCE } from "./commerce";
+import { formatPrice, formatPriceShort } from "./utils";
+
 export interface HelpLink {
   label: string;
   href: string;
@@ -83,7 +86,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     topic: "delivery",
     question: "When is delivery free?",
     answer:
-      "Orders of $35 or more qualify for free shipping. Below that a flat $5.99 applies. The cart shows a progress meter with the exact amount still needed to qualify.",
+      `Orders of ${formatPriceShort(COMMERCE.freeShippingThreshold)} or more qualify for free shipping. Below that a flat ${formatPrice(COMMERCE.standardShippingCents)} applies. The cart shows a progress meter with the exact amount still needed to qualify.`,
     links: [{ label: "Go to your cart", href: "/cart" }],
   },
   {

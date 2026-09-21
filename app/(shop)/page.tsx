@@ -8,6 +8,8 @@ import {
   getProductsByCategory,
   getProductsWithBadge,
 } from "@/lib/catalog";
+import { COMMERCE } from "@/lib/commerce";
+import { formatPriceShort } from "@/lib/utils";
 import { HeroCarousel, type HeroSlide } from "@/components/home/HeroCarousel";
 import { CardRow, type HomeCard } from "@/components/home/CardRow";
 import { ProductRail } from "@/components/home/ProductRail";
@@ -17,10 +19,18 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 /*
   Marketplace homepage.
 
-  Structure follows the recon: a contained hero, then alternating four-up card
-  rows and full-width product rails, all on the grey page with white cards and
-  tight gutters. Everything renders from the real catalogue through the shared
-  ProductCard, so nothing here is a one-off.
+  A contained hero, then department discovery, then merchandising: four-up card
+  rows and full-width product rails alternating down the page, all on the grey
+  page with white cards and tight gutters.
+
+  Departments sit directly under the hero rather than four modules down, which
+  is the one place the older reference screenshots are worth departing from.
+  Category discovery is the most useful thing a marketplace homepage can put
+  near the fold, and burying it behind promo tiles leans the whole page on a
+  single hero carousel to do work it is bad at.
+
+  Everything renders from the real catalogue through the shared ProductCard, so
+  nothing here is a one-off.
 */
 
 /** Picks the most-reviewed products of a department to stand in as promo art. */
@@ -35,7 +45,9 @@ const HERO_SLIDES: HeroSlide[] = [
     id: "deals",
     eyebrow: "Limited time",
     headline: "Deals across every department",
-    sub: "Hundreds of reductions, refreshed daily. Free delivery on eligible orders over $35.",
+    sub: `Hundreds of reductions, refreshed daily. Free delivery on eligible orders over ${formatPriceShort(
+      COMMERCE.freeShippingThreshold
+    )}.`,
     cta: "Shop today's deals",
     href: "/s?deals=1",
     image: heroImage("electronics"),
@@ -119,15 +131,6 @@ export default function Home() {
       <div className="shell space-y-4 pt-3">
         <HeroCarousel slides={HERO_SLIDES} />
 
-        <CardRow cards={topRow} />
-
-        <ProductRail
-          title="Best Sellers"
-          subtitle="What shoppers are buying most this week"
-          products={bestSellers}
-          href="/s?sort=rating"
-        />
-
         {/* departments */}
         <section className="card p-4 sm:p-5">
           <SectionHeader
@@ -166,6 +169,15 @@ export default function Home() {
           subtitle="Limited time offers across the store"
           products={deals}
           href="/s?deals=1"
+        />
+
+        <CardRow cards={topRow} />
+
+        <ProductRail
+          title="Best Sellers"
+          subtitle="What shoppers are buying most this week"
+          products={bestSellers}
+          href="/s?sort=rating"
         />
 
         <CardRow cards={secondRow} />

@@ -7,6 +7,7 @@ import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PriceBlock } from "@/components/ui/PriceBlock";
 import { useCart } from "@/lib/store/cart";
+import { ADD_FEEDBACK_MS, useCartDrawer } from "@/lib/store/cartDrawer";
 import { formatPrice, pluralize, cn } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
@@ -22,6 +23,7 @@ import type { Product } from "@/lib/types";
  */
 export function FrequentlyBoughtTogether({ bundle }: { bundle: Product[] }) {
   const add = useCart((s) => s.add);
+  const openDrawer = useCartDrawer((s) => s.openDrawer);
   const [selected, setSelected] = useState<Record<string, boolean>>(
     () => Object.fromEntries(bundle.map((p) => [p.id, true]))
   );
@@ -42,7 +44,10 @@ export function FrequentlyBoughtTogether({ bundle }: { bundle: Product[] }) {
   function addSelected() {
     for (const p of chosen) add(p.id, 1, null);
     setAddedCount(chosen.length);
-    window.setTimeout(() => setAddedCount(0), 2200);
+    // No highlight: several items land at once, so singling one out would be
+    // arbitrary. The drawer showing all of them is the confirmation.
+    openDrawer(null);
+    window.setTimeout(() => setAddedCount(0), ADD_FEEDBACK_MS);
   }
 
   return (

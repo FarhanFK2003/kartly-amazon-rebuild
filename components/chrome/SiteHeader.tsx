@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { MapPin, ChevronDown, Globe } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { getCategories } from "@/lib/catalog";
+import { getCartIndex } from "@/lib/commerce";
 import { getNavDepartments, getNavGroups } from "@/lib/navigation";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { SearchBar } from "@/components/chrome/SearchBar";
@@ -10,6 +11,9 @@ import { DepartmentDrawer } from "@/components/chrome/DepartmentDrawer";
 import { DrawerTrigger } from "@/components/chrome/DrawerTrigger";
 import { AccountArea } from "@/components/chrome/AccountArea";
 import { SubNav } from "@/components/chrome/SubNav";
+import { LocaleMenu } from "@/components/chrome/LocaleMenu";
+import { HEADER_HOVER_BOX as HOVER_BOX } from "@/components/chrome/styles";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 
 /*
   Two-row marketplace header.
@@ -22,9 +26,6 @@ import { SubNav } from "@/components/chrome/SubNav";
   Desktop and mobile are separate layouts rather than one shrinking layout,
   because the mobile arrangement moves search onto its own full-width row.
 */
-
-const HOVER_BOX =
-  "rounded-[2px] border border-transparent px-2 py-1 hover:border-white transition-colors";
 
 export function SiteHeader() {
   const categories = getCategories();
@@ -52,13 +53,7 @@ export function SiteHeader() {
             </Suspense>
           </div>
 
-          {/* A globe rather than a flag emoji: Windows ships no glyph for
-              regional-indicator pairs, so a flag renders as bare letters. */}
-          <button type="button" className={`${HOVER_BOX} flex items-center gap-1 text-[14px] font-bold`}>
-            <Globe className="h-4 w-4 text-[#ccc]" strokeWidth={2} />
-            EN
-            <ChevronDown className="h-3 w-3 text-[#ccc]" />
-          </button>
+          <LocaleMenu />
 
           <AccountArea />
 
@@ -104,6 +99,17 @@ export function SiteHeader() {
       <Suspense fallback={null}>
         <DepartmentDrawer departments={getNavDepartments()} groups={getNavGroups()} />
       </Suspense>
+
+      {/*
+        The mini-cart, also rendered once for the whole app.
+
+        It needs product data for whatever is in the cart, and the cart lives in
+        localStorage, so the server cannot know which products to send - the
+        same problem the cart page has, solved the same way, with the shared
+        index. It costs about 13KB gzipped on shop pages and buys a drawer that
+        opens with no request and no loading state.
+      */}
+      <CartDrawer index={getCartIndex()} />
     </header>
   );
 }

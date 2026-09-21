@@ -77,7 +77,6 @@ No attribution is required for these; they are credited anyway.
 | home-kitchen-11 | [Quilted Softness](https://www.flickr.com/photos/56544547@N00/4292903479) | athrasher | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
 | home-kitchen-12 | [Water bottles](https://www.flickr.com/photos/40632439@N00/16466809032) | Thad Zajdowicz | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
 | fashion-01 | [2023 Women Parka Winter Jacket Middle Old Hooded Mid Long Coat Warm Ladies Outwear High Quality Cotton Padded Casual Female Tops4](https://www.flickr.com/photos/201293456@N03/54383777814) | webmy01en | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
-| fashion-03 | [Kim Kardashian - Candids During Wet T-Shirt Photoshoot In Mexico](https://www.flickr.com/photos/135504457@N06/29654718082) | centuryblack9 | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | fashion-04 | [long leather skirt and boots](https://www.flickr.com/photos/40129118@N08/19112272612) | rallie1@yahoo.com | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | fashion-05 | [Backpackers in Hoodoo Basin](https://www.flickr.com/photos/80223459@N05/51484725609) | YellowstoneNPS | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | fashion-06 | [Warana: Sunglasses and Brass](https://www.flickr.com/photos/60455048@N02/30273770765) | Queensland State Archives | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
@@ -152,3 +151,4 @@ No attribution is required for these; they are credited anyway.
 | beauty-08 | [makeup mirrors](https://www.flickr.com/photos/160361120@N02/47519524381) | roycheng28 | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
 | office-09 | [Colorful sketch pens on white background](https://www.flickr.com/photos/155753322@N06/43712542771) | www.readyelements.com | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | flickr |
 | pets-03 | [Woman with Dog on Leash, Medano Creek](https://www.flickr.com/photos/94707653@N06/12661002583) | Great Sand Dunes National Park and Preserve | [pdm 1.0](https://creativecommons.org/publicdomain/mark/1.0/) | flickr |
+| fashion-03 | [Stack of folded t-shirts](https://www.rawpixel.com/image/11515802/stack-folded-t-shirts) | - | [cc0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | rawpixel |

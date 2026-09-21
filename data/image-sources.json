@@ -362,17 +362,6 @@
     "landingUrl": "https://www.flickr.com/photos/201293456@N03/54383777814",
     "bytes": 43609
   },
-  "fashion-03": {
-    "file": "orvan-everyday-merino-wool-crew-t-shirt-fashion-03.jpg",
-    "query": "t-shirt clothing",
-    "title": "Kim Kardashian - Candids During Wet T-Shirt Photoshoot In Mexico",
-    "creator": "centuryblack9",
-    "license": "pdm 1.0",
-    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-    "source": "flickr",
-    "landingUrl": "https://www.flickr.com/photos/135504457@N06/29654718082",
-    "bytes": 30888
-  },
   "fashion-04": {
     "file": "aureon-field-leather-chelsea-boots-fashion-04.jpg",
     "query": "leather boots",
@@ -1318,5 +1307,16 @@
     "source": "flickr",
     "landingUrl": "https://www.flickr.com/photos/32137198@N07/5061995897",
     "bytes": 46901
+  },
+  "fashion-03": {
+    "file": "orvan-everyday-merino-wool-crew-t-shirt-fashion-03.jpg",
+    "query": "folded t-shirt",
+    "title": "Stack of folded t-shirts",
+    "creator": null,
+    "license": "cc0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "source": "rawpixel",
+    "landingUrl": "https://www.rawpixel.com/image/11515802/stack-folded-t-shirts",
+    "bytes": 42031
   }
 }

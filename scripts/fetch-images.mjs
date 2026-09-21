@@ -169,6 +169,18 @@ const IMAGE_OVERRIDES = {
   "pets-05": "pet bowl",              // was a fish pond
   "pets-03": "dog leash",                  // was a grey sculpture
   "fashion-02": "sneakers",                // was shoes on an overhead wire
+
+  /*
+    This one is not a relevance override, it is a safety one.
+
+    "t-shirt clothing" ranked a paparazzi candid of an identifiable celebrity,
+    in a state of undress, above every photograph of an actual shirt - and it
+    carried a Public Domain Mark, so the licence filter passed it straight
+    through. A licence filter says what you may reuse, never what is
+    appropriate to reuse. Searching for the garment rather than the category
+    returns garments.
+  */
+  "fashion-03": "folded t-shirt",          // was a celebrity beach candid
 };
 
 /*
@@ -190,6 +202,26 @@ const LICENCE_WIDENED = new Set([
   "sports-10", "sports-05", "beauty-02", "books-01",
   "toys-04", "pets-05",
 ]);
+
+/*
+  Pinned images: product id -> a specific Openverse image id.
+
+  A search override picks a better pool; it cannot pick a specific photograph,
+  and ranking is not review. The pool for "folded t-shirt" contains both clean
+  apparel shots and a 1995 conference tee covered in someone else's branding,
+  and which one comes back depends on the API's ordering and its size filter on
+  the day. Where a slot has been checked by eye, pinning the exact image is the
+  only way to keep that check meaningful across re-runs.
+*/
+const PINNED = {
+  // Verified by eye: a fanned stack of folded jersey tees, no people, no
+  // third-party branding, CC0. Replaces a celebrity beach candid.
+  "fashion-03": "7e40b7d4-5c22-4554-9b40-1e1e6cb1d423",
+};
+
+async function fetchPinned(id) {
+  return getJson(`https://api.openverse.org/v1/images/${id}/`);
+}
 
 const queryFor = (product) => IMAGE_OVERRIDES[product.id] ?? product.imageQuery;
 
@@ -303,6 +335,17 @@ for (let qi = 0; qi < queries.length; qi++) {
     const file = `${product.slug}.jpg`;
     const dest = path.join(OUT_DIR, file);
     let done = false;
+
+    // A pinned image is fetched by id and tried first. If it ever disappears
+    // upstream, this falls through to the ranked pool rather than failing.
+    if (PINNED[product.id] && !openverseDead) {
+      try {
+        const hit = await fetchPinned(PINNED[product.id]);
+        pool.unshift(hit);
+      } catch (err) {
+        console.warn(`  ! pinned image for ${product.id}: ${err.message}`);
+      }
+    }
 
     while (!done && pool.length > 0) {
       const hit = pool.shift();

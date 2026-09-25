@@ -24,11 +24,17 @@ export const TID = {
   orderTotal: "order-total",
 
   searchInput: "search-input",
+  searchTrigger: "search-trigger",
+  searchOverlay: "search-overlay",
+
+  appBar: "app-bar",
+  bottomTabs: "bottom-tabs",
+  browseTrigger: "browse-trigger",
+  browsePopover: "browse-popover",
+  accountArea: "account-area",
+  cartLink: "cart-link",
 
   /* reserved for later waves - nothing renders these yet */
-  searchOverlay: "search-overlay",
-  bottomTabs: "bottom-tabs",
-  browsePopover: "browse-popover",
   facetBar: "facet-bar",
   facetChip: "facet-chip",
   activeFilterChip: "active-filter-chip",
@@ -46,6 +52,12 @@ export const LIVE_TIDS = [
   TID.miniCart,
   TID.miniCartSubtotal,
   TID.searchInput,
+  TID.searchTrigger,
+  TID.searchOverlay,
+  TID.appBar,
+  TID.bottomTabs,
+  TID.browseTrigger,
+  TID.cartLink,
 ];
 
 export const byTestId = (page, id) => page.locator(`[data-testid="${id}"]`);
@@ -61,9 +73,13 @@ export const addToCartCta = (page) => page.getByRole("button", { name: /^Add to 
 export const buyBoxAddToCart = (page) => page.getByRole("button", { name: /^Add to Cart$/ });
 export const proceedToCheckout = (page) => page.getByRole("link", { name: /Proceed to checkout/i });
 export const placeOrder = (page) => page.getByRole("button", { name: /Place your order/i });
-/* The header search input implements the combobox pattern, so its explicit
+/* The overlay's input implements the combobox pattern, so its explicit
    role=combobox overrides the implicit searchbox role of <input type=search>. */
 export const searchBox = (page) => page.getByRole("combobox", { name: /Search Kartly/i }).first();
+export const searchTrigger = (page) => page.getByRole("link", { name: "Search products" }).first();
+export const searchOverlay = (page) => page.getByRole("dialog", { name: "Search products" });
+export const browseTrigger = (page) => page.getByRole("button", { name: "Browse" }).first();
+export const bottomTabs = (page) => page.getByRole("navigation", { name: "Primary" });
 export const homeLink = (page) => page.getByRole("link", { name: "Kartly home" }).first();
 
 /** Reads the integer out of the header cart button's accessible name. */
@@ -91,6 +107,7 @@ export const ROUTES = {
   orders: "/orders",
   help: "/help",
   signin: "/signin",
+  browse: "/browse",
   notFound: "/no-such-page-exists",
 };
 

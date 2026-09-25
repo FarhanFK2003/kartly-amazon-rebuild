@@ -4,19 +4,23 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 import { useHydratedCartCount } from "@/lib/store/cart";
-import { HEADER_HOVER_BOX } from "@/components/chrome/styles";
 
 /**
- * Live cart count. Reads 0 on the server and on first paint, then swaps to the
- * persisted value once the store rehydrates, which keeps the markup identical
- * across the hydration boundary.
+ * Cart control.
  *
- * When the count goes up the badge gives one short nudge. It is deliberately
- * almost nothing - a 10% scale for 220ms - because this fires on every add, and
- * anything with bounce or travel in it becomes irritating by the third item.
- * It is also the only confirmation a shopper gets when they add from a listing
- * without opening the drawer, so it cannot be nothing at all.
+ * The count is a small brand-filled badge at the icon's top-right, replacing
+ * the orange numeral that sat over the middle of the trolley - legible only
+ * because it was the one warm colour on a dark bar, and unreadable on a light
+ * one.
+ *
+ * Reads 0 on the server and on first paint, then swaps to the persisted value
+ * once the store rehydrates, so the markup is identical across hydration.
+ *
+ * When the count rises the badge gives one short nudge. Deliberately almost
+ * nothing - a 10% scale for 220ms - because it fires on every add, and anything
+ * with bounce in it is irritating by the third item.
  */
 export function CartButton({ compact = false, className }: { compact?: boolean; className?: string }) {
   const count = useHydratedCartCount();
@@ -38,23 +42,30 @@ export function CartButton({ compact = false, className }: { compact?: boolean; 
   return (
     <Link
       href="/cart"
-      className={cn(HEADER_HOVER_BOX, "group relative flex items-end gap-1", className)}
+      data-testid={TID.cartLink}
       aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}
+      className={cn(
+        "flex items-center gap-2 rounded-[var(--radius-sm)] text-ink transition-colors hover:bg-surface-sunk",
+        compact ? "h-10 w-10 justify-center" : "h-9 px-3",
+        className
+      )}
     >
       <span className="relative">
-        <ShoppingCart className={cn("text-white", compact ? "h-7 w-7" : "h-[30px] w-[30px]")} strokeWidth={1.6} />
-        <span
-          className={cn(
-            "absolute left-1/2 -translate-x-[35%] font-bold text-brand",
-            "motion-safe:transition-transform motion-safe:duration-200",
-            bumped && "motion-safe:scale-110",
-            compact ? "-top-[6px] text-[13px]" : "-top-[7px] text-[15px]"
-          )}
-        >
-          {capped}
-        </span>
+        <ShoppingCart className={compact ? "h-5 w-5" : "h-[20px] w-[20px]"} strokeWidth={1.9} aria-hidden />
+        {count > 0 && (
+          <span
+            className={cn(
+              "tnum absolute -right-[7px] -top-[6px] min-w-[16px] rounded-full bg-brand px-1",
+              "text-center text-[10px] font-semibold leading-[16px] text-white",
+              "motion-safe:transition-transform motion-safe:duration-200",
+              bumped && "motion-safe:scale-110"
+            )}
+          >
+            {capped}
+          </span>
+        )}
       </span>
-      {!compact && <span className="text-[14px] font-bold leading-4 text-white">Cart</span>}
+      {!compact && <span className="text-body font-medium">Cart</span>}
     </Link>
   );
 }

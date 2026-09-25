@@ -27,14 +27,14 @@ loops over widths or routes, so the executed total is higher (e.g. responsive is
 
 | Suite | Call sites | Runtime | Fate | Ported |
 |---|---|---|---|---|
-| `qa-smoke-final` | 12 | 12 | **Port** | ✅ `qa/smoke-final.mjs` |
-| `qa-responsive` | 4 | 189 | **Port** | ✅ `qa/responsive.mjs` |
+| `qa-smoke-final` | 12 | 12 | **Port** | ✅ `qa/smoke-final.mjs` — 22/22 |
+| `qa-responsive` | 4 | 189 | **Port** | ✅ `qa/responsive.mjs` — 231/231 |
+| `qa-drawer` | 28 | 69 | **Re-targeted** | ✅ `qa/navigation.mjs` — 127/127 (wave 1) |
 | `qa-purchase` | 49 | 48 | Port | wave 5 |
 | `qa-p1` | 60 | 54 | Port | wave 2 |
 | `qa-discovery` | 41 | 42 | Port | waves 2 + 4 |
 | `qa-smoke-drawer` | 29 | 49 | Port | wave 5 |
 | `qa-home` | 41 | 42 | **Rewrite** | wave 3 |
-| `qa-drawer` | 28 | 69 | **Re-target** | wave 1 |
 | `qa-signin` | 37 | 36 | Port | wave 6 |
 | `qa-help` | 27 | 26 | Port | wave 6 |
 | `qa-fbt` | 29 | 23 | Port | wave 4 |
@@ -79,8 +79,11 @@ regression without knowing what anything looks like.
 3. Every button, link and form control meets the minimum tap target.
 4. No page errors at any width.
 
-`PENDING wave 1` — bottom tab bar present and above the fold at ≤480px; sticky
-bottom bars respect `env(safe-area-inset-bottom)` and do not overlap each other.
+Resolved in wave 1: the bottom tab bar is asserted in `qa/navigation.mjs`
+(presence, height, span, active state, and that it never covers content). The
+`/browse` route joined the sweep, taking it from 189 to 231 runtime checks.
+
+`PENDING wave 5` — the mini-cart docks and reflows the grid at ≥1280px.
 
 ## qa-purchase — the money path · Port (wave 5)
 
@@ -171,22 +174,42 @@ survive as behavioural statements:
 Retired with the components they test: hero carousel autoplay, slide indicators,
 arrow controls, four-up promo row composition.
 
-## qa-drawer — department navigation · RE-TARGET (wave 1)
+## qa-drawer — department navigation · RE-TARGETED in wave 1
 
-The modal drawer becomes `/browse` plus a header popover. The single-instance
-guarantee is the assertion worth keeping — it caught a real duplicate-DOM bug.
+Replaced by `qa/navigation.mjs`. The subject no longer exists, so the mapping is
+recorded assertion by assertion below.
 
-1. Exactly one department navigation instance exists in the DOM at any width.
-2. Exactly one mini-cart instance exists.
-3. Opening is possible at every width from a visible trigger.
-4. Escape and outside click dismiss.
-5. Focus returns to the trigger on close.
-6. Every department link resolves to a real page — no dead links.
-7. Navigating closes it.
+| Old behaviour | New behaviour | Fate | Replacement |
+|---|---|---|---|
+| A modal drawer opens from a hamburger and the "All" button | A popover opens from the Browse trigger; `/browse` is a real page | **Replaced** | `@w exactly one app bar`, `@w browse opens` |
+| Exactly one `[role=dialog]` department instance in the DOM | Exactly one app bar, one overlay, one cart panel, one tab bar | **Kept, broadened** | four single-instance checks per width |
+| `aria-modal`, focus trapped inside, body scroll locked | Popover is not modal: no trap, no scroll lock — it is a menu of links, not a task | **Obsolete** | none; superseded by the aria-expanded/aria-controls pair |
+| Escape closes the drawer | Escape closes the popover **and** returns focus to the trigger | **Kept, strengthened** | `@w Escape closes browse`, `@w focus returns to the browse trigger` |
+| Outside click closes | unchanged | **Kept** | `@w outside click closes browse` |
+| Every department link resolves | unchanged, plus the count is asserted as all 10 | **Kept, strengthened** | `@w browse lists every department` |
+| Trigger visible at every width | Desktop: Browse in the bar. Mobile: the Browse tab | **Replaced** | `@w five primary destinations`, `@w browse tab reaches /browse` |
+| `PENDING wave 1` — closed navigation not in the tab order | Moot: the popover is unmounted when closed, so there is nothing to tab into | **Obsolete** | n/a |
 
-*Structural change:* modal semantics become popover semantics; `aria-modal` and
-the focus trap no longer apply. `PENDING wave 1` — closed navigation is not in
-the tab order.
+## qa/navigation.mjs — global chrome · NEW in wave 1
+
+127 checks across 1440/1280/1024 and 390/480/640, plus a no-JavaScript pass.
+
+1. One instance each of app bar, search overlay, cart panel and tab bar.
+2. No department sub-navigation row survives; the bar is a single row ≤60px.
+3. Browse reports `aria-expanded`, is wired with `aria-controls`, lists all ten
+   departments, and links to `/browse`.
+4. Escape and outside click close Browse; focus returns to the trigger.
+5. The search trigger opens the overlay and moves focus to its input.
+6. Suggestions still arrive from `/api/suggest`; arrow keys move
+   `aria-activedescendant`; Escape closes and restores focus to the trigger.
+7. Help, Orders and Cart are reachable from the bar.
+8. The bar compresses past the scroll sentinel and does not shift the page.
+9. Mobile: five destinations, a thumb-reachable bar spanning the viewport, the
+   current route marked with `aria-current`, and the bar never covering content.
+10. The mobile bar renders only wordmark, search and cart.
+11. Search opens from both the mobile bar and the Search tab.
+12. **Without JavaScript**: the trigger is a plain link to `/s`, `/s` carries a
+    real `form[action="/s"][method="get"]`, and a query still returns results.
 
 ## qa-signin / qa-help / qa-fbt · Port (waves 6, 6, 4)
 

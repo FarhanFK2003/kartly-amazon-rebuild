@@ -18,7 +18,7 @@ import { FreeShippingMeter } from "@/components/cart/FreeShippingMeter";
 /**
  * The mini-cart.
  *
- * Rendered once by SiteHeader and opened by every add-to-cart control through a
+ * Rendered once by the app bar and opened by every add-to-cart control through a
  * shared store, exactly as the department drawer works - so there is one dialog
  * in the accessibility tree rather than one per button.
  *
@@ -121,9 +121,9 @@ export function CartDrawer({ index }: { index: CartIndex }) {
           open ? "visible translate-x-0" : "invisible translate-x-full"
         )}
       >
-        {/* Matching the department drawer's 54px dark strip keeps the two
-            panels reading as the same component from opposite edges. */}
-        <div className="flex h-[54px] shrink-0 items-center justify-between bg-subnav pl-5 pr-2 text-white">
+        {/* The dark strip here used to mirror the department drawer, which no
+            longer exists. It follows the application bar instead. */}
+        <div className="flex h-[56px] shrink-0 items-center justify-between border-b border-line bg-paper pl-5 pr-2 text-ink">
           <span className="flex items-center gap-2 truncate text-[17px] font-bold">
             <ShoppingCart className="h-[18px] w-[18px]" strokeWidth={2} />
             {mounted && totals.itemCount > 0
@@ -134,7 +134,7 @@ export function CartDrawer({ index }: { index: CartIndex }) {
             type="button"
             onClick={close}
             aria-label="Close cart"
-            className="rounded p-2 transition-colors hover:bg-white/10"
+            className="rounded-[var(--radius-sm)] p-2 transition-colors hover:bg-surface-sunk"
           >
             <X className="h-6 w-6" />
           </button>

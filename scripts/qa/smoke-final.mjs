@@ -29,6 +29,8 @@ import {
   placeOrder,
   proceedToCheckout,
   searchBox,
+  searchOverlay,
+  searchTrigger,
   TID,
 } from "./selectors.mjs";
 
@@ -64,7 +66,7 @@ page.on("console", (m) => {
    drifting apart, so the gate asserts a sample of the live ids exist. */
 await page.goto(BASE + ROUTES.search, { waitUntil: "domcontentloaded" });
 await settle(page, 1000);
-for (const id of [TID.productCard, TID.productCardTitle, TID.productCardPrice, TID.searchInput]) {
+for (const id of [TID.productCard, TID.productCardTitle, TID.productCardPrice, TID.appBar, TID.searchTrigger]) {
   check(`test-id contract: ${id} is rendered`, (await byTestId(page, id).count()) > 0);
 }
 
@@ -76,12 +78,19 @@ check(
   (await page.getByRole("heading", { name: /Shop by department/i }).count()) > 0
 );
 
-/* ---- 2. search ------------------------------------------------------------ */
+/* ---- 2. search ------------------------------------------------------------
+   Search now lives behind a trigger that opens a full-screen overlay. The
+   behaviour asserted is unchanged: a query reaches /s and returns results. */
+await searchTrigger(page).click();
+await page.waitForTimeout(400);
+check("the search trigger opens the overlay", await searchOverlay(page).isVisible());
+
 await searchBox(page).fill("camera");
 await page.keyboard.press("Enter");
 await page.waitForURL(/\/s\?/, { timeout: 15000 });
 await settle(page);
 check("search returns results", (await byTestId(page, TID.productCard).count()) > 0);
+check("the overlay closes after searching", !(await searchOverlay(page).isVisible()));
 
 /* ---- 3. product page ------------------------------------------------------ */
 await byTestId(page, TID.productCardTitle).first().click();
@@ -173,7 +182,9 @@ check("no console or page errors", errors.length === 0, errors.join(" | "));
 /* the ids reserved for later waves must not be rendered yet */
 check(
   "reserved test ids are not wired ahead of their wave",
-  (await byTestId(page, TID.facetBar).count()) === 0 && (await byTestId(page, TID.bottomTabs).count()) === 0
+  (await byTestId(page, TID.facetBar).count()) === 0 &&
+    (await byTestId(page, TID.filterSheet).count()) === 0 &&
+    (await byTestId(page, TID.pdpDecisionCard).count()) === 0
 );
 
 await browser.close();

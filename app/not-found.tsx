@@ -22,10 +22,13 @@ export default function NotFound() {
     <html lang="en" className={fontVariables}>
       <body>
         <div className="flex min-h-screen flex-col">
-          <header className="bg-header">
-            <div className="shell flex h-[60px] items-center">
-              <Link href="/" className="flex items-center text-white" aria-label="Kartly home">
-                <Wordmark height={30} />
+          {/* The not-found boundary renders outside every layout, so it
+              carries its own minimal bar. It follows the application bar
+              rather than the chrome that used to be above it. */}
+          <header className="border-b border-line bg-paper">
+            <div className="shell flex h-[56px] items-center">
+              <Link href="/" className="flex items-center rounded-[var(--radius-sm)] px-1 py-1" aria-label="Kartly home">
+                <Wordmark height={24} />
               </Link>
             </div>
           </header>
@@ -41,7 +44,7 @@ export default function NotFound() {
                   The link may be broken, or the page may have moved. Here are some ways back in.
                 </p>
 
-                <form action="/s" method="get" role="search" className="mx-auto mt-6 flex h-10 max-w-[420px] overflow-hidden rounded-[8px] border border-[#888c8c]">
+                <form action="/s" method="get" role="search" className="mx-auto mt-6 flex h-10 max-w-[420px] overflow-hidden rounded-[var(--radius-sm)] border border-line-strong">
                   <input
                     name="q"
                     type="search"
@@ -49,7 +52,7 @@ export default function NotFound() {
                     aria-label="Search Kartly"
                     className="min-w-0 flex-1 px-3 text-[15px] text-ink placeholder:text-[#888] focus:outline-none"
                   />
-                  <button type="submit" className="shrink-0 bg-search px-4 text-[14px] font-medium text-ink hover:bg-search-hover">
+                  <button type="submit" className="shrink-0 bg-brand px-4 text-body font-medium text-white transition-colors hover:bg-brand-hover">
                     Search
                   </button>
                 </form>

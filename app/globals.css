@@ -87,8 +87,8 @@
   /* Retired by the wave named against each. Nothing new may reference these. */
 
   --color-page: #eaeded; /* wave 3 - page ground, superseded by paper */
-  --color-header: #131921; /* wave 1 - header chrome */
-  --color-subnav: #232f3e; /* wave 1 - header chrome */
+  --color-header: #131921; /* UNUSED since wave 1 - delete in wave 6 */
+  --color-subnav: #232f3e; /* wave 5 - checkout step markers */
   --color-footer: #232f3e; /* wave 6 - footer */
   --color-footer-deep: #131a22; /* wave 6 - footer */
   --color-muted: #565959; /* wave 6 - superseded by ink-2 */
@@ -104,9 +104,9 @@
   --color-buy: #ffa41c; /* wave 4 - replica secondary CTA */
   --color-buy-hover: #fa8900; /* wave 4 */
   --color-buy-border: #ff8f00; /* wave 4 */
-  --color-search: #febd69; /* wave 1 - replica search button */
-  --color-search-hover: #f3a847; /* wave 1 */
-  --color-brand-deep: #e88b00; /* wave 1 */
+  --color-search: #febd69; /* wave 6 - help page search button */
+  --color-search-hover: #f3a847; /* wave 6 */
+  --color-brand-deep: #e88b00; /* UNUSED since wave 1 - delete in wave 6 */
 
   /* Marketplace density: a 1500px shell with tight gutters. */
   --spacing-shell: 1500px;

@@ -42,19 +42,23 @@ export const TID = {
   cartSubtotal: "cart-subtotal",
   orderTotal: "order-total",
 
-  /* Search. The input is reachable by role; the overlay that will wrap it in
-     wave 1 is not. */
+  /* Search. The input is reachable by role; the overlay and the trigger that
+     opens it are not. */
   searchInput: "search-input",
+  searchTrigger: "search-trigger",
+  searchOverlay: "search-overlay",
+
+  /* Chrome. The bar and the tab bar are <header>/<nav> landmarks, but there is
+     more than one of each on a page, so they carry ids. */
+  appBar: "app-bar",
+  bottomTabs: "bottom-tabs",
+  browseTrigger: "browse-trigger",
+  browsePopover: "browse-popover",
+  accountArea: "account-area",
+  cartLink: "cart-link",
 
   /* --- Reserved for later waves. Declared here so the contract is written
      down once; nothing renders these yet. ---------------------------------- */
-
-  /** wave 1 - full-screen search overlay */
-  searchOverlay: "search-overlay",
-  /** wave 1 - mobile bottom tab bar */
-  bottomTabs: "bottom-tabs",
-  /** wave 1 - department popover in the header */
-  browsePopover: "browse-popover",
   /** wave 2 - sticky facet bar above results */
   facetBar: "facet-bar",
   /** wave 2 - a facet dropdown chip in the facet bar */

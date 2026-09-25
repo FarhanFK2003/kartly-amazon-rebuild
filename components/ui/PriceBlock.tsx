@@ -1,19 +1,20 @@
-import { cn, splitPrice, formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 
 /*
-  The symbol and the decimals are raised by being small text top-aligned inside
-  a tall line box - that alone is the effect. They used to carry an extra
-  negative offset of about 0.6em on top of that, which lifted the "$" a further
-  8px and left it floating clear above the digits instead of sitting against
-  them. Measured against the reference, the symbol's top sits at or just below
-  the top of the whole number, so the offset is gone and only the alignment
-  does the work.
+  Prices are set plainly, in tabular lining figures.
+
+  The raised currency symbol with oversized whole number and raised decimals is
+  the single most recognisable typographic signature of the marketplace this
+  project was replicating. Kartly states the price instead: one size, one
+  weight, digits in a fixed column so a value does not reflow as it changes.
+  splitPrice() stays exported for any caller that still wants the parts;
+  nothing in the new system uses it.
 */
 const SIZES = {
-  xs: { whole: "text-[15px]", small: "text-[10px]" },
-  sm: { whole: "text-[18px]", small: "text-[11px]" },
-  md: { whole: "text-[21px]", small: "text-[12px]" },
-  lg: { whole: "text-[28px]", small: "text-[13px]" },
+  xs: "text-body-sm font-semibold",
+  sm: "text-body-lg font-semibold",
+  md: "text-display-sm font-semibold",
+  lg: "text-display-md font-semibold",
 } as const;
 
 interface PriceBlockProps {
@@ -23,14 +24,17 @@ interface PriceBlockProps {
   size?: keyof typeof SIZES;
   /** Shipping cost shown under the price, as result rows do. */
   deliveryCents?: number | null;
+  /** Test-id from lib/testids, so QA can tell one money figure from another. */
+  testId?: string;
   className?: string;
 }
 
 /**
- * The raised currency symbol, oversized whole number and raised decimals are the
- * most recognisable typographic signature of a marketplace listing. Every price
- * in the app renders through this component so it is impossible to get wrong in
- * one place and right in another.
+ * Every price in the application renders through this component, so money
+ * cannot be formatted one way on a card and another in a total.
+ *
+ * The redesign changed only presentation. The props, the discount semantics and
+ * the values themselves are untouched.
  */
 export function PriceBlock({
   cents,
@@ -38,35 +42,28 @@ export function PriceBlock({
   dealPercent = 0,
   size = "md",
   deliveryCents,
+  testId,
   className,
 }: PriceBlockProps) {
-  const { symbol, whole, fraction } = splitPrice(cents);
   const s = SIZES[size];
   const showList = typeof listPrice === "number" && listPrice > cents;
 
   return (
-    <div className={cn("text-ink", className)}>
-      <div className="flex flex-wrap items-center gap-x-2">
+    <div className={cn("text-ink", className)} data-testid={testId}>
+      <div className="flex flex-wrap items-baseline gap-x-2">
+        <span className={cn("tnum leading-tight tracking-tight", s)}>{formatPrice(cents)}</span>
+        {showList && (
+          <span className="tnum text-body-sm text-ink-3 line-through">{formatPrice(listPrice!)}</span>
+        )}
         {dealPercent > 0 && (
-          <span className="rounded-[4px] bg-deal px-[6px] py-[2px] text-[12px] font-bold leading-4 text-white">
-            -{dealPercent}%
+          <span className="rounded-[var(--radius-sm)] bg-accent-tint px-[6px] py-[1px] text-label font-semibold text-accent">
+            &minus;{dealPercent}%
           </span>
         )}
-        <span className="inline-flex items-start leading-none">
-          <span className={cn(s.small)}>{symbol}</span>
-          <span className={cn("font-medium leading-none tracking-tight", s.whole)}>{whole}</span>
-          <span className={cn(s.small)}>{fraction}</span>
-        </span>
       </div>
 
-      {showList && (
-        <p className="mt-[2px] text-[12px] text-muted">
-          List: <span className="line-through">{formatPrice(listPrice!)}</span>
-        </p>
-      )}
-
       {typeof deliveryCents === "number" && deliveryCents > 0 && (
-        <p className="mt-[2px] text-[12px] text-muted">{formatPrice(deliveryCents)} delivery</p>
+        <p className="tnum mt-[2px] text-body-sm text-ink-2">{formatPrice(deliveryCents)} delivery</p>
       )}
     </div>
   );

@@ -16,6 +16,8 @@ interface QuantityStepperProps {
   label?: string;
   /** Stretches to the width of its container, for use in place of a button. */
   fullWidth?: boolean;
+  /** Test-id from lib/testids. */
+  testId?: string;
   className?: string;
 }
 
@@ -34,20 +36,21 @@ export function QuantityStepper({
   size = "md",
   label,
   fullWidth = false,
+  testId,
   className,
 }: QuantityStepperProps) {
   const atMin = value <= min;
   const atMax = value >= max;
   const removable = atMin && typeof onRemove === "function";
 
-  const box = size === "sm" ? "h-7 text-[12px]" : "h-8 text-[13px]";
-  const btn = size === "sm" ? "w-7" : "w-8";
+  const box = size === "sm" ? "h-8 text-body-sm" : "h-10 text-body";
+  const btn = size === "sm" ? "w-8" : "w-10";
 
   return (
     <div
+      data-testid={testId}
       className={cn(
-        "inline-flex items-center rounded-full border border-[#d5d9d9] bg-white",
-        "shadow-[0_2px_5px_rgba(213,217,217,.5)]",
+        "inline-flex items-center rounded-[var(--radius-btn)] border border-line-strong bg-surface",
         disabled && "opacity-55",
         fullWidth && "flex w-full",
         box,
@@ -60,8 +63,8 @@ export function QuantityStepper({
         disabled={disabled || (atMin && !removable)}
         aria-label={removable ? "Remove item" : "Decrease quantity"}
         className={cn(
-          "flex h-full items-center justify-center rounded-l-full text-ink",
-          "hover:bg-[#f7fafa] disabled:cursor-not-allowed disabled:text-faint disabled:hover:bg-transparent",
+          "flex h-full items-center justify-center rounded-l-[var(--radius-btn)] text-ink",
+          "hover:bg-surface-sunk disabled:cursor-not-allowed disabled:text-ink-3 disabled:hover:bg-transparent",
           btn
         )}
       >
@@ -70,7 +73,7 @@ export function QuantityStepper({
 
       <span
         className={cn(
-          "select-none border-x border-line px-1 text-center font-medium leading-none",
+          "tnum select-none border-x border-line px-1 text-center font-medium leading-none",
           label ? "flex-1 whitespace-nowrap" : "min-w-[28px]"
         )}
         aria-live="polite"
@@ -84,8 +87,8 @@ export function QuantityStepper({
         disabled={disabled || atMax}
         aria-label="Increase quantity"
         className={cn(
-          "flex h-full items-center justify-center rounded-r-full text-ink",
-          "hover:bg-[#f7fafa] disabled:cursor-not-allowed disabled:text-faint disabled:hover:bg-transparent",
+          "flex h-full items-center justify-center rounded-r-[var(--radius-btn)] text-ink",
+          "hover:bg-surface-sunk disabled:cursor-not-allowed disabled:text-ink-3 disabled:hover:bg-transparent",
           btn
         )}
       >

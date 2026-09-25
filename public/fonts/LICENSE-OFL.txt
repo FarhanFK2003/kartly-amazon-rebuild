@@ -1,0 +1,44 @@
+Kartly bundled typefaces
+========================
+
+Both files in this directory are redistributed under the SIL Open Font License,
+Version 1.1, which permits bundling and redistribution — including inside a
+commercial or public repository — provided the fonts are not sold on their own
+and this notice travels with them.
+
+They are committed rather than fetched so that neither a build nor a page view
+depends on a third-party host. This is the same rule the product imagery follows
+(see ATTRIBUTION.md for that chain).
+
+
+Inter-latin-var.woff2
+---------------------
+Family:   Inter (variable, weight 100–900)
+Subset:   latin
+Designer: Rasmus Andersson
+Licence:  SIL Open Font License 1.1
+Source:   https://fonts.google.com/specimen/Inter
+Upstream: https://github.com/rsms/inter
+Used for: all UI and body text
+
+
+Fraunces-latin-var.woff2
+------------------------
+Family:   Fraunces (variable, weight 100–900)
+Subset:   latin
+Designer: Undercase Type — Phaedra Charles, Flavia Zimbardi
+Licence:  SIL Open Font License 1.1
+Source:   https://fonts.google.com/specimen/Fraunces
+Upstream: https://github.com/undercasetype/Fraunces
+Used for: display headings
+
+
+SIL Open Font License 1.1 — summary of terms
+--------------------------------------------
+Permitted: use, study, modification, and redistribution, bundled or standalone,
+           including within commercial products.
+Required:  this notice and the licence must accompany any redistribution;
+           modified versions must not use the Reserved Font Names.
+Forbidden: selling the fonts by themselves.
+
+Full licence text: https://openfontlicense.org/open-font-license-official-text/

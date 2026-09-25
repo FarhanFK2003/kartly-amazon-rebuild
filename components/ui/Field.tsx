@@ -7,11 +7,18 @@ import type { InputHTMLAttributes, SelectHTMLAttributes, ReactNode } from "react
   rather than a browser outline.
 */
 
+/*
+  One control skin for inputs, selects and textareas.
+
+  No inset shadow and no bespoke focus glow: separation comes from the border,
+  and focus comes from the application-wide :focus-visible ring, so a field
+  cannot drift out of step with a button.
+*/
 const CONTROL =
-  "w-full rounded-[4px] border border-[#888c8c] bg-white px-3 text-[14px] text-ink " +
-  "shadow-[inset_0_1px_2px_rgba(15,17,17,.15)] placeholder:text-faint " +
-  "focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,.5)] focus:outline-none " +
-  "disabled:cursor-not-allowed disabled:bg-[#f0f2f2] disabled:text-muted";
+  "w-full rounded-[var(--radius-sm)] border border-line-strong bg-surface px-3 text-body text-ink " +
+  "placeholder:text-ink-3 transition-colors duration-150 " +
+  "hover:border-ink-3 focus:border-brand " +
+  "disabled:cursor-not-allowed disabled:bg-surface-sunk disabled:text-ink-3";
 
 interface FieldProps {
   label?: string;
@@ -50,7 +57,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function Input({ className, invalid, ...props }: InputProps) {
   return (
     <input
-      className={cn(CONTROL, "h-[34px]", invalid && "border-deal", className)}
+      className={cn(CONTROL, "h-10", invalid && "border-accent", className)}
       aria-invalid={invalid || undefined}
       {...props}
     />
@@ -68,7 +75,7 @@ export function Select({ className, invalid, children, ...props }: SelectProps) 
       // sets, so an enabled select was wearing the app's disabled colour - most
       // visibly in the checkout address row, where State sat between two white
       // inputs and read as switched off.
-      className={cn(CONTROL, "h-[34px] cursor-pointer appearance-none pr-8", invalid && "border-deal", className)}
+      className={cn(CONTROL, "h-10 cursor-pointer appearance-none pr-8", invalid && "border-accent", className)}
       aria-invalid={invalid || undefined}
       {...props}
     >

@@ -1,0 +1,98 @@
+/**
+ * QA-side mirror of lib/testids.ts, plus the shared locator helpers.
+ *
+ * Standalone Playwright scripts cannot import the TypeScript contract, so this
+ * file restates it. The smoke suite asserts a sample of these against the live
+ * DOM, which is what catches a drift between the two.
+ *
+ * Helpers below encode the targeting preference: reach for a role and an
+ * accessible name first, fall back to a test id, and never use a CSS class.
+ */
+
+export const TID = {
+  productCard: "product-card",
+  productCardTitle: "product-card-title",
+  productCardPrice: "product-card-price",
+
+  addToCart: "add-to-cart",
+  cartQtyStepper: "cart-qty-stepper",
+
+  miniCart: "mini-cart",
+  miniCartSubtotal: "mini-cart-subtotal",
+
+  cartSubtotal: "cart-subtotal",
+  orderTotal: "order-total",
+
+  searchInput: "search-input",
+
+  /* reserved for later waves - nothing renders these yet */
+  searchOverlay: "search-overlay",
+  bottomTabs: "bottom-tabs",
+  browsePopover: "browse-popover",
+  facetBar: "facet-bar",
+  facetChip: "facet-chip",
+  activeFilterChip: "active-filter-chip",
+  filterSheet: "filter-sheet",
+  densityToggle: "density-toggle",
+  pdpDecisionCard: "pdp-decision-card",
+};
+
+/** IDs that must be present in the running app today. The rest are reserved. */
+export const LIVE_TIDS = [
+  TID.productCard,
+  TID.productCardTitle,
+  TID.productCardPrice,
+  TID.addToCart,
+  TID.miniCart,
+  TID.miniCartSubtotal,
+  TID.searchInput,
+];
+
+export const byTestId = (page, id) => page.locator(`[data-testid="${id}"]`);
+
+/* ---------------------------------------------------------------- semantics */
+/* Preferred: everything below is reachable by role and accessible name, so it
+   survives any amount of visual change. */
+
+export const cartLink = (page) => page.locator("a[aria-label^='Cart,']").first();
+export const miniCart = (page) => page.getByRole("dialog", { name: "Shopping cart" });
+export const goToCart = (page) => page.getByRole("link", { name: "Go to Cart" });
+export const addToCartCta = (page) => page.getByRole("button", { name: /^Add to cart$/i });
+export const buyBoxAddToCart = (page) => page.getByRole("button", { name: /^Add to Cart$/ });
+export const proceedToCheckout = (page) => page.getByRole("link", { name: /Proceed to checkout/i });
+export const placeOrder = (page) => page.getByRole("button", { name: /Place your order/i });
+/* The header search input implements the combobox pattern, so its explicit
+   role=combobox overrides the implicit searchbox role of <input type=search>. */
+export const searchBox = (page) => page.getByRole("combobox", { name: /Search Kartly/i }).first();
+export const homeLink = (page) => page.getByRole("link", { name: "Kartly home" }).first();
+
+/** Reads the integer out of the header cart button's accessible name. */
+export async function cartCount(page) {
+  const label = (await cartLink(page).getAttribute("aria-label")) || "";
+  const m = /Cart,\s*(\d+)/.exec(label);
+  return m ? Number(m[1]) : null;
+}
+
+/** Money as a number, from any element whose text contains a currency figure. */
+export function money(text) {
+  const m = /([\d,]+\.\d{2})/.exec(String(text ?? ""));
+  return m ? Number(m[1].replace(/,/g, "")) : NaN;
+}
+
+/* --------------------------------------------------------------- the routes */
+
+export const ROUTES = {
+  home: "/",
+  search: "/s?q=laptop",
+  browseCategory: "/s?i=home-kitchen",
+  filtered: "/s?i=electronics&sort=price-asc",
+  pdp: "/dp/nordvik-field-4k-action-camera-electronics-03",
+  cart: "/cart",
+  orders: "/orders",
+  help: "/help",
+  signin: "/signin",
+  notFound: "/no-such-page-exists",
+};
+
+/** The widths the responsive suite sweeps. */
+export const WIDTHS = [1440, 1280, 1024, 768, 480, 390, 375];

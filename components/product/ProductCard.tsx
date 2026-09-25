@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 import { StarRating } from "@/components/ui/StarRating";
 import { PriceBlock } from "@/components/ui/PriceBlock";
 import { Badge, DeliveryPromise, SponsoredBadge, StockWarning } from "@/components/ui/Badge";
@@ -88,7 +89,7 @@ function TopBadge({ product }: { product: Product }) {
 
 function GridCard({ product, showCta, priority, className }: Required<Pick<ProductCardProps, "product">> & { showCta?: boolean; priority?: boolean; className?: string }) {
   return (
-    <div className={cn("flex h-full flex-col", className)}>
+    <div className={cn("flex h-full flex-col", className)} data-testid={TID.productCard}>
       <Link href={`/dp/${product.slug}`} className="block">
         <Thumb
           product={product}
@@ -106,13 +107,13 @@ function GridCard({ product, showCta, priority, className }: Required<Pick<Produ
 
         <StockWarning stock={product.stock} />
 
-        <Link href={`/dp/${product.slug}`} className="clamp-2 text-[13px] leading-[18px] text-link hover:text-link-hover hover:underline">
+        <Link href={`/dp/${product.slug}`} data-testid={TID.productCardTitle} className="clamp-2 text-[13px] leading-[18px] text-link hover:text-link-hover hover:underline">
           {product.title}
         </Link>
 
         <StarRating rating={product.rating} count={product.reviewCount} size="sm" />
 
-        <PriceBlock cents={product.price} listPrice={product.listPrice} dealPercent={product.dealPercent} size="sm" />
+        <PriceBlock cents={product.price} listPrice={product.listPrice} dealPercent={product.dealPercent} size="sm" testId={TID.productCardPrice} />
 
         <DeliveryPromise days={product.deliveryDays} />
 
@@ -141,7 +142,7 @@ function RowCard({ product, showCta, priority, className }: Required<Pick<Produc
     drop away rather than wrapping into a wall of text.
   */
   return (
-    <article className={cn("flex gap-3 py-4 sm:gap-4 sm:py-5", className)}>
+    <article className={cn("flex gap-3 py-4 sm:gap-4 sm:py-5", className)} data-testid={TID.productCard}>
       <Link href={`/dp/${product.slug}`} className="shrink-0">
         <Thumb
           product={product}
@@ -160,6 +161,7 @@ function RowCard({ product, showCta, priority, className }: Required<Pick<Produc
 
         <Link
           href={`/dp/${product.slug}`}
+          data-testid={TID.productCardTitle}
           className="clamp-2 text-[15px] leading-5 text-ink hover:text-link-hover hover:underline sm:clamp-2 sm:text-[18px] sm:leading-6"
         >
           {product.title}
@@ -199,6 +201,7 @@ function RowCard({ product, showCta, priority, className }: Required<Pick<Produc
           listPrice={product.listPrice}
           dealPercent={product.dealPercent}
           size="md"
+          testId={TID.productCardPrice}
           className="mt-[2px] sm:hidden"
         />
         <PriceBlock
@@ -239,12 +242,12 @@ function RowCard({ product, showCta, priority, className }: Required<Pick<Produc
 
 function MiniCard({ product, className }: { product: Product; className?: string }) {
   return (
-    <div className={cn("flex gap-3", className)}>
+    <div className={cn("flex gap-3", className)} data-testid={TID.productCard}>
       <Link href={`/dp/${product.slug}`} className="shrink-0">
         <Thumb product={product} sizes="72px" className="h-[72px] w-[72px]" />
       </Link>
       <div className="flex min-w-0 flex-col gap-[2px]">
-        <Link href={`/dp/${product.slug}`} className="clamp-2 text-[13px] leading-[17px] text-link hover:text-link-hover hover:underline">
+        <Link href={`/dp/${product.slug}`} data-testid={TID.productCardTitle} className="clamp-2 text-[13px] leading-[17px] text-link hover:text-link-hover hover:underline">
           {product.title}
         </Link>
         <StarRating rating={product.rating} count={product.reviewCount} size="sm" />

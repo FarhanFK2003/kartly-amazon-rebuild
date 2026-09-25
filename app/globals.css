@@ -1,58 +1,117 @@
 @import "tailwindcss";
 
 /*
-  Kartly design tokens.
+  Kartly design system.
 
-  Values were read off the recon screenshots in /recon rather than guessed, so
-  the palette, type scale and spacing rhythm match a real dense marketplace.
-  Branding (wordmark, accent) is our own; the layout language is the familiar
-  marketplace convention.
+  Two token sets live here during the redesign.
+
+  KARTLY tokens are the system every redesigned surface uses. They are the
+  authoritative palette, type scale, shape scale and rhythm.
+
+  LEGACY tokens are the marketplace-replica values the current screens still
+  reference. Each is annotated with the wave that retires it. Nothing new may
+  reference them, and the redesign is not complete while any remain.
 */
 @theme {
-  /* surfaces */
-  --color-page: #eaeded;
+  /* ---------------------------------------------------------------- KARTLY */
+
+  /* Surfaces. A warm paper ground rather than grey; white is for content. */
+  --color-paper: #fbfaf8;
   --color-surface: #ffffff;
-  --color-header: #131921;
-  --color-subnav: #232f3e;
-  --color-footer: #232f3e;
-  --color-footer-deep: #131a22;
+  --color-surface-sunk: #f3f1ed;
 
-  /* text */
-  --color-ink: #0f1111;
-  --color-muted: #565959;
-  --color-faint: #888c8c;
+  /* Lines carry the separation that shadows used to. */
+  --color-line: #e6e2db;
+  --color-line-strong: #cfc9bf;
 
-  /* lines */
-  --color-line: #d5d9d9;
-  --color-line-soft: #e7e7e7;
+  /* Text. Three weights of ink, and no fourth. */
+  --color-ink: #1a1a18;
+  --color-ink-2: #5c5951;
+  --color-ink-3: #8b877e;
 
-  /* accents */
-  --color-link: #007185;
-  --color-link-hover: #c7511f;
-  --color-star: #de7921;
-  --color-deal: #cc0c39;
-  --color-success: #007600;
+  /* Brand: deep teal. Primary action, active state, links. */
+  --color-brand: #14594f;
+  --color-brand-hover: #0e453d;
+  --color-brand-tint: #e8f0ee;
 
-  /* calls to action */
-  --color-cta: #ffd814;
-  --color-cta-hover: #f7ca00;
-  --color-cta-border: #fcd200;
-  --color-buy: #ffa41c;
-  --color-buy-hover: #fa8900;
-  --color-buy-border: #ff8f00;
-  --color-search: #febd69;
-  --color-search-hover: #f3a847;
+  /* Accent: terracotta. Discounts, low stock, destructive intent. */
+  --color-accent: #b4443a;
+  --color-accent-tint: #fbeeec;
 
-  /* brand */
-  --color-brand: #ff9900;
-  --color-brand-deep: #e88b00;
+  --color-success: #1e7a4c;
+  --color-focus: #14594f;
 
+  /* Type: two families, seven roles. */
+  --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --text-display-lg: 34px;
+  --text-display-lg--line-height: 40px;
+  --text-display-md: 26px;
+  --text-display-md--line-height: 32px;
+  --text-display-sm: 20px;
+  --text-display-sm--line-height: 26px;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-body: 14px;
+  --text-body--line-height: 21px;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 18px;
+  --text-label: 12px;
+  --text-label--line-height: 16px;
+
+  /*
+    Spacing is the default 4px scale, restricted by convention to the steps
+    1 2 3 4 5 6 8 12 (4 8 12 16 20 24 32 48px). Section rhythm is named,
+    because it is the single value that carries page hierarchy and the current
+    build's flat 16px everywhere is why it has none.
+  */
+  --spacing-section: 48px;
+  --spacing-section-sm: 32px;
+
+  /* Shape. Buttons are rounded rectangles; the pill is a replica signature. */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-btn: 8px;
+
+  /*
+    Elevation is reserved. Borders separate everything else. Only the three
+    surfaces that genuinely float carry a shadow: the search overlay, the
+    filter sheet and the mini-cart panel.
+  */
+  --shadow-overlay: 0 16px 48px rgba(26, 26, 24, 0.18);
+  --shadow-panel: -8px 0 28px rgba(26, 26, 24, 0.16);
+
+  /* ---------------------------------------------------------------- LEGACY */
+  /* Retired by the wave named against each. Nothing new may reference these. */
+
+  --color-page: #eaeded; /* wave 3 - page ground, superseded by paper */
+  --color-header: #131921; /* wave 1 - header chrome */
+  --color-subnav: #232f3e; /* wave 1 - header chrome */
+  --color-footer: #232f3e; /* wave 6 - footer */
+  --color-footer-deep: #131a22; /* wave 6 - footer */
+  --color-muted: #565959; /* wave 6 - superseded by ink-2 */
+  --color-faint: #888c8c; /* wave 6 - superseded by ink-3 */
+  --color-line-soft: #e7e7e7; /* wave 6 - superseded by line */
+  --color-link: #007185; /* wave 6 - superseded by brand */
+  --color-link-hover: #c7511f; /* wave 6 - superseded by brand-hover */
+  --color-star: #de7921; /* wave 2 - star fill */
+  --color-deal: #cc0c39; /* wave 5 - superseded by accent */
+  --color-cta: #ffd814; /* wave 2 - replica CTA yellow */
+  --color-cta-hover: #f7ca00; /* wave 2 */
+  --color-cta-border: #fcd200; /* wave 2 */
+  --color-buy: #ffa41c; /* wave 4 - replica secondary CTA */
+  --color-buy-hover: #fa8900; /* wave 4 */
+  --color-buy-border: #ff8f00; /* wave 4 */
+  --color-search: #febd69; /* wave 1 - replica search button */
+  --color-search-hover: #f3a847; /* wave 1 */
+  --color-brand-deep: #e88b00; /* wave 1 */
 
   /* Marketplace density: a 1500px shell with tight gutters. */
   --spacing-shell: 1500px;
 
-  --radius-card: 8px;
+  --radius-card: 10px; /* now the md radius; the name retires in wave 6 */
 }
 
 @layer base {
@@ -60,6 +119,12 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /*
+    Base stays 14/20 rather than the system's 14/21 until wave 6. Changing the
+    root line-height reflows every existing screen by a pixel a line, which is
+    not a foundation change - it is a redesign of pages this wave must leave
+    alone. Redesigned surfaces opt in with text-body.
+  */
   body {
     background-color: var(--color-page);
     color: var(--color-ink);
@@ -68,21 +133,37 @@
     line-height: 20px;
   }
 
-  /* Amazon-style focus: a soft orange glow rather than a hard outline. */
+  /*
+    One focus treatment for the whole application: a brand ring, offset so it
+    reads against both light surfaces and filled buttons. Every interactive
+    element inherits it, so no component defines its own.
+  */
   :focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(228, 121, 17, 0.5);
-    border-radius: 2px;
+    outline: 3px solid color-mix(in srgb, var(--color-focus) 45%, transparent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
   }
 
   a {
     color: inherit;
     text-decoration: none;
   }
+
+  /* Honour a system request for less motion, application-wide. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {
-  /* The standard blue action link used throughout the marketplace UI. */
+  /* The standard action link used throughout the UI. */
   .link {
     color: var(--color-link);
   }
@@ -126,6 +207,36 @@
 }
 
 @layer utilities {
+  /*
+    Every price, rating and quantity uses lining tabular figures, so digits sit
+    in a fixed column and a value does not reflow as it changes.
+  */
+  .tnum {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+
+  /* The display face, for the roles that carry it. */
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  /*
+    Minimum interactive target. For controls whose visible box is under 24px,
+    this extends the hit area without changing how the control looks.
+  */
+  .tap-target {
+    position: relative;
+  }
+  .tap-target::after {
+    content: "";
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: max(100%, 24px);
+    height: max(100%, 24px);
+    transform: translate(-50%, -50%);
+  }
+
   /* Hide scrollbars on horizontal carousels without losing scrollability. */
   .no-scrollbar {
     scrollbar-width: none;

@@ -6,33 +6,41 @@ export type ButtonVariant = "primary" | "secondary" | "outline" | "search" | "su
 export type ButtonSize = "sm" | "md" | "lg";
 
 /*
-  Marketplace buttons are pills with a 1px darker border and a soft inner
-  highlight. The yellow primary and orange secondary are the two CTAs that carry
-  the whole buy flow, so they are defined once here and never restyled inline.
+  Kartly buttons are 8px rounded rectangles, not pills. The pill is one of the
+  replica's most recognisable signatures, and dropping it changes the read of
+  every screen at no functional cost.
+
+  One filled action per view: brand teal. Everything else is an outline or a
+  bare link, so a screen never presents two saturated fills competing for the
+  same attention - which is what the yellow-and-orange pair did on the PDP.
+
+  Focus is not defined here. The application-wide :focus-visible ring in
+  globals.css covers every interactive element, so a component that styles its
+  own focus is creating an inconsistency rather than fixing one.
 */
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary:
-    "bg-cta hover:bg-cta-hover border-cta-border text-ink shadow-[0_2px_5px_rgba(213,217,217,.5)]",
-  secondary:
-    "bg-buy hover:bg-buy-hover border-buy-border text-ink shadow-[0_2px_5px_rgba(213,217,217,.5)]",
-  outline:
-    "bg-white hover:bg-[#f7fafa] border-line text-ink shadow-[0_2px_5px_rgba(213,217,217,.5)]",
-  search: "bg-search hover:bg-search-hover border-search text-ink",
-  subtle: "bg-transparent border-transparent text-link hover:underline shadow-none",
+  primary: "bg-brand hover:bg-brand-hover border-brand hover:border-brand-hover text-white",
+  /* Kept for callers that still ask for a second filled action. It is the same
+     brand colour as an outline, not a second hue - retires with the PDP in
+     wave 4, where Buy now becomes the outline it should always have been. */
+  secondary: "bg-brand-tint hover:bg-[#dbe7e4] border-brand-tint text-brand",
+  outline: "bg-surface hover:bg-surface-sunk border-line-strong text-ink",
+  search: "bg-brand hover:bg-brand-hover border-brand text-white",
+  subtle: "bg-transparent border-transparent text-brand hover:underline",
 };
 
+/* Heights clear the 24px minimum target at every size. */
 const SIZES: Record<ButtonSize, string> = {
-  sm: "h-7 px-3 text-[12px]",
-  md: "h-8 px-4 text-[13px]",
-  lg: "h-11 px-5 text-[15px]",
+  sm: "h-8 px-3 text-body-sm",
+  md: "h-10 px-4 text-body",
+  lg: "h-12 px-5 text-body-lg",
 };
 
 function classesFor(variant: ButtonVariant, size: ButtonSize, fullWidth?: boolean, className?: string) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-full border font-normal",
-    "transition-colors select-none",
-    "active:shadow-[inset_0_2px_3px_rgba(0,0,0,.18)]",
-    "disabled:cursor-not-allowed disabled:opacity-55 disabled:shadow-none",
+    "inline-flex items-center justify-center gap-2 rounded-[var(--radius-btn)] border font-medium",
+    "transition-colors duration-150 select-none",
+    "disabled:cursor-not-allowed disabled:opacity-50",
     VARIANTS[variant],
     SIZES[size],
     fullWidth && "w-full",

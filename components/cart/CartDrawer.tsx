@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { X, ShoppingCart, Check, ChevronLeft } from "lucide-react";
 import { cn, formatPrice, pluralize } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 import { computeTotals, resolveLines, type CartIndex } from "@/lib/commerce";
 import { useCart, useIsMounted } from "@/lib/store/cart";
 import { useCartDrawer } from "@/lib/store/cartDrawer";
@@ -111,6 +112,7 @@ export function CartDrawer({ index }: { index: CartIndex }) {
         ref={panelRef}
         role="dialog"
         aria-label="Shopping cart"
+        data-testid={TID.miniCart}
         aria-hidden={!open || undefined}
         className={cn(
           "fixed inset-y-0 right-0 z-[61] flex w-[92vw] max-w-[380px] flex-col bg-white",
@@ -210,7 +212,9 @@ export function CartDrawer({ index }: { index: CartIndex }) {
 
               <p className="mt-3 flex items-baseline justify-between text-[15px] text-ink">
                 <span>Subtotal</span>
-                <span className="text-[18px] font-bold">{formatPrice(totals.subtotal)}</span>
+                <span className="tnum text-[18px] font-bold" data-testid={TID.miniCartSubtotal}>
+                  {formatPrice(totals.subtotal)}
+                </span>
               </p>
 
               <ButtonLink href="/cart" variant="primary" size="lg" fullWidth className="mt-3">

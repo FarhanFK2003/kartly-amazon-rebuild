@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 import { Button, type ButtonSize } from "@/components/ui/Button";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { useCart, useIsMounted } from "@/lib/store/cart";
@@ -80,7 +81,8 @@ export function AddToCartButton({
         // Keeps the yellow of the CTA it replaced, so an added card still reads
         // as acted on from across the grid. A grey stepper made a card that had
         // been added look quieter than one that had not.
-        className={cn("border-cta-border", className)}
+        className={cn("border-brand", className)}
+        testId={TID.cartQtyStepper}
         onChange={(next) => setQty(productId, variantId, next)}
         onRemove={() => remove(productId, variantId)}
       />
@@ -92,6 +94,7 @@ export function AddToCartButton({
       variant="primary"
       size={size}
       className={className}
+      data-testid={TID.addToCart}
       onClick={() => {
         add(productId, qty, variantId);
         openDrawer(productId);

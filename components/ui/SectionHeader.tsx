@@ -12,10 +12,11 @@ interface SectionHeaderProps {
   className?: string;
 }
 
+/* Headings carry the display face; the three roles map to the display scale. */
 const SIZES = {
-  sm: "text-[15px]",
-  md: "text-[18px]",
-  lg: "text-[21px]",
+  sm: "text-body-lg",
+  md: "text-display-sm",
+  lg: "text-display-md",
 } as const;
 
 export function SectionHeader({
@@ -30,11 +31,11 @@ export function SectionHeader({
   return (
     <div className={cn("flex items-end justify-between gap-4", className)}>
       <div className="min-w-0">
-        <Tag className={cn("font-bold leading-tight text-ink", SIZES[size])}>{title}</Tag>
-        {subtitle && <p className="mt-[2px] text-[13px] text-muted">{subtitle}</p>}
+        <Tag className={cn("font-display font-medium leading-tight text-ink", SIZES[size])}>{title}</Tag>
+        {subtitle && <p className="mt-1 text-body-sm text-ink-2">{subtitle}</p>}
       </div>
       {actionLabel && actionHref && (
-        <Link href={actionHref} className="link shrink-0 text-[13px]">
+        <Link href={actionHref} className="shrink-0 text-body-sm font-medium text-brand hover:underline">
           {actionLabel}
         </Link>
       )}

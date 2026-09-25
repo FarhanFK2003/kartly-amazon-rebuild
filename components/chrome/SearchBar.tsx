@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { Search, TrendingUp } from "lucide-react";
 import { cn, splitPrice } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 import type { Category } from "@/lib/types";
 import type { Suggestion } from "@/lib/suggest";
 
@@ -235,6 +236,7 @@ export function SearchBar({ categories, className, autoFocusOnMount }: SearchBar
           onKeyDown={onKeyDown}
           placeholder={activeCategory ? `Search ${activeCategory.name}` : "Search Kartly"}
           aria-label="Search Kartly"
+          data-testid={TID.searchInput}
           autoComplete="off"
           role="combobox"
           aria-expanded={showList}

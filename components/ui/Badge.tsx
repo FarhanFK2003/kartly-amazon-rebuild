@@ -11,14 +11,14 @@ export type BadgeVariant =
   | "prime";
 
 const VARIANTS: Record<BadgeVariant, string> = {
-  bestSeller: "bg-[#cc6600] text-white font-bold",
-  choice: "bg-subnav text-white font-bold",
-  deal: "bg-deal text-white font-bold",
-  sponsored: "text-muted",
-  stock: "text-deal",
-  delivery: "text-muted",
-  info: "bg-[#f0f2f2] text-ink border border-line",
-  prime: "text-[#1a98c9] font-bold",
+  bestSeller: "bg-brand text-white font-semibold",
+  choice: "bg-brand-tint text-brand font-semibold",
+  deal: "bg-accent-tint text-accent font-semibold",
+  sponsored: "text-ink-3",
+  stock: "text-accent",
+  delivery: "text-ink-2",
+  info: "bg-surface-sunk text-ink border border-line",
+  prime: "text-brand font-semibold",
 };
 
 const BOXED: BadgeVariant[] = ["bestSeller", "choice", "deal", "info"];
@@ -38,7 +38,7 @@ export function Badge({ variant, children, className }: BadgeProps) {
         // sentences - "Only 2 left in stock - order soon." is wider than a
         // 160px carousel card, so nowrap pushed it straight out of the card and
         // into the one beside it.
-        BOXED.includes(variant) && "whitespace-nowrap rounded-[4px] px-[6px] py-[2px]",
+        BOXED.includes(variant) && "whitespace-nowrap rounded-[var(--radius-sm)] px-[6px] py-[2px]",
         !BOXED.includes(variant) && "text-[12px]",
         VARIANTS[variant],
         className

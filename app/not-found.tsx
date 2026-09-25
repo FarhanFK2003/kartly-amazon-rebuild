@@ -1,12 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Inter } from "next/font/google";
 import { getCategories, getBestSellers } from "@/lib/catalog";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { ButtonLink } from "@/components/ui/Button";
+import { fontVariables } from "@/lib/fonts";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 /*
   Global 404.
@@ -21,7 +19,7 @@ export default function NotFound() {
   const picks = getBestSellers(6);
 
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={fontVariables}>
       <body>
         <div className="flex min-h-screen flex-col">
           <header className="bg-header">

@@ -5,6 +5,7 @@ import { ShoppingCart } from "lucide-react";
 import { useCart, useIsMounted } from "@/lib/store/cart";
 import { computeTotals, resolveLines, type CartIndex } from "@/lib/commerce";
 import { formatPrice, pluralize } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Field";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -104,7 +105,9 @@ export function CartView({ index, recommended }: { index: CartIndex; recommended
 
             <p className="mt-3 text-[18px] text-ink">
               Subtotal ({totals.itemCount} {pluralize(totals.itemCount, "item")}):{" "}
-              <span className="font-bold">{formatPrice(totals.subtotal)}</span>
+              <span className="tnum font-bold" data-testid={TID.cartSubtotal}>
+                {formatPrice(totals.subtotal)}
+              </span>
             </p>
 
             <Checkbox id="gift" label="This order contains a gift" className="mt-3" />

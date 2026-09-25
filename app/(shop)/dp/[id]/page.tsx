@@ -56,13 +56,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <div className="shell pb-10">
           {/* breadcrumbs */}
           <nav aria-label="Breadcrumb" className="flex items-center gap-1 py-3 text-[12px] text-muted">
-            <Link href="/s" className="hover:text-link-hover hover:underline">
+            <Link href="/s" className="tap-target hover:text-link-hover hover:underline">
               All
             </Link>
             {category && (
               <>
                 <ChevronRight className="h-3 w-3" aria-hidden />
-                <Link href={`/s?i=${category.id}`} className="hover:text-link-hover hover:underline">
+                <Link href={`/s?i=${category.id}`} className="tap-target hover:text-link-hover hover:underline">
                   {category.name}
                 </Link>
               </>

@@ -23,6 +23,7 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/Field";
 import { CheckoutStepPanel } from "@/components/checkout/CheckoutStep";
 import { formatPrice, deliveryDate, pluralize } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 
 export function CheckoutView({ index }: { index: CartIndex }) {
   const mounted = useIsMounted();
@@ -448,7 +449,9 @@ export function CheckoutView({ index }: { index: CartIndex }) {
             </dl>
             <div className="mt-2 flex justify-between border-t border-line-soft pt-2 text-[18px] font-bold text-deal">
               <span>Order total</span>
-              <span>{formatPrice(totals.total)}</span>
+              <span className="tnum" data-testid={TID.orderTotal}>
+                {formatPrice(totals.total)}
+              </span>
             </div>
           </div>
 

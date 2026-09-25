@@ -1,14 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { fontVariables } from "@/lib/fonts";
 import "./globals.css";
-
-// Amazon Ember is licensed and cannot ship here. Inter is the closest free
-// substitute for its proportions at small sizes.
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -23,7 +15,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={fontVariables}>
       <body>{children}</body>
     </html>
   );

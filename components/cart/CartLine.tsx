@@ -93,7 +93,7 @@ export function CartLineRow({ resolved, saved = false }: { resolved: ResolvedLin
           <button
             type="button"
             onClick={() => remove(line.productId, line.variantId)}
-            className="link text-[13px]"
+            className="tap-target link text-[13px]"
           >
             Delete
           </button>

@@ -13,13 +13,23 @@ interface StarRatingProps {
   showCaret?: boolean;
   /** Wrap the count in parentheses (result rows) rather than bare (cards). */
   parenthesised?: boolean;
+  /** Metadata form: one star, the value, the count. */
+  compact?: boolean;
   href?: string;
   className?: string;
 }
 
 /**
- * Fractional stars are drawn by overlaying a clipped filled row on a grey row,
- * so 4.3 renders as four solid stars and a 30% fifth rather than rounding.
+ * Compact by default: a single filled star, the value, then the count.
+ *
+ * The replica drew five glyphs, a caret and a parenthesised count on every card
+ * - six elements and roughly 90px of width to communicate one number, repeated
+ * sixteen times in a grid. Kartly states it as "4.2 (2,823)" against one star.
+ *
+ * The full five-glyph row is still available for surfaces where the rating is
+ * the subject rather than metadata - the PDP header and the review summary -
+ * via showValue/size, so no data or precision is lost. Fractional fill is still
+ * drawn by clipping a filled row over a neutral one.
  */
 export function StarRating({
   rating,
@@ -28,6 +38,7 @@ export function StarRating({
   showValue = false,
   showCaret = false,
   parenthesised = false,
+  compact = false,
   href,
   className,
 }: StarRatingProps) {
@@ -41,7 +52,7 @@ export function StarRating({
       role="img"
       aria-label={`${rating} out of 5 stars`}
     >
-      <span className="absolute inset-0 flex text-line" aria-hidden>
+      <span className="absolute inset-0 flex text-line-strong" aria-hidden>
         <StarRow px={px} />
       </span>
       <span className="absolute inset-0 flex overflow-hidden text-star" style={{ width: `${pct}%` }} aria-hidden>
@@ -50,9 +61,28 @@ export function StarRating({
     </span>
   );
 
+  /* Metadata form: one star, the value, the count. */
+  if (compact) {
+    return (
+      <span
+        className={cn("inline-flex items-center gap-1 whitespace-nowrap text-body-sm", className)}
+        role="img"
+        aria-label={`${rating} out of 5 stars${typeof count === "number" ? `, ${count} ratings` : ""}`}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" className="h-[13px] w-[13px] shrink-0 text-brand" aria-hidden>
+          <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+        </svg>
+        <span className="tnum text-ink">{rating.toFixed(1)}</span>
+        {typeof count === "number" && (
+          <span className="tnum text-ink-3">({count.toLocaleString("en-US")})</span>
+        )}
+      </span>
+    );
+  }
+
   const body = (
     <span className={cn("inline-flex items-center gap-1 whitespace-nowrap", className)}>
-      {showValue && <span className="text-[13px] text-ink">{rating.toFixed(1)}</span>}
+      {showValue && <span className="tnum text-body-sm text-ink">{rating.toFixed(1)}</span>}
       {stars}
       {showCaret && (
         <svg viewBox="0 0 12 12" className="h-3 w-3 text-[#565959]" aria-hidden>
@@ -60,7 +90,7 @@ export function StarRating({
         </svg>
       )}
       {typeof count === "number" && (
-        <span className="text-[13px] text-link">
+        <span className="tnum text-body-sm text-brand">
           {parenthesised ? `(${count.toLocaleString("en-US")})` : count.toLocaleString("en-US")}
         </span>
       )}

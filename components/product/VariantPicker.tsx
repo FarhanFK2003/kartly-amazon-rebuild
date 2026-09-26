@@ -59,7 +59,7 @@ export function VariantPicker() {
                 active
                   ? isColour
                     ? "border-brand"
-                    : "border-brand bg-brand text-white"
+                    : "border-brand bg-brand [color:var(--color-on-brand)]"
                   : "border-line-strong bg-surface text-ink hover:border-ink-3"
               )}
             >

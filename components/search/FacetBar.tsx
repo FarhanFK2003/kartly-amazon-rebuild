@@ -93,7 +93,7 @@ function FacetDropdown({
       >
         {FACET_LABELS[group]}
         {selected > 0 && (
-          <span className="tnum rounded-full bg-brand px-[6px] text-label font-semibold leading-[18px] text-white">
+          <span className="tnum rounded-full bg-brand px-[6px] text-label font-semibold leading-[18px] [color:var(--color-on-brand)]">
             {selected}
           </span>
         )}

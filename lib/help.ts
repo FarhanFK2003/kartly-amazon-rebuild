@@ -177,7 +177,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     topic: "account",
     question: "Is sign-in real?",
     answer:
-      "No. Sign-in is simulated: any email and any password of six characters or more is accepted. Nothing is authenticated, no password is stored, and no credentials leave your browser. Only a display name is kept so the header can greet you.",
+      "Yes. Creating an account stores your email address in Kartly's database, and your password is hashed with bcrypt before it is saved - the plaintext is never stored and is never sent back to the browser. Signing in gives you a secure session cookie that your browser holds and page scripts cannot read. There is no password reset or email verification in this demo.",
     links: [{ label: "Go to sign in", href: "/signin" }],
   },
   {
@@ -185,14 +185,14 @@ export const HELP_ARTICLES: HelpArticle[] = [
     topic: "account",
     question: "What data is stored about me?",
     answer:
-      "Only what your browser holds locally: your cart, your checkout progress, your simulated orders, recently viewed products and a display name. There is no server, no database and no analytics. Clearing site data removes all of it permanently.",
+      "If you create an account, your email and a hashed password are stored in Kartly's database, along with any orders you place and the delivery details on them. Your cart is stored server-side too, so it follows you between tabs and survives a refresh. Your checkout progress and recently viewed products stay in your browser. There is no analytics and no tracking.",
   },
   {
     id: "sign-out",
     topic: "account",
     question: "How do I sign out?",
     answer:
-      "Open the Account & Lists menu in the header and choose Sign out, or use Sign out in the departments menu. Your cart and orders are kept, because they are not tied to the account.",
+      "Open the Account & Lists menu in the header and choose Sign out, or use Sign out in the departments menu. Your cart stays where it is - it belongs to the browser, not the account, so signing out does not empty it. Any orders you placed while signed in belong to your account: they are not deleted, and you will see them again the next time you sign in.",
   },
 
   /* ---------- demo ---------- */
@@ -224,7 +224,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     topic: "demo",
     question: "Conditions of use and privacy",
     answer:
-      "There are no terms to accept and no privacy policy to publish, because no account is created, no payment is taken and no personal data is collected or transmitted. Everything you enter stays in your browser.",
+      "Kartly is a demo storefront, so there is no commercial service to agree terms for. Accounts are real, though: if you create one, your email, a hashed password, and any orders and delivery details you enter are stored in Kartly's database. No payment is ever taken, and no card number, expiry or security code is collected or stored - only the last four digits, to render the receipt.",
   },
   {
     id: "contact",

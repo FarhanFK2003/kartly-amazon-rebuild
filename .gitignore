@@ -14,3 +14,5 @@ next-env.d.ts
 .DS_Store
 
 # NOTE: .agent-logs/ is intentionally NOT ignored. It ships with the repo.
+.vercel
+.env*

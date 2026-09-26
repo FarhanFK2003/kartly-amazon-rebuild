@@ -113,7 +113,7 @@ export function FilterSheet({
         <SlidersHorizontal className="h-4 w-4" aria-hidden />
         Filters
         {activeCount > 0 && (
-          <span className="tnum rounded-full bg-brand px-[6px] text-label font-semibold leading-[18px] text-white">
+          <span className="tnum rounded-full bg-brand px-[6px] text-label font-semibold leading-[18px] [color:var(--color-on-brand)]">
             {activeCount}
           </span>
         )}
@@ -194,7 +194,7 @@ export function FilterSheet({
               setOpen(false);
               triggerRef.current?.focus();
             }}
-            className="tnum h-10 flex-1 rounded-[var(--radius-btn)] bg-brand text-body font-medium text-white transition-colors hover:bg-brand-hover"
+            className="tnum h-10 flex-1 rounded-[var(--radius-btn)] bg-brand text-body font-medium [color:var(--color-on-brand)] transition-colors hover:bg-brand-hover"
           >
             Show {resultCount} {resultCount === 1 ? "result" : "results"}
           </button>

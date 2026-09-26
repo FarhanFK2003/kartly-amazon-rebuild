@@ -56,7 +56,7 @@ export function CartButton({ compact = false, className }: { compact?: boolean; 
           <span
             className={cn(
               "tnum absolute -right-[7px] -top-[6px] min-w-[16px] rounded-full bg-brand px-1",
-              "text-center text-[10px] font-semibold leading-[16px] text-white",
+              "text-center text-[10px] font-semibold leading-[16px] [color:var(--color-on-brand)]",
               "motion-safe:transition-transform motion-safe:duration-200",
               bumped && "motion-safe:scale-110"
             )}

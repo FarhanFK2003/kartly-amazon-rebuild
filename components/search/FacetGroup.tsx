@@ -146,7 +146,7 @@ function Tick({ selected }: { selected: boolean }) {
       aria-hidden
       className={cn(
         "flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-[4px] border",
-        selected ? "border-brand bg-brand text-white" : "border-line-strong bg-surface"
+        selected ? "border-brand bg-brand [color:var(--color-on-brand)]" : "border-line-strong bg-surface"
       )}
     >
       {selected && <Check className="h-[11px] w-[11px]" strokeWidth={3} />}

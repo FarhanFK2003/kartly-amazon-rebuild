@@ -97,7 +97,7 @@ function Tab({
         <span className="relative">
           <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.3 : 1.9} aria-hidden />
           {typeof badge === "number" && badge > 0 && (
-            <span className="tnum absolute -right-[9px] -top-[5px] min-w-[16px] rounded-full bg-brand px-1 text-center text-[10px] font-semibold leading-[16px] text-white">
+            <span className="tnum absolute -right-[9px] -top-[5px] min-w-[16px] rounded-full bg-brand px-1 text-center text-[10px] font-semibold leading-[16px] [color:var(--color-on-brand)]">
               {badge > 99 ? "99+" : badge}
             </span>
           )}

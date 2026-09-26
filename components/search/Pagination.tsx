@@ -69,7 +69,7 @@ function PageLink({
       className={cn(
         base,
         current
-          ? "border-brand bg-brand font-semibold text-white"
+          ? "border-brand bg-brand font-semibold [color:var(--color-on-brand)]"
           : "border-line-strong bg-surface text-ink hover:bg-surface-sunk"
       )}
     >

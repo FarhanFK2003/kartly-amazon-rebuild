@@ -61,7 +61,7 @@ export default async function NotFound() {
                     aria-label="Search Kartly"
                     className="min-w-0 flex-1 px-3 text-[15px] text-ink placeholder:text-[#888] focus:outline-none"
                   />
-                  <button type="submit" className="shrink-0 bg-brand px-4 text-body font-medium text-white transition-colors hover:bg-brand-hover">
+                  <button type="submit" className="shrink-0 bg-brand px-4 text-body font-medium [color:var(--color-on-brand)] transition-colors hover:bg-brand-hover">
                     Search
                   </button>
                 </form>

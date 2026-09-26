@@ -116,7 +116,7 @@ export function CartDrawer({ index }: { index: CartIndex }) {
         aria-hidden={!open || undefined}
         className={cn(
           "fixed inset-y-0 right-0 z-[61] flex w-[92vw] max-w-[380px] flex-col bg-white",
-          "shadow-[-8px_0_28px_rgba(0,0,0,.22)]",
+          "shadow-[var(--shadow-panel)]",
           "transition-[transform,visibility] duration-200 ease-out sm:max-w-[400px]",
           open ? "visible translate-x-0" : "invisible translate-x-full"
         )}
@@ -124,7 +124,7 @@ export function CartDrawer({ index }: { index: CartIndex }) {
         {/* The dark strip here used to mirror the department drawer, which no
             longer exists. It follows the application bar instead. */}
         <div className="flex h-[56px] shrink-0 items-center justify-between border-b border-line bg-paper pl-5 pr-2 text-ink">
-          <span className="flex items-center gap-2 truncate text-[17px] font-bold">
+          <span className="flex items-center gap-2 truncate font-display text-display-sm font-medium">
             <ShoppingCart className="h-[18px] w-[18px]" strokeWidth={2} />
             {mounted && totals.itemCount > 0
               ? `${totals.itemCount} ${pluralize(totals.itemCount, "item")}`
@@ -168,19 +168,19 @@ export function CartDrawer({ index }: { index: CartIndex }) {
                       <div className="min-w-0 flex-1">
                         <Link
                           href={`/dp/${r.product.slug}`}
-                          className="clamp-2 text-[13px] leading-[17px] text-ink hover:text-link-hover hover:underline"
+                          className="clamp-2 text-body-sm font-medium leading-[17px] text-ink transition-colors hover:text-brand"
                         >
                           {r.product.title}
                         </Link>
                         {r.variantLabel && (
-                          <p className="mt-[2px] text-[12px] text-muted">{r.variantLabel}</p>
+                          <p className="mt-[2px] text-body-sm text-ink-3">{r.variantLabel}</p>
                         )}
 
                         {/* The just-added marker is a line of text rather than a
                             motion effect, so it is legible to a screen reader
                             and invisible to anyone who was not looking for it. */}
                         {highlightId === r.product.id && (
-                          <p className="mt-[2px] flex items-center gap-1 text-[12px] font-medium text-success">
+                          <p className="mt-[2px] flex items-center gap-1 text-label font-medium text-success">
                             <Check className="h-[13px] w-[13px]" strokeWidth={2.5} />
                             Added
                           </p>
@@ -210,15 +210,15 @@ export function CartDrawer({ index }: { index: CartIndex }) {
                 qualified={totals.freeShipping}
               />
 
-              <p className="mt-3 flex items-baseline justify-between text-[15px] text-ink">
+              <p className="mt-3 flex items-baseline justify-between text-body text-ink-2">
                 <span>Subtotal</span>
-                <span className="tnum text-[18px] font-bold" data-testid={TID.miniCartSubtotal}>
+                <span className="tnum text-display-sm font-semibold text-ink" data-testid={TID.miniCartSubtotal}>
                   {formatPrice(totals.subtotal)}
                 </span>
               </p>
 
               <ButtonLink href="/cart" variant="primary" size="lg" fullWidth className="mt-3">
-                Go to Cart
+                Go to cart
               </ButtonLink>
               <Button variant="subtle" size="md" fullWidth className="mt-2" onClick={close}>
                 Continue shopping
@@ -237,8 +237,8 @@ function EmptyState({ onClose }: { onClose: () => void }) {
       <div className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-[#f3f4f4]">
         <ShoppingCart className="h-10 w-10 text-[#b9bdbd]" strokeWidth={1.4} />
       </div>
-      <p className="mt-4 text-[16px] font-bold text-ink">Your cart is empty</p>
-      <p className="mt-1 text-[13px] text-muted">
+      <p className="mt-4 font-display text-display-sm font-medium text-ink">Your cart is empty</p>
+      <p className="mt-1 text-body-sm text-ink-2">
         Anything you add stays in your cart on this device.
       </p>
       <Button variant="primary" size="md" className="mt-5" onClick={onClose}>

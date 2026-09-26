@@ -18,15 +18,15 @@ export function FreeShippingMeter({
   const pct = Math.min(100, Math.round((subtotal / COMMERCE.freeShippingThreshold) * 100));
 
   return (
-    <div className="rounded-[8px] border border-line-soft bg-[#f7f8f8] px-3 py-[10px]">
-      <p className="flex items-start gap-2 text-[13px] leading-[18px]">
-        <Truck className={`mt-[2px] h-4 w-4 shrink-0 ${qualified ? "text-success" : "text-muted"}`} />
+    <div className="rounded-[var(--radius-sm)] bg-surface-sunk px-3 py-[10px]">
+      <p className="flex items-start gap-2 text-body-sm leading-[18px]">
+        <Truck className={`mt-[2px] h-4 w-4 shrink-0 ${qualified ? "text-success" : "text-ink-3"}`} />
         {qualified ? (
-          <span className="text-ink">
+          <span className="text-ink-2">
             Your order qualifies for <span className="font-bold text-success">FREE Shipping</span>.
           </span>
         ) : (
-          <span className="text-ink">
+          <span className="text-ink-2">
             Add <span className="font-bold">{formatPrice(remaining)}</span> of eligible items to
             qualify for <span className="font-bold">FREE Shipping</span>.
           </span>
@@ -34,7 +34,7 @@ export function FreeShippingMeter({
       </p>
 
       <div
-        className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#e3e6e6]"
+        className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-line"
         role="progressbar"
         aria-valuenow={pct}
         aria-valuemin={0}

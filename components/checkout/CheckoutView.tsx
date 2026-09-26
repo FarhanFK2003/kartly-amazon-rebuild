@@ -55,14 +55,14 @@ export function CheckoutView({ index }: { index: CartIndex }) {
     return (
       <div className="mx-auto max-w-[1000px] px-4 py-16 text-center">
         <h2 className="text-[24px] font-bold text-ink">There is nothing to check out</h2>
-        <p className="mx-auto mt-2 max-w-[440px] text-[14px] text-muted">
+        <p className="mx-auto mt-2 max-w-[440px] text-body text-ink-2">
           Your cart is empty. Add something to it and the checkout will be waiting.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <ButtonLink href="/s" variant="primary" size="md">
             Continue shopping
           </ButtonLink>
-          <Link href="/cart" className="link text-[14px]">
+          <Link href="/cart" className="text-body font-medium text-brand hover:underline">
             Back to cart
           </Link>
         </div>
@@ -145,9 +145,10 @@ export function CheckoutView({ index }: { index: CartIndex }) {
   }
 
   return (
-    <div className="mx-auto max-w-[1000px] px-4 py-6">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1 space-y-3">
+    <div className="mx-auto max-w-[1040px] px-4 py-8 sm:py-10">
+      <h1 className="mb-8 font-display text-display-lg font-medium text-ink">Checkout</h1>
+      <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-14">
+        <div className="min-w-0 flex-1">
           {/* ---------- 1. delivery ---------- */}
           <CheckoutStepPanel
             number={1}
@@ -269,14 +270,14 @@ export function CheckoutView({ index }: { index: CartIndex }) {
             }
           >
             <form onSubmit={submitPayment} noValidate className="space-y-4">
-              <div className="rounded-[8px] border border-[#f5d9a0] bg-[#fef8ec] px-3 py-2 text-[13px] text-ink">
+              <div className="rounded-[var(--radius-sm)] border border-line bg-surface-sunk px-3 py-2 text-body-sm text-ink-2">
                 <strong>Simulated payment.</strong> Nothing is charged and no card details are
                 transmitted or stored. Use <code className="font-mono">4242 4242 4242 4242</code> to
                 try it.
               </div>
 
               <fieldset className="space-y-2">
-                <legend className="mb-1 text-[13px] font-bold text-ink">Choose how to pay</legend>
+                <legend className="mb-2 text-body font-medium text-ink">Choose how to pay</legend>
 
                 <PaymentOption
                   checked={paymentMethod === "card"}
@@ -284,7 +285,7 @@ export function CheckoutView({ index }: { index: CartIndex }) {
                     setPaymentMethod("card");
                     setPaymentError("");
                   }}
-                  icon={<CreditCard className="h-5 w-5 text-muted" />}
+                  icon={<CreditCard className="h-5 w-5 text-ink-3" />}
                   title="Credit or debit card"
                   subtitle="Simulated - no real card is charged"
                 />
@@ -295,20 +296,20 @@ export function CheckoutView({ index }: { index: CartIndex }) {
                     setPaymentMethod("on-delivery");
                     setPaymentError("");
                   }}
-                  icon={<Truck className="h-5 w-5 text-muted" />}
+                  icon={<Truck className="h-5 w-5 text-ink-3" />}
                   title="Pay on delivery"
                   subtitle="Settle up when the order arrives"
                 />
 
                 {paymentError && (
-                  <p role="alert" className="text-[12px] text-deal">
+                  <p role="alert" className="text-body-sm text-accent">
                     {paymentError}
                   </p>
                 )}
               </fieldset>
 
               {paymentMethod === "card" && (
-                <div className="space-y-3 rounded-[8px] border border-line-soft bg-[#f7f8f8] p-3">
+                <div className="space-y-3 rounded-[var(--radius-sm)] border border-line bg-surface-sunk p-4">
                   <Field label="Card number" htmlFor="cardNumber" required error={cardErrors.number}>
                     <Input
                       id="cardNumber"
@@ -375,8 +376,8 @@ export function CheckoutView({ index }: { index: CartIndex }) {
             state={step === 3 ? "active" : completed.includes(3) ? "complete" : "upcoming"}
           >
             <div className="space-y-4">
-              <div className="rounded-[8px] border border-line-soft p-3">
-                <p className="text-[13px] font-bold text-ink">
+              <div className="rounded-[var(--radius-sm)] border border-line p-4">
+                <p className="text-body font-medium text-ink">
                   Estimated delivery: <span className="text-success">{delivery.long}</span>
                 </p>
               </div>
@@ -384,17 +385,17 @@ export function CheckoutView({ index }: { index: CartIndex }) {
               <ul className="divide-y divide-line-soft">
                 {active.map((r) => (
                   <li key={`${r.line.productId}-${r.line.variantId ?? "base"}`} className="flex gap-3 py-3">
-                    <div className="relative h-[64px] w-[64px] shrink-0 overflow-hidden rounded-[4px] bg-white">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[var(--radius-sm)] border border-line bg-surface-sunk">
                       {r.product.image && (
                         <Image src={r.product.image} alt={r.product.title} fill sizes="64px" className="object-contain" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="clamp-2 text-[13px] leading-[18px] text-ink">{r.product.title}</p>
-                      {r.variantLabel && <p className="text-[12px] text-muted">{r.variantLabel}</p>}
-                      <p className="text-[12px] text-muted">Qty: {r.line.qty}</p>
+                      <p className="clamp-2 text-body-sm leading-[18px] text-ink">{r.product.title}</p>
+                      {r.variantLabel && <p className="text-body-sm text-ink-3">{r.variantLabel}</p>}
+                      <p className="tnum text-body-sm text-ink-3">Qty: {r.line.qty}</p>
                     </div>
-                    <p className="shrink-0 text-[14px] font-bold text-ink">{formatPrice(r.lineTotal)}</p>
+                    <p className="tnum shrink-0 text-body font-semibold text-ink">{formatPrice(r.lineTotal)}</p>
                   </li>
                 ))}
               </ul>
@@ -408,7 +409,7 @@ export function CheckoutView({ index }: { index: CartIndex }) {
                 </Button>
               </div>
 
-              <p className="text-[12px] text-muted">
+              <p className="text-body-sm text-ink-3">
                 By placing this order you are creating a simulated order in this demo. Nothing ships
                 and nothing is charged.
               </p>
@@ -417,45 +418,53 @@ export function CheckoutView({ index }: { index: CartIndex }) {
         </div>
 
         {/* ---------- summary rail ---------- */}
-        <aside className="w-full lg:sticky lg:top-6 lg:w-[300px] lg:shrink-0">
-          <div className="rounded-[8px] border border-line bg-white p-4">
+        <aside className="w-full lg:sticky lg:top-[24px] lg:w-[340px] lg:shrink-0">
+          <div
+            data-testid={TID.checkoutSummary}
+            className="rounded-[var(--radius-md)] border border-line bg-surface p-5"
+          >
+            <h2 className="font-display text-display-sm font-medium text-ink">Order summary</h2>
+
+            <dl className="mt-4 flex flex-col gap-[10px] text-body">
+              <Row label={`Items (${totals.itemCount})`} value={formatPrice(totals.subtotal)} />
+              <Row
+                label="Shipping"
+                value={totals.freeShipping ? "Free" : formatPrice(totals.shipping)}
+                accent={totals.freeShipping}
+                testId={TID.checkoutShipping}
+              />
+              <Row label="Estimated tax" value={formatPrice(totals.tax)} testId={TID.checkoutTax} />
+              <div className="mt-2 flex items-baseline justify-between border-t border-line pt-3">
+                <dt className="text-body-lg font-medium text-ink">Total</dt>
+                <dd className="tnum text-display-sm font-semibold text-ink" data-testid={TID.orderTotal}>
+                  {formatPrice(totals.total)}
+                </dd>
+              </div>
+            </dl>
+
             <Button
               variant="primary"
               size="lg"
               fullWidth
+              className="mt-5"
               onClick={placeOrder}
               disabled={step !== 3}
               loading={placing}
+              data-testid={TID.placeOrder}
             >
               Place your order
             </Button>
             {step !== 3 && (
-              <p className="mt-2 text-center text-[12px] text-muted">
-                Complete the steps to place your order.
+              <p className="mt-2 text-center text-body-sm text-ink-3">
+                Complete the steps above to place your order.
               </p>
             )}
-
-            <h2 className="mt-4 border-t border-line-soft pt-3 text-[18px] font-bold text-ink">
-              Order summary
-            </h2>
-            <dl className="mt-2 space-y-1 text-[13px]">
-              <Row label={`Items (${totals.itemCount} ${pluralize(totals.itemCount, "item")})`} value={formatPrice(totals.subtotal)} />
-              <Row
-                label="Shipping"
-                value={totals.freeShipping ? "FREE" : formatPrice(totals.shipping)}
-                accent={totals.freeShipping}
-              />
-              <Row label="Estimated tax" value={formatPrice(totals.tax)} />
-            </dl>
-            <div className="mt-2 flex justify-between border-t border-line-soft pt-2 text-[18px] font-bold text-deal">
-              <span>Order total</span>
-              <span className="tnum" data-testid={TID.orderTotal}>
-                {formatPrice(totals.total)}
-              </span>
-            </div>
           </div>
 
-          <Link href="/cart" className="link mt-3 block text-center text-[13px]">
+          <Link
+            href="/cart"
+            className="mt-4 block text-center text-body-sm font-medium text-brand hover:underline"
+          >
             Back to cart
           </Link>
         </aside>
@@ -464,11 +473,23 @@ export function CheckoutView({ index }: { index: CartIndex }) {
   );
 }
 
-function Row({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Row({
+  label,
+  value,
+  accent,
+  testId,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  testId?: string;
+}) {
   return (
-    <div className="flex justify-between gap-3">
-      <dt className="text-ink">{label}</dt>
-      <dd className={accent ? "font-bold text-success" : "text-ink"}>{value}</dd>
+    <div className="flex items-baseline justify-between gap-4">
+      <dt className="text-ink-2">{label}</dt>
+      <dd data-testid={testId} className={accent ? "font-medium text-success" : "tnum text-ink"}>
+        {value}
+      </dd>
     </div>
   );
 }
@@ -488,8 +509,8 @@ function PaymentOption({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-center gap-3 rounded-[8px] border px-3 py-[10px] ${
-        checked ? "border-[#e77600] bg-[#fef8f2]" : "border-line hover:bg-[#f7fafa]"
+      className={`flex cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] border px-3 py-[10px] transition-colors ${
+        checked ? "border-brand bg-brand-tint" : "border-line-strong hover:bg-surface-sunk"
       }`}
     >
       <input
@@ -501,8 +522,8 @@ function PaymentOption({
       />
       {icon}
       <span className="min-w-0">
-        <span className="block text-[14px] font-bold text-ink">{title}</span>
-        <span className="block text-[12px] text-muted">{subtitle}</span>
+        <span className="block text-body font-medium text-ink">{title}</span>
+        <span className="block text-body-sm text-ink-3">{subtitle}</span>
       </span>
     </label>
   );

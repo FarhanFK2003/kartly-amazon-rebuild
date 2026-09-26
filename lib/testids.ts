@@ -89,6 +89,22 @@ export const TID = {
   pdpGallery: "pdp-gallery",
   pdpGalleryThumb: "pdp-gallery-thumb",
 
+  /* Purchase flow. Rows and money figures that repeat and have no unique
+     accessible name of their own. */
+  cartLine: "cart-line",
+  cartLineTitle: "cart-line-title",
+  cartLineQuantity: "cart-line-quantity",
+  cartLineTotal: "cart-line-total",
+  cartTotal: "cart-total",
+  checkoutSummary: "checkout-summary",
+  checkoutShipping: "checkout-shipping",
+  checkoutTax: "checkout-tax",
+  placeOrder: "place-order",
+  orderConfirmation: "order-confirmation",
+  orderNumber: "order-number",
+  bundle: "bundle",
+  bundleItem: "bundle-item",
+
   /* --- Reserved for later waves. Declared here so the contract is written
      down once; nothing renders these yet. ---------------------------------- */
 } as const;

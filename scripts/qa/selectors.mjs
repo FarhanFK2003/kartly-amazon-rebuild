@@ -61,6 +61,20 @@ export const TID = {
   pdpGallery: "pdp-gallery",
   pdpGalleryThumb: "pdp-gallery-thumb",
 
+  cartLine: "cart-line",
+  cartLineTitle: "cart-line-title",
+  cartLineQuantity: "cart-line-quantity",
+  cartLineTotal: "cart-line-total",
+  cartTotal: "cart-total",
+  checkoutSummary: "checkout-summary",
+  checkoutShipping: "checkout-shipping",
+  checkoutTax: "checkout-tax",
+  placeOrder: "place-order",
+  orderConfirmation: "order-confirmation",
+  orderNumber: "order-number",
+  bundle: "bundle",
+  bundleItem: "bundle-item",
+
   /* reserved for later waves - nothing renders these yet */
   pdpDecisionCard: "pdp-decision-card",
 };
@@ -87,6 +101,7 @@ export const LIVE_TIDS = [
   TID.hero,
   TID.categorySection,
   TID.shelf,
+  TID.placeOrder,
 ];
 
 export const byTestId = (page, id) => page.locator(`[data-testid="${id}"]`);
@@ -97,13 +112,17 @@ export const byTestId = (page, id) => page.locator(`[data-testid="${id}"]`);
 
 export const cartLink = (page) => page.locator("a[aria-label^='Cart,']").first();
 export const miniCart = (page) => page.getByRole("dialog", { name: "Shopping cart" });
-export const goToCart = (page) => page.getByRole("link", { name: "Go to Cart" });
+export const goToCart = (page) => page.getByRole("link", { name: /^Go to cart$/i });
 export const addToCartCta = (page) => page.getByRole("button", { name: /^Add to cart$/i });
 /* The PDP's add-to-cart, by id rather than label: the buy box and the product
    cards used to disagree on casing ("Add to Cart" vs "Add to cart") and now do
    not, so targeting the label would have coupled the suite to that detail. */
 export const buyBoxAddToCart = (page) => byTestId(page, TID.pdpAddToCart);
-export const proceedToCheckout = (page) => page.getByRole("link", { name: /Proceed to checkout/i });
+/* The cart's checkout CTA. It was "Proceed to checkout" and is now simply
+   "Checkout", matching the page it leads to; the pattern accepts both so the
+   suite is not coupled to the wording. */
+export const proceedToCheckout = (page) =>
+  page.getByRole("link", { name: /^(proceed to )?checkout$/i });
 export const placeOrder = (page) => page.getByRole("button", { name: /Place your order/i });
 /* The overlay's input implements the combobox pattern, so its explicit
    role=combobox overrides the implicit searchbox role of <input type=search>. */

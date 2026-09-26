@@ -4,9 +4,16 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Accordion step. Completed steps collapse to a one-line summary with a Change
- * link, which is what lets the shopper see the whole order taking shape without
- * scrolling through three open forms.
+ * One checkout step.
+ *
+ * Completed steps collapse to a one-line summary with a Change link, which
+ * lets the shopper see the whole order taking shape without scrolling three
+ * open forms. That behaviour is unchanged; only the chrome moved onto the
+ * Kartly system - hairline separation instead of stacked boxes, and a step
+ * marker that reads as state rather than a numbered badge.
+ *
+ * Completion is not signalled by colour alone: a finished step shows a tick,
+ * and its summary text states what was entered.
  */
 export function CheckoutStepPanel({
   number,
@@ -28,16 +35,20 @@ export function CheckoutStepPanel({
   return (
     <section
       className={cn(
-        "rounded-[8px] border bg-white",
-        state === "active" ? "border-line shadow-[0_2px_5px_rgba(15,17,17,.08)]" : "border-line-soft"
+        "border-t border-line py-6 first:border-t-0 first:pt-0",
+        state === "upcoming" && "opacity-55"
       )}
       aria-current={state === "active" ? "step" : undefined}
     >
-      <div className="flex items-start gap-3 px-4 py-3 sm:px-5">
+      <div className="flex items-start gap-3">
         <span
           className={cn(
-            "mt-[1px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] font-bold",
-            complete ? "bg-success text-white" : state === "active" ? "bg-subnav text-white" : "bg-[#e3e6e6] text-muted"
+            "mt-[2px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-label font-semibold",
+            complete
+              ? "bg-success text-white"
+              : state === "active"
+                ? "bg-brand text-white"
+                : "border border-line-strong bg-surface text-ink-3"
           )}
           aria-hidden
         >
@@ -48,20 +59,20 @@ export function CheckoutStepPanel({
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2
               className={cn(
-                "text-[18px] font-bold",
-                state === "upcoming" ? "text-muted" : "text-ink"
+                "font-display text-display-sm font-medium",
+                state === "upcoming" ? "text-ink-3" : "text-ink"
               )}
             >
               {title}
             </h2>
             {complete && onEdit && (
-              <button type="button" onClick={onEdit} className="link text-[13px]">
+              <button type="button" onClick={onEdit} className="text-body-sm font-medium text-brand hover:underline">
                 Change
               </button>
             )}
           </div>
 
-          {complete && summary && <div className="mt-1 text-[13px] text-muted">{summary}</div>}
+          {complete && summary && <div className="mt-1 text-body-sm text-ink-2">{summary}</div>}
         </div>
       </div>
 

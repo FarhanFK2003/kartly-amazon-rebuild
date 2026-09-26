@@ -7,6 +7,7 @@ import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PriceBlock } from "@/components/ui/PriceBlock";
 import { useCart } from "@/lib/store/cart";
+import { TID } from "@/lib/testids";
 import { ADD_FEEDBACK_MS, useCartDrawer } from "@/lib/store/cartDrawer";
 import { formatPrice, pluralize, cn } from "@/lib/utils";
 import type { Product } from "@/lib/types";
@@ -51,8 +52,8 @@ export function FrequentlyBoughtTogether({ bundle }: { bundle: Product[] }) {
   }
 
   return (
-    <section className="border-t border-line-soft pt-6" aria-labelledby="fbt-heading">
-      <h2 id="fbt-heading" className="text-[18px] font-bold text-ink sm:text-[21px]">
+    <section data-testid={TID.bundle} className="border-t border-line pt-6" aria-labelledby="fbt-heading">
+      <h2 id="fbt-heading" className="font-display text-display-md font-medium text-ink">
         Frequently bought together
       </h2>
 
@@ -61,13 +62,13 @@ export function FrequentlyBoughtTogether({ bundle }: { bundle: Product[] }) {
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {bundle.map((p, i) => (
             <div key={p.id} className="flex items-center gap-2 sm:gap-3">
-              {i > 0 && <Plus className="h-4 w-4 shrink-0 text-muted" aria-hidden />}
+              {i > 0 && <Plus className="h-4 w-4 shrink-0 text-ink-2" aria-hidden />}
               <Link
                 href={`/dp/${p.slug}`}
                 title={p.title}
                 className={cn(
-                  "relative block h-[96px] w-[96px] shrink-0 rounded-[4px] border bg-white p-1 transition-opacity sm:h-[116px] sm:w-[116px]",
-                  selected[p.id] ? "border-line opacity-100" : "border-line-soft opacity-40"
+                  "relative block h-[96px] w-[96px] shrink-0 rounded-[var(--radius-sm)] border bg-surface p-1 transition-opacity sm:h-[116px] sm:w-[116px]",
+                  selected[p.id] ? "border-line opacity-100" : "border-line opacity-40"
                 )}
               >
                 {p.image && (
@@ -80,7 +81,7 @@ export function FrequentlyBoughtTogether({ bundle }: { bundle: Product[] }) {
 
         {/* total and action */}
         <div className="shrink-0 xl:w-[240px]">
-          <p className="text-[13px] text-muted">
+          <p className="text-body-sm text-ink-2">
             Total price for {chosen.length} {pluralize(chosen.length, "item")}
           </p>
           <PriceBlock cents={total} size="md" className="mt-[2px]" />
@@ -106,13 +107,13 @@ export function FrequentlyBoughtTogether({ bundle }: { bundle: Product[] }) {
         </div>
 
         {/* checkbox list */}
-        <ul className="min-w-0 flex-1 space-y-2 xl:border-l xl:border-line-soft xl:pl-6">
+        <ul className="min-w-0 flex-1 space-y-2 xl:border-l xl:border-line xl:pl-6">
           {bundle.map((p) => {
             const isAnchor = p.id === anchor.id;
             const on = !!selected[p.id];
             return (
               <li key={p.id}>
-                <label className="flex w-full cursor-pointer items-start gap-2 text-[13px] leading-[18px]">
+                <label className="flex w-full cursor-pointer items-start gap-2 text-body-sm leading-[18px]">
                   <input
                     type="checkbox"
                     checked={on}
@@ -124,7 +125,7 @@ export function FrequentlyBoughtTogether({ bundle }: { bundle: Product[] }) {
                     {isAnchor && <span className="font-bold text-ink">This item: </span>}
                     <Link
                       href={`/dp/${p.slug}`}
-                      className={cn("hover:text-link-hover hover:underline", on ? "text-link" : "text-muted")}
+                      className={cn("hover:text-link-hover hover:underline", on ? "text-link" : "text-ink-2")}
                     >
                       {p.title.split(",")[0]}
                     </Link>

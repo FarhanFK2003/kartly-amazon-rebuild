@@ -33,11 +33,11 @@ loops over widths or routes, so the executed total is higher (e.g. responsive is
 | `qa-discovery` | 41 | 42 | **Re-targeted** | ✅ `qa/discovery.mjs` — 83/83 (wave 2) |
 | `qa-home` | 41 | 42 | **Rewritten** | ✅ `qa/home.mjs` — 60/60 (wave 3) |
 | `qa-discovery` (PDP half) | — | — | **Re-targeted** | ✅ `qa/pdp.mjs` — 108/108 (wave 4) |
-| `qa-fbt` | 29 | 23 | Port | wave 5 — bundle logic unchanged, container restyled |
+| `qa-purchase` | 49 | 48 | **Re-targeted** | ✅ `qa/purchase.mjs` — 65/65 (wave 5) |
+| `qa-smoke-drawer` | 29 | 49 | **Re-targeted** | ✅ `qa/purchase.mjs` (wave 5) |
+| `qa-fbt` | 29 | 23 | **Re-targeted** | ✅ `qa/purchase.mjs` (wave 5) |
 | `qa-p1` (filter/sort/page half) | — | — | **Re-targeted** | ✅ `qa/discovery.mjs` (wave 2); review half still pending wave 4 |
-| `qa-purchase` | 49 | 48 | Port | wave 5 |
 | `qa-p1` | 60 | 54 | Port | wave 2 |
-| `qa-smoke-drawer` | 29 | 49 | Port | wave 5 |
 | `qa-signin` | 37 | 36 | Port | wave 6 |
 | `qa-help` | 27 | 26 | Port | wave 6 |
 | `qa-homepage-polish` | 22 | — | **Obsolete** | superseded by `qa/home.mjs` (wave 3); it asserted carousel and promo-row composition that no longer exists |
@@ -109,6 +109,64 @@ Resolved in wave 1: the bottom tab bar is asserted in `qa/navigation.mjs`
 *Structural change:* three-step accordion → single page. Steps 12's
 "use this address → collapse → next" transitions disappear; the validation and
 totals assertions are unchanged.
+
+## qa-purchase / qa-smoke-drawer / qa-fbt · RE-TARGETED in wave 5
+
+All three are replaced by `qa/purchase.mjs`. The journey is unchanged; the
+surfaces it passes through were redesigned.
+
+| Old selector / assumption | New | Note |
+|---|---|---|
+| cart rows found by `article` / class | `[data-testid="cart-line"]` | rows are a `<li>` list now |
+| link named `Proceed to checkout` | `/^(proceed to )?checkout$/i` | the CTA is simply "Checkout"; the pattern accepts both so the suite is not coupled to wording |
+| drawer link `Go to Cart` | `/^go to cart$/i` | casing now matches the rest of the app |
+| cart showed only a subtotal | `cart-subtotal` **and** `cart-total`, plus shipping and tax | the cart now states the whole cost |
+| `Save for later` / `Move to cart` / `Delete` text links | same actions, `Remove … from cart` is now an icon button with an accessible name | behaviour identical |
+| checkout totals read from prose | `checkout-shipping`, `checkout-tax`, `order-total` | each figure addressable |
+| place-order button by label | `[data-testid="place-order"]` | |
+| order id read from prose | `[data-testid="order-number"]` | |
+| bundle checkboxes by index in a `section` | `[data-testid="bundle"]` scope | bundle logic untouched |
+
+**Assertions kept and strengthened.** The old suite asserted that a total was
+"derived and non-zero". The new suite **recomputes** subtotal, shipping, tax and
+total from `data/catalog.json` using the constants read out of `lib/commerce.ts`
+itself, and compares them with what is rendered — at two different quantities,
+so the shipping threshold is crossed and both the charged and free cases are
+exercised. A page showing a total the commerce logic did not produce now fails.
+
+**One harness defect fixed, not an assertion weakened.** The suite's first click
+could land before hydration on a freshly-built server, which looked like a
+broken control. The first navigation now waits for the network to settle. The
+run was re-verified from a cleared `.next`.
+
+**Obsolete**: assertions about the boxed summary panel, the three stacked step
+cards, and the cart's rating/stock/delivery lines. The rating in particular was
+removed from the cart deliberately — it invites reconsideration at the moment of
+paying, and the decision has already been made.
+
+## qa/purchase.mjs — purchase journey · NEW in wave 5
+
+65 checks, plus a responsive sweep of cart and checkout at seven widths.
+
+1. Adding from the PDP opens the drawer, updates the count, and the drawer
+   subtotal equals the product price.
+2. The drawer reaches the cart; the cart line is the product that was added.
+3. At quantity 1 and 3: line total, subtotal, shipping, tax and total all match
+   the recomputed commerce values.
+4. Removing the last line empties the cart, the empty state renders with a way
+   back, and the badge reads zero.
+5. Frequently bought together: a product with a real bundle is **found**, not
+   assumed; every item starts selected; deselecting lowers the total; adding
+   adds exactly the selected count.
+6. Checkout renders its summary and fields, place-order is disabled until the
+   steps are complete, an empty address shows validation errors and keeps the
+   shopper on step 1.
+7. The checkout summary matches the recomputed totals.
+8. Placing an order produces an order number in the existing `KTL-…` format,
+   lists the purchased product, shows the same total, states plainly that
+   nothing was charged, and empties the cart.
+9. At every width: no horizontal overflow on cart or checkout, and the primary
+   action never sits under the fixed tab bar.
 
 ## qa-p1 — facets, sorting, reviews · Port (wave 2)
 

@@ -2,7 +2,7 @@
 
 import { useIsMounted } from "@/lib/store/cart";
 import { useRecentlyViewed } from "@/lib/store/recentlyViewed";
-import { ProductRail } from "@/components/home/ProductRail";
+import { Shelf } from "@/components/home/Shelf";
 import type { Product } from "@/lib/types";
 
 /**
@@ -23,9 +23,9 @@ export function RecentlyViewed({ catalog }: { catalog: Product[] }) {
   if (products.length === 0) return null;
 
   return (
-    <ProductRail
-      title="Your recently viewed items"
-      subtitle="Pick up where you left off"
+    <Shelf
+      title="Recently viewed"
+      subtitle="Pick up where you left off."
       products={products}
       showCta={false}
     />

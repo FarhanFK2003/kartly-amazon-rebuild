@@ -86,7 +86,6 @@
   /* ---------------------------------------------------------------- LEGACY */
   /* Retired by the wave named against each. Nothing new may reference these. */
 
-  --color-page: #eaeded; /* wave 3 - page ground, superseded by paper */
   --color-header: #131921; /* UNUSED since wave 1 - delete in wave 6 */
   --color-subnav: #232f3e; /* wave 5 - checkout step markers */
   --color-footer: #232f3e; /* wave 6 - footer */
@@ -126,7 +125,7 @@
     alone. Redesigned surfaces opt in with text-body.
   */
   body {
-    background-color: var(--color-page);
+    background-color: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 14px;

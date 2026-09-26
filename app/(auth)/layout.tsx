@@ -8,7 +8,7 @@ import { Wordmark } from "@/components/brand/Wordmark";
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-page">
+    <div className="flex min-h-screen flex-col bg-paper">
       <header className="flex justify-center py-5">
         <Link href="/" className="text-ink" aria-label="Kartly home">
           <Wordmark height={34} />

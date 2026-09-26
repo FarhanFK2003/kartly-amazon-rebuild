@@ -44,6 +44,11 @@ export const TID = {
   sortControl: "sort-control",
   pagination: "pagination",
 
+  hero: "hero",
+  categorySection: "category-section",
+  reducedSection: "reduced-section",
+  shelf: "shelf",
+
   /* reserved for later waves - nothing renders these yet */
   pdpDecisionCard: "pdp-decision-card",
 };
@@ -67,6 +72,9 @@ export const LIVE_TIDS = [
   TID.sortControl,
   TID.filterSheetTrigger,
   TID.pagination,
+  TID.hero,
+  TID.categorySection,
+  TID.shelf,
 ];
 
 export const byTestId = (page, id) => page.locator(`[data-testid="${id}"]`);

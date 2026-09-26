@@ -69,6 +69,12 @@ export const TID = {
   sortControl: "sort-control",
   pagination: "pagination",
 
+  /* Homepage sections. Landmarks with no unique accessible name of their own. */
+  hero: "hero",
+  categorySection: "category-section",
+  reducedSection: "reduced-section",
+  shelf: "shelf",
+
   /* --- Reserved for later waves. Declared here so the contract is written
      down once; nothing renders these yet. ---------------------------------- */
   /** wave 4 - sticky PDP decision card */

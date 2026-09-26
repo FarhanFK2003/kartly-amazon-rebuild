@@ -142,7 +142,7 @@ export function SignInForm() {
       {/* mode switch */}
       <div className="relative my-5">
         <span className="absolute inset-x-0 top-1/2 h-px bg-line" aria-hidden />
-        <span className="relative mx-auto block w-fit bg-page px-3 text-[12px] text-muted">
+        <span className="relative mx-auto block w-fit bg-paper px-3 text-[12px] text-muted">
           {mode === "signin" ? "New to Kartly?" : "Already have an account?"}
         </span>
       </div>

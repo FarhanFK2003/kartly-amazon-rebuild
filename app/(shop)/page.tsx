@@ -1,8 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import {
   getAllProducts,
-  getBestSellers,
   getCategories,
   getDeals,
   getProductsByCategory,
@@ -10,199 +9,174 @@ import {
 } from "@/lib/catalog";
 import { COMMERCE } from "@/lib/commerce";
 import { formatPriceShort } from "@/lib/utils";
-import { HeroCarousel, type HeroSlide } from "@/components/home/HeroCarousel";
-import { CardRow, type HomeCard } from "@/components/home/CardRow";
-import { ProductRail } from "@/components/home/ProductRail";
+import { TID } from "@/lib/testids";
+import { Hero } from "@/components/home/Hero";
+import { CategoryMosaic, type MosaicTile } from "@/components/home/CategoryMosaic";
+import { Shelf } from "@/components/home/Shelf";
 import { RecentlyViewed } from "@/components/home/RecentlyViewed";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { ProductCard } from "@/components/product/ProductCard";
+import { ButtonLink } from "@/components/ui/Button";
 
 /*
-  Marketplace homepage.
+  The Kartly storefront.
 
-  A contained hero, then department discovery, then merchandising: four-up card
-  rows and full-width product rails alternating down the page, all on the grey
-  page with white cards and tight gutters.
+  The replica homepage was ten modules of equal weight at a uniform 16px gap: a
+  rotating hero, two four-up promo grids, a department grid and five boxed
+  product rails. Nothing led, so nothing was read.
 
-  Departments sit directly under the hero rather than four modules down, which
-  is the one place the older reference screenshots are worth departing from.
-  Category discovery is the most useful thing a marketplace homepage can put
-  near the fold, and burying it behind promo tiles leans the whole page on a
-  single hero carousel to do work it is bad at.
+  This page has five sections with a deliberate order, and each one answers a
+  different question:
 
-  Everything renders from the real catalogue through the shared ProductCard, so
-  nothing here is a one-off.
+    1. what is this shop            - hero
+    2. where do I start             - departments
+    3. what is worth buying         - the best-reviewed shelf
+    4. what is cheap right now      - reduced, as a grid
+    5. what if none of that suited  - a way out to search
+
+  Every selection below is derived from the catalogue at request time and is
+  deterministic: the same data produces the same page. Nothing is curated by
+  hand, and there is no claim on this page that the data does not support.
 */
 
-/** Picks the most-reviewed products of a department to stand in as promo art. */
-function heroImage(categoryId: string): string | null {
+/** The most-reviewed product of a department stands in as its cover. */
+function departmentCover(categoryId: string) {
   return (
     getProductsByCategory(categoryId).sort((a, b) => b.reviewCount - a.reviewCount)[0]?.image ?? null
   );
-}
-
-const HERO_SLIDES: HeroSlide[] = [
-  {
-    id: "deals",
-    eyebrow: "Limited time",
-    headline: "Deals across every department",
-    sub: `Hundreds of reductions, refreshed daily. Free delivery on eligible orders over ${formatPriceShort(
-      COMMERCE.freeShippingThreshold
-    )}.`,
-    cta: "Shop today's deals",
-    href: "/s?deals=1",
-    image: heroImage("electronics"),
-    background: "linear-gradient(120deg,#e7d9ff 0%,#f3ecff 55%,#ffffff 100%)",
-  },
-  {
-    id: "computers",
-    eyebrow: "New arrivals",
-    headline: "Set up your desk properly",
-    sub: "Laptops, monitors and the accessories that make them worth using.",
-    cta: "Explore Computers",
-    href: "/s?i=computers",
-    image: heroImage("computers"),
-    background: "linear-gradient(120deg,#d7ecff 0%,#eaf5ff 55%,#ffffff 100%)",
-  },
-  {
-    id: "home-kitchen",
-    eyebrow: "Home essentials",
-    headline: "Kitchen upgrades under $50",
-    sub: "Cookware, small appliances and the everyday things that wear out.",
-    cta: "Shop Home & Kitchen",
-    href: "/s?i=home-kitchen",
-    image: heroImage("home-kitchen"),
-    background: "linear-gradient(120deg,#ffe6cc 0%,#fff3e6 55%,#ffffff 100%)",
-  },
-  {
-    id: "sports",
-    eyebrow: "Get outside",
-    headline: "Gear built for the weekend",
-    sub: "Packs, tents and training kit rated by thousands of shoppers.",
-    cta: "Shop Sports & Outdoors",
-    href: "/s?i=sports",
-    image: heroImage("sports"),
-    background: "linear-gradient(120deg,#d8f0e4 0%,#ecf8f2 55%,#ffffff 100%)",
-  },
-];
-
-/** Builds a 2x2 card from a department's top four products. */
-function departmentCard(categoryId: string, title: string, linkLabel: string): HomeCard {
-  const picks = getProductsByCategory(categoryId)
-    .sort((a, b) => b.reviewCount - a.reviewCount)
-    .slice(0, 4);
-  return {
-    title,
-    linkLabel,
-    linkHref: `/s?i=${categoryId}`,
-    tiles: picks.map((p) => ({
-      label: p.title.split(",")[0],
-      href: `/dp/${p.slug}`,
-      image: p.image,
-    })),
-  };
 }
 
 export default function Home() {
   const categories = getCategories();
   const catalog = getAllProducts();
 
-  const bestSellers = getBestSellers(14);
-  const deals = getDeals(14);
-  const electronics = getProductsByCategory("electronics").sort((a, b) => b.rating - a.rating);
-  const choice = getProductsWithBadge("choice", 14);
-  const home = getProductsByCategory("home-kitchen").sort((a, b) => b.reviewCount - a.reviewCount);
+  /*
+    Departments are ranked by total review count across their products.
 
-  const topRow: HomeCard[] = [
-    departmentCard("electronics", "Top tech for every desk", "Discover more in Electronics"),
-    departmentCard("home-kitchen", "Kitchen essentials under $50", "Shop Home & Kitchen"),
-    departmentCard("fashion", "Shop fashion for less", "See all deals"),
-    departmentCard("toys", "Toys for all ages", "See more in Toys & Games"),
-  ];
+    Product count cannot rank them: the catalogue holds exactly twelve in every
+    department, so sorting by size degenerates to a tiebreak and the "biggest"
+    department would really just be the alphabetically first. Total reviews is a
+    real signal of what shoppers engage with, it is deterministic, and it is
+    already in the data.
+  */
+  const byCategory = categories
+    .map((c) => {
+      const products = getProductsByCategory(c.id);
+      return {
+        category: c,
+        products,
+        reviews: products.reduce((n, p) => n + p.reviewCount, 0),
+      };
+    })
+    .sort((a, b) => b.reviews - a.reviews || a.category.id.localeCompare(b.category.id));
 
-  const secondRow: HomeCard[] = [
-    departmentCard("sports", "Gear up to get fit", "Discover more"),
-    departmentCard("beauty", "Most-loved beauty picks", "Shop Beauty"),
-    departmentCard("office", "Level up your workspace", "Discover more"),
-    departmentCard("pets", "Have more fun with pets", "See more"),
-  ];
+  /* One product from each of the three most-reviewed departments, taking the
+     best-reviewed of each - three departments rather than three products from
+     one, so the picture shows the breadth the copy claims. */
+  const heroProducts = byCategory
+    .slice(0, 3)
+    .map(({ products }) => [...products].sort((a, b) => b.reviewCount - a.reviewCount)[0])
+    .filter(Boolean);
+
+  /* Most-reviewed first, so the two feature panels are earned rather than picked. */
+  const tiles: MosaicTile[] = byCategory.map(({ category, products }) => ({
+    id: category.id,
+    name: category.name,
+    blurb: category.blurb,
+    count: products.length,
+    image: departmentCover(category.id),
+  }));
+
+  /*
+    Top rated: the highest-rated products that also have enough reviews for the
+    rating to mean anything. A 5.0 from nine people is not a recommendation.
+  */
+  const reviewThreshold = 500;
+  const topRated = [...catalog]
+    .filter((p) => p.reviewCount >= reviewThreshold)
+    .sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount)
+    .slice(0, 12);
+
+  /* Reduced: real discounts, deepest first. */
+  const reduced = getDeals(10);
+
+  /* Kartly's Choice, an existing badge in the catalogue. */
+  const choice = getProductsWithBadge("choice", 12);
 
   return (
-    <div className="pb-4">
-      <div className="shell space-y-4 pt-3">
-        <HeroCarousel slides={HERO_SLIDES} />
+    <div className="shell pb-16">
+      <Hero
+        products={heroProducts}
+        productCount={catalog.length}
+        departmentCount={categories.length}
+        freeShippingThreshold={COMMERCE.freeShippingThreshold}
+      />
 
-        {/* departments */}
-        <section className="card p-4 sm:p-5">
-          <SectionHeader
-            title="Shop by department"
-            subtitle={`All ${categories.length} departments, ${catalog.length} products`}
-            actionLabel="Browse everything"
-            actionHref="/s"
-            className="mb-4"
-          />
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {categories.map((c, i) => (
-              <Link key={c.id} href={`/s?i=${c.id}`} className="group">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[4px] bg-white">
-                  {c.image && (
-                    <Image
-                      src={c.image}
-                      alt=""
-                      fill
-                      sizes="(max-width: 640px) 45vw, 200px"
-                      className="object-cover transition-transform duration-200 group-hover:scale-[1.04]"
-                      priority={i < 3}
-                    />
-                  )}
-                </div>
-                <p className="mt-2 text-[13px] font-bold text-ink group-hover:text-link-hover group-hover:underline">
-                  {c.name}
-                </p>
-                <p className="clamp-1 text-[12px] text-muted">{c.blurb}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
+      <div className="flex flex-col gap-12 sm:gap-16">
+        <CategoryMosaic tiles={tiles} />
 
-        <ProductRail
-          title="Today's Deals"
-          subtitle="Limited time offers across the store"
-          products={deals}
-          href="/s?deals=1"
-        />
-
-        <CardRow cards={topRow} />
-
-        <ProductRail
-          title="Best Sellers"
-          subtitle="What shoppers are buying most this week"
-          products={bestSellers}
+        <Shelf
+          title="Best reviewed"
+          subtitle={`Rated highest by shoppers, counting only products with ${reviewThreshold}+ reviews.`}
+          products={topRated}
           href="/s?sort=rating"
+          hrefLabel="See all"
         />
 
-        <CardRow cards={secondRow} />
+        {reduced.length > 0 && (
+          <section data-testid={TID.reducedSection} className="border-t border-line pt-6">
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <h2 className="font-display text-display-md font-medium text-ink">Reduced this week</h2>
+                <p className="mt-1 text-body text-ink-2">
+                  Real reductions against the list price, deepest first.
+                </p>
+              </div>
+              <Link
+                href="/s?deals=1"
+                className="hidden shrink-0 items-center gap-1 text-body font-medium text-brand hover:underline sm:inline-flex"
+              >
+                All offers
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
 
-        <ProductRail
-          title="Popular in Electronics"
-          subtitle="Highest rated audio, video and everyday tech"
-          products={electronics}
-          href="/s?i=electronics"
-        />
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+              {reduced.slice(0, 5).map((p) => (
+                <li key={p.id} className="flex">
+                  <ProductCard product={p} className="w-full" />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-        <RecentlyViewed catalog={catalog} />
-
-        <ProductRail
-          title="Recommended for you"
-          subtitle="Kartly's Choice picks across the catalogue"
+        <Shelf
+          title="Kartly&rsquo;s Choice"
+          subtitle="Well rated, in stock, and priced sensibly against the alternatives."
           products={choice}
           href="/s?sort=rating"
         />
 
-        <ProductRail
-          title="Best Sellers in Home & Kitchen"
-          products={home}
-          href="/s?i=home-kitchen"
-        />
+        <RecentlyViewed catalog={catalog} />
+
+        {/* A way out, for anyone none of the above suited. */}
+        <section className="rounded-[var(--radius-lg)] border border-line bg-surface px-6 py-12 text-center sm:px-10 sm:py-16">
+          <h2 className="font-display text-display-md font-medium text-ink">
+            Looking for something specific?
+          </h2>
+          <p className="mx-auto mt-2 max-w-[460px] text-body-lg text-ink-2">
+            Search {catalog.length} products, or filter by department, brand, price and rating.
+            Free delivery over {formatPriceShort(COMMERCE.freeShippingThreshold)}.
+          </p>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <ButtonLink href="/s" variant="primary" size="lg">
+              Browse all products
+            </ButtonLink>
+            <ButtonLink href="/browse" variant="outline" size="lg">
+              Shop by department
+            </ButtonLink>
+          </div>
+        </section>
       </div>
     </div>
   );

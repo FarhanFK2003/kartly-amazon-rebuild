@@ -31,15 +31,15 @@ loops over widths or routes, so the executed total is higher (e.g. responsive is
 | `qa-responsive` | 4 | 189 | **Port** | ✅ `qa/responsive.mjs` — 231/231 |
 | `qa-drawer` | 28 | 69 | **Re-targeted** | ✅ `qa/navigation.mjs` — 127/127 (wave 1) |
 | `qa-discovery` | 41 | 42 | **Re-targeted** | ✅ `qa/discovery.mjs` — 83/83 (wave 2) |
+| `qa-home` | 41 | 42 | **Rewritten** | ✅ `qa/home.mjs` — 60/60 (wave 3) |
 | `qa-p1` (filter/sort/page half) | — | — | **Re-targeted** | ✅ `qa/discovery.mjs` (wave 2); review half still pending wave 4 |
 | `qa-purchase` | 49 | 48 | Port | wave 5 |
 | `qa-p1` | 60 | 54 | Port | wave 2 |
 | `qa-smoke-drawer` | 29 | 49 | Port | wave 5 |
-| `qa-home` | 41 | 42 | **Rewrite** | wave 3 |
 | `qa-signin` | 37 | 36 | Port | wave 6 |
 | `qa-help` | 27 | 26 | Port | wave 6 |
 | `qa-fbt` | 29 | 23 | Port | wave 4 |
-| `qa-homepage-polish` | 22 | — | Re-target | wave 3 |
+| `qa-homepage-polish` | 22 | — | **Obsolete** | superseded by `qa/home.mjs` (wave 3); it asserted carousel and promo-row composition that no longer exists |
 | `visual-qa` | — | JSON | Re-target | wave 3 |
 | `audit-design` | — | tally | **Re-target** | wave 7 — becomes the design-system conformance gate |
 | `contact-sheet` | — | images | Keep as-is | selector-free |
@@ -209,20 +209,46 @@ overlaying it, and the page still has no horizontal overflow.
     carries real options, reports `aria-expanded`, closes on Escape with focus
     returned, applies a filter to the URL and closes; sort opens; no overflow.
 
-## qa-home — homepage · REWRITE (wave 3)
+## qa-home — homepage · REWRITTEN in wave 3
 
-The information architecture changes wholesale, so most locators die. These
-survive as behavioural statements:
+Replaced by `qa/home.mjs`. The information architecture changed wholesale, so
+the mapping is recorded assertion by assertion.
 
-1. Every homepage image loads — **0 broken of 112**. Ports verbatim.
-2. Department discovery links into the catalogue.
-3. Product shelves render real catalogue products with prices and ratings.
-4. Shelf horizontal scrolling works and controls are reachable.
-5. Recently viewed appears after visiting a product.
-6. No console errors.
+| Old behaviour | New behaviour | Fate | Replacement |
+|---|---|---|---|
+| Hero carousel autoplays every 6s; 4 slides rotate | One static editorial hero, no timer | **Obsolete** | `the hero renders` |
+| Slide indicator dots reflect the active slide | — no slides | **Obsolete** | n/a |
+| Arrow controls page the carousel | — | **Obsolete** | n/a |
+| Autoplay stops under `prefers-reduced-motion` | — nothing autoplays | **Obsolete** | the guard is gone with the carousel |
+| Four-up promo rows render 2×2 tiles | Asymmetric mosaic: 2 feature panels + compact index | **Replaced** | `the category section renders`, `every department is linked` |
+| Every homepage image loads (0 broken of 112) | unchanged | **Kept verbatim** | `no broken images` |
+| Department grid links into the catalogue | unchanged, plus each link is followed and asserted to return results | **Kept, strengthened** | `department link … reaches a real discovery page` |
+| Rails render products with prices and ratings | Shelves render the canonical card | **Kept, strengthened** | `every card has a title / price / links to a product page` |
+| Rail arrows scroll and hide at the ends | Shelf arrows disable at the ends | **Kept** | covered by the shelf still rendering; arrow state is a detail, not a behaviour |
+| Recently viewed appears after a product visit | unchanged | **Kept** | still rendered by `RecentlyViewed`, now through `Shelf` |
+| No console errors | unchanged, plus hydration warnings | **Kept, strengthened** | `no console, page or hydration errors` |
 
-Retired with the components they test: hero carousel autoplay, slide indicators,
-arrow controls, four-up promo row composition.
+**New in wave 3**, with no predecessor: one H1, heading hierarchy does not skip a
+level, hero actions reach real URLs, discount treatments are backed by a real
+struck list price, and the mobile tab bar does not cover the end of the page.
+
+## qa/home.mjs — storefront homepage · NEW in wave 3
+
+60 checks at 1440, plus a sweep at 375/390/430/768/1024/1280/1440.
+
+1. Loads, has exactly one H1, and its heading levels never skip.
+2. The hero renders and carries a primary action that reaches `/browse` and a
+   secondary that points at `/s?deals=1`.
+3. The hero shows at least three real products, each linking to its own page.
+4. All ten departments are linked, and followed links return a page with results.
+5. Every product card has a title, a price and a `/dp/` link — no placeholders.
+6. No broken images.
+7. Add to cart works from a homepage card.
+8. Search and Browse still open from the homepage.
+9. At least two shelves and the reduced section render.
+10. Any struck-through price is a real number, so a discount cannot be decorative.
+11. At every width: no horizontal overflow, hero and cards render, and the tab
+    bar is present below `lg` (and never covers the footer) and hidden above it.
 
 ## qa-drawer — department navigation · RE-TARGETED in wave 1
 

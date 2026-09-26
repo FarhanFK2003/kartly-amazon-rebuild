@@ -98,7 +98,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           aria-label="Breadcrumb"
           className="no-scrollbar flex items-center gap-1 overflow-x-auto whitespace-nowrap py-4 text-body-sm text-ink-3"
         >
-          <Link href="/browse" className="tap-target shrink-0 transition-colors hover:text-brand">
+          <Link href="/browse" className="tap-target shrink-0 transition-colors hover:text-brand-ink">
             Browse
           </Link>
           {category && (
@@ -106,7 +106,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
               <Link
                 href={`/s?i=${category.id}`}
-                className="tap-target shrink-0 transition-colors hover:text-brand"
+                className="tap-target shrink-0 transition-colors hover:text-brand-ink"
               >
                 {category.name}
               </Link>
@@ -126,7 +126,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <p className="text-label font-semibold uppercase tracking-wide text-ink-3">
               <Link
                 href={`/s?brand=${encodeURIComponent(product.brand)}`}
-                className="transition-colors hover:text-brand"
+                className="transition-colors hover:text-brand-ink"
               >
                 {product.brand}
               </Link>
@@ -135,7 +135,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                   <span className="px-1">&middot;</span>
                   <Link
                     href={`/s?i=${category.id}`}
-                    className="normal-case tracking-normal transition-colors hover:text-brand"
+                    className="normal-case tracking-normal transition-colors hover:text-brand-ink"
                   >
                     {category.name}
                   </Link>
@@ -153,7 +153,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Link href="#reviews" className="group inline-flex items-center gap-2">
                 <StarRating rating={product.rating} size="sm" />
-                <span className="tnum text-body-sm text-ink-2 group-hover:text-brand group-hover:underline">
+                <span className="tnum text-body-sm text-ink-2 group-hover:text-brand-ink group-hover:underline">
                   {product.rating.toFixed(1)} &middot;{" "}
                   {product.reviewCount.toLocaleString("en-US")} reviews
                 </span>

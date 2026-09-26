@@ -66,7 +66,7 @@ export default async function BrowsePage() {
           <h2 id="departments-heading" className="font-display text-display-md font-medium text-ink">
             Departments
           </h2>
-          <Link href="/s" className="shrink-0 text-body font-medium text-brand hover:underline">
+          <Link href="/s" className="shrink-0 text-body font-medium text-brand-ink hover:underline">
             See all products
           </Link>
         </div>
@@ -94,7 +94,7 @@ export default async function BrowsePage() {
                   </span>
                   <span className="flex flex-1 flex-col p-3">
                     <span className="flex items-baseline justify-between gap-2">
-                      <span className="font-medium text-ink transition-colors group-hover:text-brand">
+                      <span className="font-medium text-ink transition-colors group-hover:text-brand-ink">
                         {d.name}
                       </span>
                       <span className="tnum shrink-0 text-body-sm text-ink-3">{d.count}</span>
@@ -122,7 +122,7 @@ export default async function BrowsePage() {
             <li key={brand}>
               <Link
                 href={`/s?brand=${encodeURIComponent(brand)}`}
-                className="inline-flex h-10 items-center rounded-[var(--radius-btn)] border border-line-strong bg-surface px-4 text-body text-ink transition-colors hover:border-brand hover:bg-brand-tint hover:text-brand"
+                className="inline-flex h-10 items-center rounded-[var(--radius-btn)] border border-line-strong bg-surface px-4 text-body text-ink transition-colors hover:border-brand hover:bg-brand-tint hover:text-brand-ink"
               >
                 {brand}
               </Link>
@@ -141,7 +141,7 @@ export default async function BrowsePage() {
           {departments.map((d) => (
             <li key={d.id} className="border-t border-line pt-4">
               <h3 className="font-medium text-ink">
-                <Link href={`/s?i=${d.id}`} className="transition-colors hover:text-brand">
+                <Link href={`/s?i=${d.id}`} className="transition-colors hover:text-brand-ink">
                   {d.name}
                 </Link>
               </h3>
@@ -150,7 +150,7 @@ export default async function BrowsePage() {
                   <li key={brand}>
                     <Link
                       href={`/s?i=${d.id}&brand=${encodeURIComponent(brand)}`}
-                      className="inline-block py-1 text-body-sm text-ink-2 underline-offset-2 hover:text-brand hover:underline"
+                      className="inline-block py-1 text-body-sm text-ink-2 underline-offset-2 hover:text-brand-ink hover:underline"
                     >
                       {brand}
                     </Link>
@@ -169,7 +169,7 @@ export default async function BrowsePage() {
             <h2 id="reduced-heading" className="font-display text-display-md font-medium text-ink">
               Reduced right now
             </h2>
-            <Link href="/s?deals=1" className="shrink-0 text-body font-medium text-brand hover:underline">
+            <Link href="/s?deals=1" className="shrink-0 text-body font-medium text-brand-ink hover:underline">
               All offers
             </Link>
           </div>
@@ -194,7 +194,7 @@ export default async function BrowsePage() {
             <li key={c.id}>
               <Link
                 href={`/s?i=${c.id}`}
-                className="inline-flex items-center gap-1 text-body-sm text-ink-2 transition-colors hover:text-brand"
+                className="inline-flex items-center gap-1 text-body-sm text-ink-2 transition-colors hover:text-brand-ink"
               >
                 {c.name}
                 <ArrowRight className="h-3 w-3" aria-hidden />

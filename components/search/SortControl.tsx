@@ -92,7 +92,7 @@ export function SortControl({ facets }: { facets: Facets }) {
                   selected ? "font-medium text-ink" : "text-ink-2"
                 )}
               >
-                <Check className={cn("h-4 w-4 shrink-0 text-brand", !selected && "invisible")} aria-hidden />
+                <Check className={cn("h-4 w-4 shrink-0 text-brand-ink", !selected && "invisible")} aria-hidden />
                 {o.label}
               </Link>
             );

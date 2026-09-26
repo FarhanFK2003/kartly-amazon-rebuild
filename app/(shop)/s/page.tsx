@@ -173,7 +173,7 @@ function NoResults({ query, hasFilters }: { query: string; hasFilters: boolean }
         <ButtonLink href="/s" variant="primary" size="md">
           {hasFilters ? "Clear all filters" : "Browse all products"}
         </ButtonLink>
-        <Link href="/browse" className="text-body font-medium text-brand hover:underline">
+        <Link href="/browse" className="text-body font-medium text-brand-ink hover:underline">
           Browse departments
         </Link>
       </div>

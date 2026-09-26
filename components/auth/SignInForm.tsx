@@ -6,51 +6,83 @@ import Link from "next/link";
 import { Info, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Field";
-import { useAuth } from "@/lib/store/auth";
+import { useAuth, type AuthUser } from "@/lib/store/auth";
 import { validateCredentials, hasErrors, type CredentialsDraft, type Errors } from "@/lib/validation";
 
 type Mode = "signin" | "register";
 
 /**
- * Simulated sign-in.
+ * Sign in and create account.
  *
- * No credentials are authenticated, transmitted or stored. The password is
- * validated for shape and then discarded - only a display name and the typed
- * identifier are kept, in localStorage, so the header can greet you.
+ * Authentication is real: accounts live in PostgreSQL through Prisma, and the
+ * password is stored only as a bcrypt hash - never in plaintext, and never
+ * returned by the API. A successful sign-in sets an httpOnly session cookie,
+ * which page script cannot read; nothing about the session is kept in
+ * localStorage.
  *
- * Validation is hand-rolled and the form carries noValidate, matching checkout,
- * so the messages are ours and appear inline.
+ * The checks below are client-side convenience only. The server validates the
+ * same rules again and is the authority. Validation is hand-rolled and the form
+ * carries noValidate, matching checkout, so the messages are ours and appear
+ * inline.
  */
 export function SignInForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const signIn = useAuth((s) => s.signIn);
+  const setUser = useAuth((s) => s.setUser);
 
   const [mode, setMode] = useState<Mode>("signin");
-  const [draft, setDraft] = useState<CredentialsDraft>({ identifier: "", password: "", name: "" });
+  const [draft, setDraft] = useState<CredentialsDraft>({ identifier: "", password: "", confirm: "" });
   const [errors, setErrors] = useState<Errors<CredentialsDraft>>({});
-  const [showReset, setShowReset] = useState(false);
   const [busy, setBusy] = useState(false);
+  /* Whatever the server said went wrong - bad credentials, duplicate email. */
+  const [formError, setFormError] = useState("");
 
   // Somewhere to return to, so signing in from the header does not dump you home.
   const next = params.get("next");
   const destination = next && next.startsWith("/") ? next : "/";
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setFormError("");
+
     const found = validateCredentials(draft, mode);
+    if (mode === "register" && draft.password !== draft.confirm) {
+      found.confirm = "Passwords do not match";
+    }
     setErrors(found);
     if (hasErrors(found)) return;
 
     setBusy(true);
-    signIn(draft.identifier, mode === "register" ? draft.name : undefined);
-    router.push(destination);
+    try {
+      const res = await fetch(mode === "signin" ? "/api/auth/login" : "/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: draft.identifier, password: draft.password }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        user?: AuthUser;
+        error?: string;
+      };
+
+      if (!res.ok || !body.user) {
+        setBusy(false);
+        setFormError(body.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      setUser(body.user);
+      router.push(destination);
+      router.refresh();
+    } catch {
+      setBusy(false);
+      setFormError("We could not reach the server. Please try again.");
+    }
   }
 
   function switchMode(nextMode: Mode) {
     setMode(nextMode);
     setErrors({});
-    setShowReset(false);
+    setFormError("");
   }
 
   return (
@@ -60,35 +92,25 @@ export function SignInForm() {
           {mode === "signin" ? "Sign in" : "Create account"}
         </h1>
 
-        <div className="mt-3 flex items-start gap-2 rounded-[8px] border border-[#f5d9a0] bg-[#fef8ec] px-3 py-2">
-          <Info className="mt-[2px] h-4 w-4 shrink-0 text-[#b26a00]" aria-hidden />
-          <p className="text-[12px] leading-[17px] text-ink">
-            <strong>Simulated sign-in.</strong> Nothing is authenticated and no password is stored
-            or sent. Use any email and any password of 6+ characters.
-          </p>
-        </div>
+        {formError && (
+          <div
+            role="alert"
+            className="mt-3 flex items-start gap-2 rounded-[8px] border border-accent/40 bg-accent-tint px-3 py-2"
+          >
+            <Info className="mt-[2px] h-4 w-4 shrink-0 text-accent" aria-hidden />
+            <p className="text-[12px] leading-[17px] text-ink">{formError}</p>
+          </div>
+        )}
 
         <form onSubmit={submit} noValidate className="mt-4 space-y-3">
-          {mode === "register" && (
-            <Field label="Your name" htmlFor="name" error={errors.name}>
-              <Input
-                id="name"
-                value={draft.name}
-                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                invalid={!!errors.name}
-                autoComplete="name"
-                placeholder="First and last name"
-              />
-            </Field>
-          )}
-
-          <Field label="Email or mobile phone number" htmlFor="identifier" error={errors.identifier}>
+          <Field label="Email address" htmlFor="identifier" error={errors.identifier}>
             <Input
               id="identifier"
               value={draft.identifier}
               onChange={(e) => setDraft({ ...draft, identifier: e.target.value })}
               invalid={!!errors.identifier}
-              autoComplete="username"
+              autoComplete="email"
+              type="email"
               placeholder="you@example.com"
             />
           </Field>
@@ -109,33 +131,27 @@ export function SignInForm() {
             />
           </Field>
 
+          {mode === "register" && (
+            <Field label="Confirm password" htmlFor="confirm" error={errors.confirm}>
+              <Input
+                id="confirm"
+                type="password"
+                value={draft.confirm}
+                onChange={(e) => setDraft({ ...draft, confirm: e.target.value })}
+                invalid={!!errors.confirm}
+                autoComplete="new-password"
+              />
+            </Field>
+          )}
+
           <Button type="submit" variant="primary" size="md" fullWidth loading={busy}>
             {mode === "signin" ? "Sign in" : "Create your Kartly account"}
           </Button>
         </form>
 
-        {mode === "signin" && (
-          <>
-            <button
-              type="button"
-              onClick={() => setShowReset((v) => !v)}
-              aria-expanded={showReset}
-              className="link mt-3 text-[13px]"
-            >
-              Forgot your password?
-            </button>
-            {showReset && (
-              <p className="mt-1 rounded-[8px] bg-[#f7f8f8] px-3 py-2 text-[12px] leading-[17px] text-muted">
-                There is no password to reset. This demo accepts any email and any password of six
-                characters or more.
-              </p>
-            )}
-          </>
-        )}
-
         <p className="mt-4 text-[12px] leading-4 text-muted">
-          By continuing you agree that this is a demo storefront and that no real account is
-          created.
+          Accounts are real and your password is stored only as a hash. This is still a demo
+          storefront: no payment is ever processed.
         </p>
       </div>
 
@@ -159,7 +175,7 @@ export function SignInForm() {
 
       <p className="mt-6 flex items-center justify-center gap-1 text-[12px] text-muted">
         <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-        No credentials leave this browser
+        Passwords are hashed, never stored in the browser
       </p>
 
       <p className="mt-2 text-center text-[13px]">

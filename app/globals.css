@@ -30,16 +30,30 @@
   --color-ink-3: #8b877e;
 
   /* Brand: deep teal. Primary action, active state, links. */
-  --color-brand: #14594f;
-  --color-brand-hover: #0e453d;
-  --color-brand-tint: #e8f0ee;
+  /*
+    The primary is a fill colour, not a text colour.
+
+    #F4B942 against white is roughly 1.8:1, so anything that puts the primary on
+    paper as *text* - links, hover states, the subtle button - uses brand-ink
+    instead, a darker tone of the same hue that clears 4.5:1. Keeping both in
+    one family is what lets the yellow stay an action colour rather than
+    becoming the interface.
+  */
+  --color-brand: #f4b942;
+  --color-brand-hover: #e5a82f;
+  --color-brand-tint: #fff6d8;
+  /** Text and icons ON the yellow fill. Near-black, ~10.5:1. */
+  --color-on-brand: #171717;
+  /** The same hue, dark enough to read as text on paper. ~5.9:1 on white. */
+  --color-brand-ink: #8a5a00;
 
   /* Accent: terracotta. Discounts, low stock, destructive intent. */
   --color-accent: #b4443a;
   --color-accent-tint: #fbeeec;
 
   --color-success: #1e7a4c;
-  --color-focus: #14594f;
+  /* The focus ring is drawn at 45% opacity, so it takes the readable tone. */
+  --color-focus: #8a5a00;
 
   /* Type: two families, seven roles. */
   --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;

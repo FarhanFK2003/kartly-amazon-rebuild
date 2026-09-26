@@ -125,7 +125,7 @@ export default async function Home() {
               </div>
               <Link
                 href="/s?deals=1"
-                className="hidden shrink-0 items-center gap-1 text-body font-medium text-brand hover:underline sm:inline-flex"
+                className="hidden shrink-0 items-center gap-1 text-body font-medium text-brand-ink hover:underline sm:inline-flex"
               >
                 All offers
                 <ArrowRight className="h-4 w-4" aria-hidden />

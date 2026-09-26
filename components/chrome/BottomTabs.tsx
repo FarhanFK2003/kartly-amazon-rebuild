@@ -91,7 +91,7 @@ function Tab({
         className={cn(
           "flex h-full w-full flex-col items-center justify-center gap-[2px] px-1",
           "text-label transition-colors",
-          active ? "text-brand" : "text-ink-2"
+          active ? "text-brand-ink" : "text-ink-2"
         )}
       >
         <span className="relative">

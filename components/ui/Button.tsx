@@ -10,7 +10,7 @@ export type ButtonSize = "sm" | "md" | "lg";
   replica's most recognisable signatures, and dropping it changes the read of
   every screen at no functional cost.
 
-  One filled action per view: brand teal. Everything else is an outline or a
+  One filled action per view: the brand yellow, with near-black text on it. Everything else is an outline or a
   bare link, so a screen never presents two saturated fills competing for the
   same attention - which is what the yellow-and-orange pair did on the PDP.
 
@@ -19,14 +19,24 @@ export type ButtonSize = "sm" | "md" | "lg";
   own focus is creating an inconsistency rather than fixing one.
 */
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-brand hover:bg-brand-hover border-brand hover:border-brand-hover text-white",
+  /*
+    The text colour is written as an arbitrary property, not `text-on-brand`.
+
+    This project's type scale uses `text-body`, `text-body-lg` and friends, and
+    tailwind-merge puts those in the same conflict group as text colours - so a
+    size class applied after the variant silently removed the colour, leaving
+    buttons to inherit ink. `[color:...]` is an arbitrary property and sits in
+    no such group, so it survives regardless of what follows it.
+  */
+  primary:
+    "bg-brand hover:bg-brand-hover border-brand hover:border-brand-hover [color:var(--color-on-brand)]",
   /* Kept for callers that still ask for a second filled action. It is the same
      brand colour as an outline, not a second hue - retires with the PDP in
      wave 4, where Buy now becomes the outline it should always have been. */
-  secondary: "bg-brand-tint hover:bg-[#dbe7e4] border-brand-tint text-brand",
-  outline: "bg-surface hover:bg-surface-sunk border-line-strong text-ink",
-  search: "bg-brand hover:bg-brand-hover border-brand text-white",
-  subtle: "bg-transparent border-transparent text-brand hover:underline",
+  secondary: "bg-brand-tint hover:bg-[#ffeeb4] border-brand-tint [color:var(--color-brand-ink)]",
+  outline: "bg-surface hover:bg-surface-sunk border-line-strong [color:var(--color-ink)]",
+  search: "bg-brand hover:bg-brand-hover border-brand [color:var(--color-on-brand)]",
+  subtle: "bg-transparent border-transparent [color:var(--color-brand-ink)] hover:underline",
 };
 
 /* Heights clear the 24px minimum target at every size. */

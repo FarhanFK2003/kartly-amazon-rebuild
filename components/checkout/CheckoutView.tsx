@@ -72,7 +72,7 @@ export function CheckoutView({ initial }: { initial: CartSnapshot }) {
           <ButtonLink href="/s" variant="primary" size="md">
             Continue shopping
           </ButtonLink>
-          <Link href="/cart" className="text-body font-medium text-brand hover:underline">
+          <Link href="/cart" className="text-body font-medium text-brand-ink hover:underline">
             Back to cart
           </Link>
         </div>
@@ -510,7 +510,7 @@ export function CheckoutView({ initial }: { initial: CartSnapshot }) {
 
           <Link
             href="/cart"
-            className="mt-4 block text-center text-body-sm font-medium text-brand hover:underline"
+            className="mt-4 block text-center text-body-sm font-medium text-brand-ink hover:underline"
           >
             Back to cart
           </Link>

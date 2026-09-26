@@ -75,7 +75,7 @@ export function FacetGroup({
               <Tick selected={o.selected} />
               <span className="flex items-center gap-[2px] text-ink">
                 {Array.from({ length: Number(o.value) }, (_, i) => (
-                  <Star key={i} className="h-[13px] w-[13px] fill-current text-brand" aria-hidden />
+                  <Star key={i} className="h-[13px] w-[13px] fill-current text-brand-ink" aria-hidden />
                 ))}
                 <span className="ml-1">&amp; up</span>
               </span>

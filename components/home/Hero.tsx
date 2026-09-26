@@ -61,7 +61,7 @@ export function Hero({
           </ButtonLink>
           <Link
             href="/s?deals=1"
-            className="inline-flex h-12 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-body-lg font-medium text-brand hover:underline"
+            className="inline-flex h-12 items-center gap-1 rounded-[var(--radius-btn)] px-2 text-body-lg font-medium text-brand-ink hover:underline"
           >
             See what&rsquo;s reduced
             <ArrowRight className="h-[18px] w-[18px]" aria-hidden />
@@ -92,7 +92,7 @@ export function Hero({
                   />
                 )}
               </span>
-              <span className="mt-2 block truncate text-body-sm text-ink-2 transition-colors group-hover:text-brand">
+              <span className="mt-2 block truncate text-body-sm text-ink-2 transition-colors group-hover:text-brand-ink">
                 {p.brand}
               </span>
               <span className="tnum block text-body-sm font-semibold text-ink">

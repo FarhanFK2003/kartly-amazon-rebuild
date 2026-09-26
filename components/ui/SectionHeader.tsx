@@ -35,7 +35,7 @@ export function SectionHeader({
         {subtitle && <p className="mt-1 text-body-sm text-ink-2">{subtitle}</p>}
       </div>
       {actionLabel && actionHref && (
-        <Link href={actionHref} className="shrink-0 text-body-sm font-medium text-brand hover:underline">
+        <Link href={actionHref} className="shrink-0 text-body-sm font-medium text-brand-ink hover:underline">
           {actionLabel}
         </Link>
       )}

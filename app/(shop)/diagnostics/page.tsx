@@ -100,7 +100,7 @@ export default async function DiagnosticsPage() {
                 Same row over HTTP:{" "}
                 <Link
                   href={`/api/products/${result.sample.id}`}
-                  className="text-brand underline underline-offset-2 hover:text-brand-hover"
+                  className="text-brand-ink underline underline-offset-2 hover:text-brand-ink-hover"
                 >
                   /api/products/{result.sample.id}
                 </Link>
@@ -128,11 +128,11 @@ export default async function DiagnosticsPage() {
 
       <p className="mt-6 text-[13px] text-ink-3">
         Endpoints:{" "}
-        <Link href="/api/health" className="text-brand underline underline-offset-2">
+        <Link href="/api/health" className="text-brand-ink underline underline-offset-2">
           /api/health
         </Link>
         {" · "}
-        <Link href="/api/products?limit=3" className="text-brand underline underline-offset-2">
+        <Link href="/api/products?limit=3" className="text-brand-ink underline underline-offset-2">
           /api/products
         </Link>
       </p>

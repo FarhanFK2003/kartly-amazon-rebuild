@@ -102,7 +102,7 @@ export function ProductCard({ product, showCta = true, priority, className }: Pr
           <Link
             href={`/dp/${product.slug}`}
             data-testid={TID.productCardTitle}
-            className="clamp-2 font-medium text-ink transition-colors hover:text-brand"
+            className="clamp-2 font-medium text-ink transition-colors hover:text-brand-ink"
           >
             {product.title}
           </Link>

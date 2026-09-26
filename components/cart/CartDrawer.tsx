@@ -170,7 +170,7 @@ export function CartDrawer() {
                       <div className="min-w-0 flex-1">
                         <Link
                           href={`/dp/${r.product.slug}`}
-                          className="clamp-2 text-body-sm font-medium leading-[17px] text-ink transition-colors hover:text-brand"
+                          className="clamp-2 text-body-sm font-medium leading-[17px] text-ink transition-colors hover:text-brand-ink"
                         >
                           {r.product.title}
                         </Link>

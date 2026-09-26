@@ -92,17 +92,20 @@ export const US_STATES = [
   "VA", "WA", "WV", "WI", "WY", "DC",
 ];
 
-/* ---------- simulated sign-in ---------- */
+/* ---------- sign-in ---------- */
 
 export interface CredentialsDraft {
   identifier: string;
   password: string;
-  name: string;
+  confirm: string;
 }
 
 /**
- * Shape checks only. Nothing is authenticated and the password is never stored
- * or transmitted - this exists so the form behaves like a real one.
+ * Client-side shape checks, so the obvious mistakes are caught before a round
+ * trip. The server validates the same rules again and is the authority; this
+ * is convenience, not a gate.
+ *
+ * Accounts are keyed on email, so a phone number is no longer accepted.
  */
 export function validateCredentials(
   c: CredentialsDraft,
@@ -110,20 +113,14 @@ export function validateCredentials(
 ): Errors<CredentialsDraft> {
   const e: Errors<CredentialsDraft> = {};
   const id = c.identifier.trim();
-  const digits = id.replace(/\D/g, "");
 
-  if (!id) {
-    e.identifier = "Enter your email or mobile phone number.";
-  } else if (id.includes("@")) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(id)) e.identifier = "Enter a valid email address.";
-  } else if (digits.length < 10) {
-    e.identifier = "Enter a valid email address or a 10-digit phone number.";
-  }
+  if (!id) e.identifier = "Enter your email address.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(id)) e.identifier = "Enter a valid email address.";
 
   if (!c.password) e.password = "Enter your password.";
   else if (c.password.length < 6) e.password = "Passwords must be at least 6 characters.";
 
-  if (mode === "register" && !c.name.trim()) e.name = "Enter your name.";
+  if (mode === "register" && !c.confirm) e.confirm = "Re-enter your password.";
 
   return e;
 }

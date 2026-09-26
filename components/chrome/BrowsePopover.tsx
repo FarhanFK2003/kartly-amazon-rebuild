@@ -130,7 +130,7 @@ export function BrowsePopover({
           <div className="border-t border-line bg-surface-sunk px-4 py-3">
             <Link
               href="/browse"
-              className="inline-flex items-center gap-1 text-body font-medium text-brand hover:underline"
+              className="inline-flex items-center gap-1 text-body font-medium text-brand-ink hover:underline"
             >
               All departments
               <ArrowRight className="h-4 w-4" aria-hidden />

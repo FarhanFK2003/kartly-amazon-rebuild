@@ -51,7 +51,7 @@ export function CartLineRow({ resolved, saved = false }: { resolved: ResolvedLin
             <Link
               href={`/dp/${product.slug}`}
               data-testid={TID.cartLineTitle}
-              className="clamp-2 text-body font-medium leading-[20px] text-ink transition-colors hover:text-brand"
+              className="clamp-2 text-body font-medium leading-[20px] text-ink transition-colors hover:text-brand-ink"
             >
               {product.title}
             </Link>
@@ -103,7 +103,7 @@ export function CartLineRow({ resolved, saved = false }: { resolved: ResolvedLin
               <button
                 type="button"
                 onClick={() => toggleSaved(line.productId, line.variantId)}
-                className="text-body-sm text-ink-2 underline-offset-2 transition-colors hover:text-brand hover:underline"
+                className="text-body-sm text-ink-2 underline-offset-2 transition-colors hover:text-brand-ink hover:underline"
               >
                 Save for later
               </button>

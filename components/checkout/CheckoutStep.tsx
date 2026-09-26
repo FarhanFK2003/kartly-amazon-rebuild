@@ -66,7 +66,7 @@ export function CheckoutStepPanel({
               {title}
             </h2>
             {complete && onEdit && (
-              <button type="button" onClick={onEdit} className="text-body-sm font-medium text-brand hover:underline">
+              <button type="button" onClick={onEdit} className="text-body-sm font-medium text-brand-ink hover:underline">
                 Change
               </button>
             )}

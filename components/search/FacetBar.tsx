@@ -86,7 +86,7 @@ function FacetDropdown({
         className={cn(
           "flex h-9 items-center gap-[6px] rounded-[var(--radius-btn)] border px-3 text-body transition-colors",
           selected > 0
-            ? "border-brand bg-brand-tint font-medium text-brand"
+            ? "border-brand bg-brand-tint font-medium text-brand-ink"
             : "border-line-strong bg-surface text-ink hover:bg-surface-sunk",
           open && selected === 0 && "bg-surface-sunk"
         )}

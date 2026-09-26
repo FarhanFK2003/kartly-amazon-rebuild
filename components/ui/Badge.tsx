@@ -12,13 +12,13 @@ export type BadgeVariant =
 
 const VARIANTS: Record<BadgeVariant, string> = {
   bestSeller: "bg-brand text-white font-semibold",
-  choice: "bg-brand-tint text-brand font-semibold",
+  choice: "bg-brand-tint text-brand-ink font-semibold",
   deal: "bg-accent-tint text-accent font-semibold",
   sponsored: "text-ink-3",
   stock: "text-accent",
   delivery: "text-ink-2",
   info: "bg-surface-sunk text-ink border border-line",
-  prime: "text-brand font-semibold",
+  prime: "text-brand-ink font-semibold",
 };
 
 const BOXED: BadgeVariant[] = ["bestSeller", "choice", "deal", "info"];

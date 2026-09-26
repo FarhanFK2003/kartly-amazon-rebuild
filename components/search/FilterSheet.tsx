@@ -106,7 +106,7 @@ export function FilterSheet({
         className={cn(
           "flex h-9 items-center gap-2 rounded-[var(--radius-btn)] border border-line-strong bg-surface px-3",
           "text-body font-medium text-ink transition-colors hover:bg-surface-sunk",
-          activeCount > 0 && "border-brand bg-brand-tint text-brand",
+          activeCount > 0 && "border-brand bg-brand-tint text-brand-ink",
           className
         )}
       >

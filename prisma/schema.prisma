@@ -267,3 +267,42 @@ model OrderItem {
   @@index([orderId])
   @@map("order_items")
 }
+
+/* ------------------------------------------------------------------ */
+/* Accounts                                                            */
+/* ------------------------------------------------------------------ */
+
+/// A real account. Deliberately minimal: an identity and a password, nothing
+/// else. No profile, no addresses, no payment methods.
+model User {
+  id           String        @id @default(cuid())
+  /// Stored trimmed and lowercased, so "  Ada@Example.COM " and
+  /// "ada@example.com" cannot become two accounts.
+  email        String        @unique
+  /// A bcrypt hash. The plaintext is never stored, logged or returned.
+  passwordHash String
+  sessions     AuthSession[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("users")
+}
+
+/// A signed-in session.
+///
+/// Only the SHA-256 of the token is stored. The raw token exists in one place -
+/// an httpOnly cookie in the browser - so a leaked database dump cannot be
+/// replayed as a login.
+model AuthSession {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}

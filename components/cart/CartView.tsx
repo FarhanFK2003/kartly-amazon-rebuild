@@ -168,7 +168,7 @@ export function CartView({
 
             <Link
               href="/s"
-              className="mt-3 block text-center text-body-sm font-medium text-brand hover:underline"
+              className="mt-3 block text-center text-body-sm font-medium text-brand-ink hover:underline"
             >
               Continue shopping
             </Link>

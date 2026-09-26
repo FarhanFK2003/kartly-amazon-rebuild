@@ -40,7 +40,7 @@ export function CategoryMosaic({ tiles }: { tiles: MosaicTile[] }) {
         </div>
         <Link
           href="/browse"
-          className="hidden shrink-0 items-center gap-1 text-body font-medium text-brand hover:underline sm:inline-flex"
+          className="hidden shrink-0 items-center gap-1 text-body font-medium text-brand-ink hover:underline sm:inline-flex"
         >
           All departments
           <ArrowRight className="h-4 w-4" aria-hidden />
@@ -62,7 +62,7 @@ export function CategoryMosaic({ tiles }: { tiles: MosaicTile[] }) {
                 className="group flex items-center justify-between gap-3 py-[11px]"
               >
                 <span className="min-w-0">
-                  <span className="block truncate font-medium text-ink transition-colors group-hover:text-brand">
+                  <span className="block truncate font-medium text-ink transition-colors group-hover:text-brand-ink">
                     {t.name}
                   </span>
                   <span className="clamp-1 block text-body-sm text-ink-3">{t.blurb}</span>
@@ -76,7 +76,7 @@ export function CategoryMosaic({ tiles }: { tiles: MosaicTile[] }) {
 
       <Link
         href="/browse"
-        className="mt-4 inline-flex items-center gap-1 text-body font-medium text-brand hover:underline sm:hidden"
+        className="mt-4 inline-flex items-center gap-1 text-body font-medium text-brand-ink hover:underline sm:hidden"
       >
         All departments
         <ArrowRight className="h-4 w-4" aria-hidden />

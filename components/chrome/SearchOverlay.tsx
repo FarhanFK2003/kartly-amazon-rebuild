@@ -322,7 +322,7 @@ export function SearchOverlay({ categories }: { categories: Category[] }) {
                       <span className="min-w-0 flex-1 truncate">
                         <Highlight text={s.text} query={query} />
                       </span>
-                      {s.scope && <span className="shrink-0 text-body-sm text-brand">in {s.scope}</span>}
+                      {s.scope && <span className="shrink-0 text-body-sm text-brand-ink">in {s.scope}</span>}
                     </>
                   )}
                 </li>

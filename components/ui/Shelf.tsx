@@ -85,7 +85,7 @@ export function Shelf({
           {href && (
             <Link
               href={href}
-              className="mr-2 inline-flex h-9 items-center gap-1 text-body font-medium text-brand hover:underline"
+              className="mr-2 inline-flex h-9 items-center gap-1 text-body font-medium text-brand-ink hover:underline"
             >
               {hrefLabel}
               <ArrowRight className="h-4 w-4" aria-hidden />

@@ -64,7 +64,7 @@ export async function ActiveFilters({ facets }: { facets: Facets }) {
           key={chip.label + chip.href}
           href={chip.href}
           data-testid={TID.activeFilterChip}
-          className="inline-flex items-center gap-[6px] rounded-[var(--radius-btn)] border border-brand bg-brand-tint py-[5px] pl-3 pr-2 text-body-sm font-medium text-brand transition-colors hover:bg-[#dbe7e4]"
+          className="inline-flex items-center gap-[6px] rounded-[var(--radius-btn)] border border-brand bg-brand-tint py-[5px] pl-3 pr-2 text-body-sm font-medium text-brand-ink transition-colors hover:bg-[#ffeeb4]"
         >
           {chip.label}
           <X className="h-[14px] w-[14px]" aria-label={`Remove ${chip.label} filter`} />

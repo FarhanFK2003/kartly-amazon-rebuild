@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { CircleHelp } from "lucide-react";
 import { getCategories } from "@/lib/data/products";
+import { getCurrentUser } from "@/lib/auth";
 import { getNavDepartments, getNavGroups } from "@/lib/navigation";
 import { TID } from "@/lib/testids";
 import { Wordmark } from "@/components/brand/Wordmark";
@@ -37,10 +38,14 @@ import { CartSync } from "@/components/cart/CartSync";
 export async function AppBar() {
   // Both reads are cached per request, so the header costs the same whether the
   // page below it also needs categories.
-  const [categories, departments, groups] = await Promise.all([
+  const [categories, departments, groups, user] = await Promise.all([
     getCategories(),
     getNavDepartments(),
     Promise.resolve(getNavGroups()),
+    /* Read here rather than fetched from the client: the session cookie is
+       httpOnly, and asking /api/auth/me from the browser meant a round trip on
+       every page plus a 401 in the console for every signed-out visitor. */
+    getCurrentUser(),
   ]);
 
   return (
@@ -86,7 +91,7 @@ export async function AppBar() {
               Help
             </BarLink>
             <BarLink href="/orders">Orders</BarLink>
-            <AccountArea />
+            <AccountArea user={user} />
             <CartButton />
           </nav>
 

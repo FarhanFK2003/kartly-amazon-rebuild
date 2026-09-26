@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import {
-  getAllProducts,
-  getCategories,
+  getCardProducts,
   getDeals,
-  getProductsByCategory,
+  getDepartmentStats,
+  getProductCount,
   getProductsWithBadge,
-} from "@/lib/catalog";
+  getTopProductOfDepartment,
+  getTopRated,
+} from "@/lib/data/products";
 import { COMMERCE } from "@/lib/commerce";
 import { formatPriceShort } from "@/lib/utils";
 import { TID } from "@/lib/testids";
@@ -38,17 +40,7 @@ import { ButtonLink } from "@/components/ui/Button";
   hand, and there is no claim on this page that the data does not support.
 */
 
-/** The most-reviewed product of a department stands in as its cover. */
-function departmentCover(categoryId: string) {
-  return (
-    getProductsByCategory(categoryId).sort((a, b) => b.reviewCount - a.reviewCount)[0]?.image ?? null
-  );
-}
-
-export default function Home() {
-  const categories = getCategories();
-  const catalog = getAllProducts();
-
+export default async function Home() {
   /*
     Departments are ranked by total review count across their products.
 
@@ -57,57 +49,57 @@ export default function Home() {
     department would really just be the alphabetically first. Total reviews is a
     real signal of what shoppers engage with, it is deterministic, and it is
     already in the data.
+
+    That total is now a SUM in PostgreSQL rather than a scan of every product,
+    and the department cover - the most-reviewed product of the department - is
+    resolved in the same read layer. See lib/data/products.ts.
   */
-  const byCategory = categories
-    .map((c) => {
-      const products = getProductsByCategory(c.id);
-      return {
-        category: c,
-        products,
-        reviews: products.reduce((n, p) => n + p.reviewCount, 0),
-      };
-    })
-    .sort((a, b) => b.reviews - a.reviews || a.category.id.localeCompare(b.category.id));
+  const REVIEW_THRESHOLD = 500;
+
+  const [departments, reduced, choice, topRated, productCount, cardCatalogue] = await Promise.all([
+    getDepartmentStats(),
+    /* Reduced: real discounts, deepest first. */
+    getDeals(10),
+    /* Kartly's Choice, an existing badge in the catalogue. */
+    getProductsWithBadge("choice", 12),
+    /*
+      Top rated: the highest-rated products that also have enough reviews for
+      the rating to mean anything. A 5.0 from nine people is not a
+      recommendation, so the threshold is part of the query.
+    */
+    getTopRated(12, REVIEW_THRESHOLD),
+    getProductCount(),
+    /* The recently-viewed shelf joins localStorage ids on the client, so it
+       needs the whole catalogue - but only the fields a card renders. */
+    getCardProducts(),
+  ]);
+
+  const byReviews = [...departments].sort(
+    (a, b) => b.reviews - a.reviews || a.id.localeCompare(b.id)
+  );
 
   /* One product from each of the three most-reviewed departments, taking the
      best-reviewed of each - three departments rather than three products from
      one, so the picture shows the breadth the copy claims. */
-  const heroProducts = byCategory
-    .slice(0, 3)
-    .map(({ products }) => [...products].sort((a, b) => b.reviewCount - a.reviewCount)[0])
-    .filter(Boolean);
+  const heroProducts = (
+    await Promise.all(byReviews.slice(0, 3).map(({ id }) => getTopProductOfDepartment(id)))
+  ).filter((p): p is NonNullable<typeof p> => Boolean(p));
 
   /* Most-reviewed first, so the two feature panels are earned rather than picked. */
-  const tiles: MosaicTile[] = byCategory.map(({ category, products }) => ({
-    id: category.id,
-    name: category.name,
-    blurb: category.blurb,
-    count: products.length,
-    image: departmentCover(category.id),
+  const tiles: MosaicTile[] = byReviews.map((d) => ({
+    id: d.id,
+    name: d.name,
+    blurb: d.blurb,
+    count: d.count,
+    image: d.image,
   }));
-
-  /*
-    Top rated: the highest-rated products that also have enough reviews for the
-    rating to mean anything. A 5.0 from nine people is not a recommendation.
-  */
-  const reviewThreshold = 500;
-  const topRated = [...catalog]
-    .filter((p) => p.reviewCount >= reviewThreshold)
-    .sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount)
-    .slice(0, 12);
-
-  /* Reduced: real discounts, deepest first. */
-  const reduced = getDeals(10);
-
-  /* Kartly's Choice, an existing badge in the catalogue. */
-  const choice = getProductsWithBadge("choice", 12);
 
   return (
     <div className="shell pb-16">
       <Hero
         products={heroProducts}
-        productCount={catalog.length}
-        departmentCount={categories.length}
+        productCount={productCount}
+        departmentCount={departments.length}
         freeShippingThreshold={COMMERCE.freeShippingThreshold}
       />
 
@@ -116,7 +108,7 @@ export default function Home() {
 
         <Shelf
           title="Best reviewed"
-          subtitle={`Rated highest by shoppers, counting only products with ${reviewThreshold}+ reviews.`}
+          subtitle={`Rated highest by shoppers, counting only products with ${REVIEW_THRESHOLD}+ reviews.`}
           products={topRated}
           href="/s?sort=rating"
           hrefLabel="See all"
@@ -157,7 +149,7 @@ export default function Home() {
           href="/s?sort=rating"
         />
 
-        <RecentlyViewed catalog={catalog} />
+        <RecentlyViewed catalog={cardCatalogue} />
 
         {/* A way out, for anyone none of the above suited. */}
         <section className="rounded-[var(--radius-lg)] border border-line bg-surface px-6 py-12 text-center sm:px-10 sm:py-16">
@@ -165,7 +157,7 @@ export default function Home() {
             Looking for something specific?
           </h2>
           <p className="mx-auto mt-2 max-w-[460px] text-body-lg text-ink-2">
-            Search {catalog.length} products, or filter by department, brand, price and rating.
+            Search {productCount} products, or filter by department, brand, price and rating.
             Free delivery over {formatPriceShort(COMMERCE.freeShippingThreshold)}.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">

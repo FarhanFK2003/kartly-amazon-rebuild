@@ -111,7 +111,11 @@ check("an applied filter is shown as a removable chip", (await byTestId(page, TI
 
 // removing it restores the wider set
 await byTestId(page, TID.activeFilterChip).first().click();
-await settle(page, 800);
+/* Wait for the filter to actually leave the URL, then for the re-render. The
+   result set is now recounted by the database, not by an in-memory filter. */
+await page.waitForURL((u) => !/[?&]i=/.test(u.toString()), { timeout: 15000 }).catch(() => {});
+await page.waitForLoadState("networkidle");
+await settle(page, 300);
 check("removing the chip restores the result set", (await resultTotal(page)) === beforeFilter);
 
 for (const [label, url, param] of [

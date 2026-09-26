@@ -62,13 +62,18 @@ float.
                                   ▼
                                lib/db.ts          single client, lazily created
                                   │
-                ┌─────────────────┼─────────────────┐
-                ▼                 ▼                 ▼
-      /api/products      /api/products/[id]    /api/health
-                                  │
-                                  ▼
-                            /diagnostics       rendered from the database
+                ┌─────────────────┴──────────────────┐
+                ▼                                    ▼
+      lib/data/*  (server-only)               app/api/*  (HTTP)
+                │                                    │
+   ┌────────┬───┴────┬──────────┐        ┌───────────┼──────────────┐
+   ▼        ▼        ▼          ▼        ▼           ▼              ▼
+  /      /browse    /s      /dp/[id]  products  products/[id]    health
 ```
+
+The storefront reads the database directly through `lib/data/`; it does not call
+its own HTTP API. A server component making an HTTP request to its own server
+would add a hop and a second failure mode for no benefit. See section 7.
 
 | File                      | Role                                                              |
 | ------------------------- | ----------------------------------------------------------------- |
@@ -78,6 +83,9 @@ float.
 | `lib/db.ts`               | The Prisma client. The whole database layer.                       |
 | `lib/api/products.ts`     | Query parsing, the `where`/`orderBy` builders, the response shape  |
 | `lib/api/errors.ts`       | The single exit for a failed request                               |
+| `lib/data/products.ts`    | The storefront's product and category reads (server-only)          |
+| `lib/data/search.ts`      | The storefront's faceted search (server-only)                      |
+| `lib/search-params.ts`    | The search URL contract. Pure; touches no product data             |
 | `app/api/products/`       | The product routes                                                 |
 | `app/api/health/`         | Connectivity and row counts                                        |
 | `app/(shop)/diagnostics/` | A page rendered entirely from the database                         |
@@ -236,7 +244,13 @@ npm run build && npm start        # or npm run dev
 node scripts/qa/backend.mjs out/
 ```
 
-The suite runs 31 checks. Four of them are the ones that matter:
+Two suites cover this. `scripts/qa/backend.mjs` checks the API and the database;
+`scripts/qa/storefront-db.mjs` checks the customer-facing pages, and ends by
+changing a product's title and price in PostgreSQL, loading the real product
+page in a browser, requiring the rendered HTML to show the changed values, then
+restoring the row and requiring the page to show the originals again.
+
+The backend suite runs 31 checks. Four of them are the ones that matter:
 
 - It walks the import graph of every API route and fails if any reachable file
   reads `catalog.json` or is `lib/catalog.ts`. Type-only imports are not
@@ -266,7 +280,79 @@ database on every request.
 
 ---
 
-## 7. What is not in the database yet
+## 7. The storefront read layer
+
+The customer-facing pages read PostgreSQL through `lib/data/`, not through the
+HTTP API. A server component calling back into its own server over HTTP would
+add a network hop and a second failure mode for no benefit; the API exists for
+external consumers.
+
+| Module                  | Role                                                       |
+| ----------------------- | ---------------------------------------------------------- |
+| `lib/data/products.ts`  | Products, categories, department statistics, card projections |
+| `lib/data/search.ts`    | Faceted search: filters, counts, sorting, pagination        |
+| `lib/search-params.ts`  | The URL contract — pure, no product data                    |
+
+Three properties it holds to:
+
+- **`import "server-only"`.** Pulling either module into a client bundle is a
+  build error. That is what keeps the catalogue and the credentials out of the
+  browser.
+- **No static fallback.** If PostgreSQL is unreachable the request fails. A
+  storefront that quietly serves fixtures when its database is down is worse
+  than one that errors, because nobody finds out.
+- **`cache()` on every entry point.** The header, the cards and the breadcrumb
+  all want the category list; they issue one query between them, not three.
+
+### Search
+
+Filtering, sorting, pagination and every facet count are SQL. The counts are
+issued as one batch and each one deliberately ignores its own dimension, so a
+shopper sees how many results *adding* another brand would return.
+
+Text relevance is the single exception, and a considered one. The search is
+fuzzy — "labtop" finds laptops — and ranks by Fuse's score. Postgres cannot
+reproduce that ranking without `pg_trgm` and a different scoring model, which
+would silently change which result comes first. So when there is a query, a
+narrow projection (id, title, brand, imageQuery, categoryId, bullets — no
+reviews, specs or images) is read **from the database** and ranked with the
+identical Fuse configuration; the resulting id list is then filtered, sorted and
+paged in SQL. The source of truth is PostgreSQL either way: a deleted row cannot
+appear, and an edited title is matched on its new value. This is ranking, not
+storage.
+
+### Rendering and caching
+
+Every route is server-rendered per request. There is no `generateStaticParams`
+and no revalidate window, so **a change in PostgreSQL is on the page at the next
+request** — which is the point of the migration, and what
+`scripts/qa/storefront-db.mjs` proves against a real browser.
+
+The 120 prerendered product pages are gone deliberately. They were correct when
+the catalogue was a file compiled into the bundle; they are wrong when a price
+corrected in the database would keep showing the build-time value until the next
+deploy.
+
+The cost is real — every page is a server render with round trips to Singapore.
+Incremental regeneration with an explicit revalidation hook is the right
+production refinement, but it needs an invalidation path that something actually
+calls, and shipping a cache nobody knows how to clear would be worse than
+rendering honestly.
+
+One exception: `lib/suggest.ts` holds its corpus in process for 30 seconds.
+The header fires a request per keystroke, and reading 120 projections from
+Singapore each time cost ~400ms per character. Suggestions are typing hints and
+the results page they lead to is always read live, so a few seconds of staleness
+is the right trade there and nowhere else.
+
+Because the root `not-found.tsx` reads best sellers from the database, Next
+would otherwise pull a database call into the shell of every prerendered page.
+Keeping those routes dynamic too preserves a property worth having: **`next
+build` succeeds with no database at all.**
+
+---
+
+## 8. What is not in the database yet
 
 Deliberately still client-side, in `localStorage` via Zustand:
 
@@ -274,16 +360,31 @@ Deliberately still client-side, in `localStorage` via Zustand:
 - orders and order history
 - authentication
 - checkout state
-- recently viewed products
 
-The storefront itself — homepage, search, product pages — also still reads
-`lib/catalog.ts`. Moving those onto the API is the next piece of work; this
-stage established the database, the schema, the migration, the seed and the API
-without destabilising a working front end.
+Two runtime references to the static catalogue remain, both deliberate:
+
+**`lib/commerce.ts` → `lib/catalog.ts`.** `getCartIndex()` resolves cart lines
+from the catalogue, synchronously. `lib/commerce.ts` is the authoritative source
+of commerce calculations and is a protected file, and cart persistence belongs
+to a later wave — so this stays. It means `data/catalog.json` is still in the
+*server* bundle for routes that import commerce constants, including the
+homepage and the product page. Neither reads product data through it: the
+homepage takes the free-shipping threshold, the product page takes the buy box's
+constants. `/s` and `/browse` have no path to the catalogue at all.
+
+**`lib/search.ts`.** Superseded by `lib/data/search.ts` and no longer on any
+storefront path. It is a protected file, so it is left exactly as it was; the
+live URL contract moved to `lib/search-params.ts`, which carries compile-time
+assertions against it so the two cannot drift apart silently.
+
+The catalogue no longer reaches the browser at all. Before this stage a 318 KB
+client chunk containing all 120 products shipped on every visit, because the
+filter sheet and sort control imported values from `lib/search.ts`, which builds
+a Fuse index over the catalogue at module scope.
 
 ---
 
-## 8. Secrets
+## 9. Secrets
 
 - `.env` and `.env.*` are git-ignored; `.env.example` is the only tracked
   template and contains placeholders.

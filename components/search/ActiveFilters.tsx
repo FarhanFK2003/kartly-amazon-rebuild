@@ -7,8 +7,8 @@ import {
   toggleFacet,
   PRICE_BRACKETS,
   type Facets,
-} from "@/lib/search";
-import { getCategory } from "@/lib/catalog";
+} from "@/lib/search-params";
+import { getCategoryNames } from "@/lib/data/products";
 import { TID } from "@/lib/testids";
 
 /**
@@ -19,12 +19,16 @@ import { TID } from "@/lib/testids";
  * more than it did when a rail was on screen anyway. Each chip is a link to the
  * same view minus that one refinement.
  */
-export function ActiveFilters({ facets }: { facets: Facets }) {
+export async function ActiveFilters({ facets }: { facets: Facets }) {
   const chips: { label: string; href: string }[] = [];
+
+  // One lookup for every chip, shared with the rest of the render through the
+  // read layer's per-request cache.
+  const categoryNames = await getCategoryNames();
 
   for (const id of facets.categories) {
     chips.push({
-      label: getCategory(id)?.name ?? id,
+      label: categoryNames[id] ?? id,
       href: facetsToHref(toggleFacet(facets, "categories", id)),
     });
   }

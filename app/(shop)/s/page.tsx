@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { SearchX } from "lucide-react";
-import { getCategory } from "@/lib/catalog";
+import { getCategory } from "@/lib/data/products";
+import { searchProducts } from "@/lib/data/search";
 import {
   activeFilterCount,
   parseFacets,
-  searchCatalog,
   PAGE_SIZE,
   type RawSearchParams,
-} from "@/lib/search";
+} from "@/lib/search-params";
 import { TID } from "@/lib/testids";
 import { ProductCard } from "@/components/product/ProductCard";
 import { FacetBar } from "@/components/search/FacetBar";
@@ -19,6 +19,9 @@ import { ActiveFilters } from "@/components/search/ActiveFilters";
 import { Pagination } from "@/components/search/Pagination";
 import { ButtonLink } from "@/components/ui/Button";
 
+// Results come from a live database, so this page is rendered per request.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   searchParams,
 }: {
@@ -27,7 +30,7 @@ export async function generateMetadata({
   const facets = parseFacets(await searchParams);
   if (facets.q) return { title: facets.q };
   if (facets.categories.length === 1) {
-    return { title: getCategory(facets.categories[0])?.name ?? "Search" };
+    return { title: (await getCategory(facets.categories[0]))?.name ?? "Search" };
   }
   return { title: "All products" };
 }
@@ -53,9 +56,10 @@ export default async function SearchPage({
   searchParams: Promise<RawSearchParams>;
 }) {
   const facets = parseFacets(await searchParams);
-  const { items, total, page, pageCount, facets: model, browsing } = searchCatalog(facets);
+  const { items, total, page, pageCount, facets: model, browsing } = await searchProducts(facets);
 
-  const department = facets.categories.length === 1 ? getCategory(facets.categories[0]) : undefined;
+  const department =
+    facets.categories.length === 1 ? await getCategory(facets.categories[0]) : undefined;
   const first = (page - 1) * PAGE_SIZE + 1;
   const last = (page - 1) * PAGE_SIZE + items.length;
   const activeCount = activeFilterCount(facets);

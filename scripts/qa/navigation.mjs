@@ -92,7 +92,17 @@ for (const width of [1440, 1280, 1024]) {
   check(`${w} overlay focuses its input`, await page.evaluate(() => document.activeElement?.getAttribute("role") === "combobox"));
 
   await page.keyboard.type("lap", { delay: 40 });
-  await settle(page, 700);
+  /*
+    Wait for the option to exist rather than for a fixed 700ms. Suggestions now
+    come from PostgreSQL rather than a catalogue compiled into the bundle, so
+    the round trip is real; waiting on the condition is both correct and
+    stronger than a longer sleep.
+  */
+  await page
+    .locator('[role="option"]')
+    .first()
+    .waitFor({ state: "visible", timeout: 15000 })
+    .catch(() => {});
   const opts = await page.locator('[role="option"]').count();
   check(`${w} suggestions appear from /api/suggest`, opts > 0, `${opts} options`);
 

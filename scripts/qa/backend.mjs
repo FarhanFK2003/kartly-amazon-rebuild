@@ -289,9 +289,16 @@ check(
   runs - it catches anything the source analysis is wrong about.
 
   It finds the compiled chunks that physically contain catalogue text, then asks
-  which routes load them. /api/suggest is the control: it really does read the
-  catalogue, so if the probe cannot see that, the probe is broken and the result
-  for the other routes means nothing.
+  which routes load them. The control is a route that genuinely still reaches
+  the catalogue, so that a result of "no hits" cannot be confused with a broken
+  probe.
+
+  That control used to be /api/suggest. Wave 6B moved suggestions onto the
+  database, so it stopped qualifying - and the check correctly failed rather
+  than quietly passing against nothing. The control is now /cart, which reaches
+  data/catalog.json through lib/commerce.ts: getCartIndex() resolves cart lines
+  from the static catalogue, lib/commerce.ts is a protected file, and cart
+  persistence is explicitly out of scope until a later wave.
 */
 const serverDir = path.join(ROOT, ".next", "server");
 
@@ -330,8 +337,8 @@ if (!fs.existsSync(serverDir)) {
   );
 
   check(
-    "25. the bundle probe can detect catalogue data at all (control: /api/suggest)",
-    catalogueChunks.length > 0 && chunksLoadedBy("api/suggest").length > 0,
+    "25. the bundle probe can detect catalogue data at all (control: /cart)",
+    catalogueChunks.length > 0 && chunksLoadedBy(path.join("(shop)", "cart")).length > 0,
     `${catalogueChunks.length} catalogue chunks found`
   );
 }

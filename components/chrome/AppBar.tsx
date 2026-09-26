@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { CircleHelp } from "lucide-react";
-import { getCategories } from "@/lib/catalog";
+import { getCategories } from "@/lib/data/products";
 import { getNavDepartments, getNavGroups } from "@/lib/navigation";
 import { getCartIndex } from "@/lib/commerce";
 import { TID } from "@/lib/testids";
@@ -34,8 +34,14 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
   of navigation data, one search implementation and one cart control; only the
   layout differs, which is what stops the two from drifting apart.
 */
-export function AppBar() {
-  const categories = getCategories();
+export async function AppBar() {
+  // Both reads are cached per request, so the header costs the same whether the
+  // page below it also needs categories.
+  const [categories, departments, groups] = await Promise.all([
+    getCategories(),
+    getNavDepartments(),
+    Promise.resolve(getNavGroups()),
+  ]);
 
   return (
     <>
@@ -67,7 +73,7 @@ export function AppBar() {
 
           {/* ---------------- desktop ---------------- */}
           <div className="hidden shrink-0 lg:block">
-            <BrowsePopover departments={getNavDepartments()} groups={getNavGroups()} />
+            <BrowsePopover departments={departments} groups={groups} />
           </div>
 
           <div className="hidden min-w-0 flex-1 lg:block">

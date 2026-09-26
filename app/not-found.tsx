@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getCategories, getBestSellers } from "@/lib/catalog";
+import { getCategories, getBestSellers } from "@/lib/data/products";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { ButtonLink } from "@/components/ui/Button";
 import { fontVariables } from "@/lib/fonts";
@@ -14,9 +14,18 @@ import "./globals.css";
   chrome. It is never a dead end: there is a search box, every department, and
   a row of real products to click.
 */
-export default function NotFound() {
-  const categories = getCategories();
-  const picks = getBestSellers(6);
+/*
+  Rendered per request, not prerendered.
+
+  This page shows a shelf of best sellers, which now comes from PostgreSQL. If
+  it were prerendered the shelf would be frozen at build time - and, more to the
+  point, `next build` would need a live database to produce a 404 page. Keeping
+  it dynamic preserves the property that the application builds without one.
+*/
+export const dynamic = "force-dynamic";
+
+export default async function NotFound() {
+  const [categories, picks] = await Promise.all([getCategories(), getBestSellers(6)]);
 
   return (
     <html lang="en" className={fontVariables}>

@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import type { SortKey } from "@/lib/search";
+import type { SortKey } from "@/lib/search-params";
 import { ClientError } from "./errors";
 
 /*

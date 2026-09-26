@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/product/ProductCard";
 import { TID } from "@/lib/testids";
-import type { Product } from "@/lib/types";
+import type { ProductCardData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -34,7 +34,7 @@ export function Shelf({
   showCta = true,
   className,
 }: {
-  products: Product[];
+  products: ProductCardData[];
   title: string;
   subtitle?: string;
   href?: string;

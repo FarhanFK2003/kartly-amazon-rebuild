@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { SlidersHorizontal, X } from "lucide-react";
-import { clearedFacets, facetsToHref, type FacetModel, type Facets } from "@/lib/search";
+import { clearedFacets, facetsToHref, type FacetModel, type Facets } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
 import { TID } from "@/lib/testids";
 import { FacetGroup, FACET_LABELS, facetHasOptions, type FacetKey } from "@/components/search/FacetGroup";

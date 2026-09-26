@@ -7,7 +7,7 @@ import {
   type FacetModel,
   type FacetOption,
   type Facets,
-} from "@/lib/search";
+} from "@/lib/search-params";
 import { cn } from "@/lib/utils";
 import { TID } from "@/lib/testids";
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { facetsToHref, setFacet, type Facets } from "@/lib/search";
+import { facetsToHref, setFacet, type Facets } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
 import { TID } from "@/lib/testids";
 

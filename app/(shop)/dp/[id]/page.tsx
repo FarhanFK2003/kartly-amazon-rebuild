@@ -3,11 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import {
-  getAllProducts,
   getCategory,
   getProductByIdOrSlug,
   getRelatedProducts,
-} from "@/lib/catalog";
+} from "@/lib/data/products";
 import { getBundle } from "@/lib/bundles";
 import { TID } from "@/lib/testids";
 import { Gallery } from "@/components/product/Gallery";
@@ -21,10 +20,22 @@ import { Shelf } from "@/components/ui/Shelf";
 import { StarRating } from "@/components/ui/StarRating";
 import { Badge } from "@/components/ui/Badge";
 
-/** All 120 products are known at build time, so every PDP is prerendered. */
-export function generateStaticParams() {
-  return getAllProducts().map((p) => ({ id: p.slug }));
-}
+/*
+  Rendered per request, against the database.
+
+  Every PDP used to be prerendered from the static catalogue, which was correct
+  when the catalogue was a file compiled into the bundle. It is wrong now: a
+  price corrected in PostgreSQL would have gone on showing the build-time value
+  until the next deploy, and a storefront that cannot reflect its own database
+  is the thing this migration exists to fix.
+
+  So there is no generateStaticParams and no revalidate window - a change in the
+  database is on the page at the next request. Incremental regeneration with an
+  explicit revalidation hook is the obvious production refinement, but it needs
+  a real invalidation path, and inventing one here would mean shipping a cache
+  nothing knows how to clear. See docs/backend.md.
+*/
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -32,7 +43,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const product = getProductByIdOrSlug(id);
+  const product = await getProductByIdOrSlug(id);
   if (!product) return { title: "Product not found" };
   return {
     title: product.title.split(",")[0],
@@ -60,13 +71,21 @@ export async function generateMetadata({
 */
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = getProductByIdOrSlug(id);
+  const product = await getProductByIdOrSlug(id);
   if (!product) notFound();
 
-  const category = getCategory(product.categoryId);
-  const related = getRelatedProducts(product, 10);
-  const bundle = getBundle(product);
-  const alsoViewed = getRelatedProducts(product, 18).slice(8);
+  /*
+    Issued together, and the two shelves share one read: "related" and "also
+    viewed" are the same ranked list sliced at different points, so asking for
+    eighteen once is cheaper than asking for ten and then eighteen.
+  */
+  const [category, relatedPool, bundle] = await Promise.all([
+    getCategory(product.categoryId),
+    getRelatedProducts(product, 18),
+    getBundle(product),
+  ]);
+  const related = relatedPool.slice(0, 10);
+  const alsoViewed = relatedPool.slice(8);
   const shortTitle = product.title.split(",")[0];
 
   return (

@@ -1,16 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Product } from "@/lib/types";
+import type { ProductCardData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { TID } from "@/lib/testids";
-import { getCategory } from "@/lib/catalog";
 import { StarRating } from "@/components/ui/StarRating";
 import { PriceBlock } from "@/components/ui/PriceBlock";
 import { DeliveryPromise } from "@/components/ui/Badge";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductCardData;
   /** Renders the add-to-cart control. Off on surfaces that are purely for navigation. */
   showCta?: boolean;
   /** Only for the first cards above the fold. */
@@ -43,7 +42,14 @@ interface ProductCardProps {
   baseline for titles and one for prices instead of a ragged edge.
 */
 export function ProductCard({ product, showCta = true, priority, className }: ProductCardProps) {
-  const category = getCategory(product.categoryId);
+  /*
+    The department label comes in on the product rather than being looked up
+    here. This component is rendered from client components (Shelf, CartView),
+    so it cannot query anything - and resolving the category locally meant
+    importing the static catalogue, which is what shipped all 120 products to
+    the browser. lib/data/products.ts fills categoryName in from the join.
+  */
+  const category = product.categoryName;
   const outOfStock = product.stock <= 0;
 
   return (
@@ -89,7 +95,7 @@ export function ProductCard({ product, showCta = true, priority, className }: Pr
         {/* Tier 2: what it is. Brand and department, one quiet line. */}
         <p className="truncate text-label uppercase tracking-wide text-ink-3">
           {product.brand}
-          {category && <span className="normal-case tracking-normal"> &middot; {category.name}</span>}
+          {category && <span className="normal-case tracking-normal"> &middot; {category}</span>}
         </p>
 
         <h3 className="text-body leading-[19px]">

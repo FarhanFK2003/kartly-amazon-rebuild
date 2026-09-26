@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getCategories, getProductsByCategory, getDeals, getBrands } from "@/lib/catalog";
-import { getNavDepartments } from "@/lib/navigation";
+import { getCategories, getDeals, getBrands, getDepartmentStats } from "@/lib/data/products";
 import { TID } from "@/lib/testids";
 import { ProductCard } from "@/components/product/ProductCard";
 
@@ -31,18 +30,19 @@ export const metadata: Metadata = {
   invented statistic and no merchandising copy that the data does not support.
 */
 
-/** The most-reviewed product of a department stands in as its cover. */
-function departmentCover(categoryId: string) {
-  return (
-    getProductsByCategory(categoryId).sort((a, b) => b.reviewCount - a.reviewCount)[0]?.image ?? null
-  );
-}
-
-export default function BrowsePage() {
-  const departments = getNavDepartments();
-  const categories = getCategories();
-  const brands = getBrands();
-  const deals = getDeals(5);
+export default async function BrowsePage() {
+  /*
+    Every figure below is a database read. Department counts and the brands
+    stocked in each one are grouped queries rather than scans of a catalogue
+    held in memory - see lib/data/products.ts - and the department cover is the
+    most-reviewed product of that department, resolved in the same place.
+  */
+  const [departments, categories, brands, deals] = await Promise.all([
+    getDepartmentStats(),
+    getCategories(),
+    getBrands(),
+    getDeals(5),
+  ]);
   const total = departments.reduce((n, d) => n + d.count, 0);
 
   return (
@@ -73,7 +73,7 @@ export default function BrowsePage() {
 
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
           {departments.map((d, i) => {
-            const cover = departmentCover(d.id);
+            const cover = d.image;
             return (
               <li key={d.id} className="flex">
                 <Link

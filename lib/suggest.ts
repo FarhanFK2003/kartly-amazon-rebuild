@@ -1,5 +1,6 @@
-import { getAllProducts, getCategories } from "./catalog";
-import type { Product } from "./types";
+import "server-only";
+import { cache } from "react";
+import { prisma } from "./db";
 
 export interface QuerySuggestion {
   type: "query";
@@ -26,15 +27,104 @@ export interface CategorySuggestion {
 export type Suggestion = QuerySuggestion | ProductSuggestion | CategorySuggestion;
 
 /*
-  Suggestion terms are derived once from the catalogue: the search phrases
-  behind each product, its brand, and each department name. That gives short,
-  typeable suggestions ("wireless earbuds") rather than echoing 200-character
-  product titles back at the shopper.
+  The suggestion corpus, read from PostgreSQL.
+
+  This used to be a module-scope constant derived once from data/catalog.json.
+  It had to move: search results now come from the database, and suggestions
+  built from a file would have gone on offering products under titles the
+  database no longer holds - the shopper would tap a suggestion and land on a
+  search for text that matches nothing. The dropdown and the results page have
+  to agree about what exists.
+
+  It is a deliberately narrow projection - no reviews, no specs, no bullets -
+  and cached per request.
 */
-const TERMS: { term: string; categoryId: string; weight: number }[] = (() => {
+interface SuggestDoc {
+  slug: string;
+  title: string;
+  brand: string;
+  categoryId: string;
+  imageQuery: string;
+  image: string | null;
+  price: number;
+  reviewCount: number;
+}
+
+/*
+  The corpus is cached in process for a short window.
+
+  React's cache() only dedupes within one request, and the header fires a
+  request per keystroke - so without this, typing "laptop" read all 120
+  projections from Singapore six times over, at roughly 400ms each. That is
+  slow enough that a shopper navigates away mid-request, which shows up as
+  aborted renders in the server log.
+
+  A few seconds of staleness is the right trade here and nowhere else: these
+  are typing hints, and the results page they lead to is always read live. The
+  window is deliberately short so an edited title still reaches the dropdown
+  without a deploy.
+*/
+const CORPUS_TTL_MS = 30_000;
+interface Corpus {
+  docs: SuggestDoc[];
+  categories: { id: string; name: string }[];
+  at: number;
+}
+let corpus: Corpus | null = null;
+
+const getCorpus = cache(async (): Promise<Corpus> => {
+  if (corpus && Date.now() - corpus.at < CORPUS_TTL_MS) return corpus;
+
+  /*
+    Deliberately not getCategories() from the read layer. That one also resolves
+    each department's cover image, which means reading every product - real work
+    for a page that shows the picture, and pure waste for a dropdown that needs
+    nothing but id and name.
+  */
+  const [rows, categories] = await Promise.all([
+    prisma.product.findMany({
+      select: {
+        slug: true,
+        title: true,
+        categoryId: true,
+        imageQuery: true,
+        image: true,
+        price: true,
+        reviewCount: true,
+        brand: { select: { name: true } },
+      },
+      orderBy: { position: "asc" },
+    }),
+    prisma.category.findMany({ select: { id: true, name: true }, orderBy: { position: "asc" } }),
+  ]);
+
+  const docs = rows.map((r) => ({
+    slug: r.slug,
+    title: r.title,
+    brand: r.brand.name,
+    categoryId: r.categoryId,
+    imageQuery: r.imageQuery,
+    image: r.image,
+    price: r.price,
+    reviewCount: r.reviewCount,
+  }));
+
+  corpus = { docs, categories, at: Date.now() };
+  return corpus;
+});
+
+/**
+ * Short, typeable suggestion terms: the search phrase behind each product, its
+ * brand, and each department name - rather than echoing 200-character product
+ * titles back at the shopper.
+ */
+function buildTerms(
+  docs: SuggestDoc[],
+  categories: { id: string; name: string }[]
+): { term: string; categoryId: string; weight: number }[] {
   const seen = new Map<string, { term: string; categoryId: string; weight: number }>();
 
-  for (const p of getAllProducts()) {
+  for (const p of docs) {
     for (const [term, weight] of [
       [p.imageQuery, 3],
       [p.brand.toLowerCase(), 1],
@@ -46,12 +136,12 @@ const TERMS: { term: string; categoryId: string; weight: number }[] = (() => {
     }
   }
 
-  for (const c of getCategories()) {
+  for (const c of categories) {
     seen.set(c.name.toLowerCase(), { term: c.name.toLowerCase(), categoryId: c.id, weight: 4 });
   }
 
   return [...seen.values()].sort((a, b) => b.weight - a.weight);
-})();
+}
 
 const MAX_QUERY = 6;
 const MAX_PRODUCTS = 4;
@@ -62,13 +152,16 @@ const MAX_CATEGORIES = 2;
  * the fuzzy matching behind the results page: a suggestion list that guesses is
  * more annoying than one that stays literal while you type.
  */
-export function suggest(rawQuery: string): Suggestion[] {
+export async function suggest(rawQuery: string): Promise<Suggestion[]> {
   const q = rawQuery.trim().toLowerCase();
   if (q.length < 1) return [];
 
   const out: Suggestion[] = [];
 
-  const termMatches = TERMS.filter((t) => t.term.includes(q)).sort((a, b) => {
+  const { docs, categories } = await getCorpus();
+  const terms = buildTerms(docs, categories);
+
+  const termMatches = terms.filter((t) => t.term.includes(q)).sort((a, b) => {
     const aStarts = a.term.startsWith(q) ? 0 : 1;
     const bStarts = b.term.startsWith(q) ? 0 : 1;
     if (aStarts !== bStarts) return aStarts - bStarts;
@@ -76,7 +169,6 @@ export function suggest(rawQuery: string): Suggestion[] {
     return a.term.length - b.term.length;
   });
 
-  const categories = getCategories();
   for (const t of termMatches.slice(0, MAX_QUERY)) {
     const category = categories.find((c) => c.id === t.categoryId);
     out.push({
@@ -101,7 +193,7 @@ export function suggest(rawQuery: string): Suggestion[] {
     product's own category term, so score the match and use popularity only to
     break ties.
   */
-  const scoreProduct = (p: Product) => {
+  const scoreProduct = (p: SuggestDoc) => {
     const title = p.title.toLowerCase();
     const brand = p.brand.toLowerCase();
     let score = 0;
@@ -119,7 +211,7 @@ export function suggest(rawQuery: string): Suggestion[] {
     return score + Math.min(5, p.reviewCount / 2000);
   };
 
-  const products = getAllProducts()
+  const products = docs
     .filter((p) => p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.imageQuery.includes(q))
     .map((p) => ({ p, score: scoreProduct(p) }))
     .sort((a, b) => b.score - a.score)

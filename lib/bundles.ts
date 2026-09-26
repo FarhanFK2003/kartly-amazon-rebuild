@@ -1,4 +1,4 @@
-import { getAllProducts } from "./catalog";
+import { getBundleCandidates } from "./data/products";
 import type { Product } from "./types";
 
 /*
@@ -171,22 +171,27 @@ const MAX_COMPLEMENTS = 3;
  * Anchor product plus its complements. Always returns the anchor first, and an
  * empty list of complements rather than filler if nothing sensible is in stock.
  */
-export function getBundle(product: Product): Product[] {
-  const catalogue = getAllProducts();
+export async function getBundle(product: Product): Promise<Product[]> {
   const wanted = [
     ...(COMPLEMENTS[product.imageQuery] ?? []),
     ...(CATEGORY_FALLBACK[product.categoryId] ?? []),
   ];
+
+  /*
+    Only the rows that could actually be picked are read: products whose search
+    term is one of the wanted complements, plus the anchor's own department for
+    the fallback, all in stock. Reading the whole catalogue to find three
+    accessories is what made the product page slow.
+  */
+  const candidates = await getBundleCandidates(wanted, product.categoryId, product.id);
 
   const picked: Product[] = [];
   const seen = new Set([product.id]);
 
   for (const term of wanted) {
     if (picked.length >= MAX_COMPLEMENTS) break;
-    // First match in catalogue order keeps the bundle stable between builds.
-    const match = catalogue.find(
-      (p) => p.imageQuery === term && !seen.has(p.id) && p.stock > 0
-    );
+    // First match in catalogue order keeps the bundle stable between requests.
+    const match = candidates.find((p) => p.imageQuery === term && !seen.has(p.id) && p.stock > 0);
     if (match) {
       picked.push(match);
       seen.add(match.id);
@@ -195,7 +200,7 @@ export function getBundle(product: Product): Product[] {
 
   // Last resort: same department, so the section is never a lone checkbox.
   if (picked.length < 2) {
-    for (const p of catalogue) {
+    for (const p of candidates) {
       if (picked.length >= 2) break;
       if (p.categoryId === product.categoryId && !seen.has(p.id) && p.stock > 0) {
         picked.push(p);

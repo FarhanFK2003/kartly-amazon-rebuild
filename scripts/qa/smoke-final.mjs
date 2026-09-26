@@ -88,6 +88,12 @@ check("the search trigger opens the overlay", await searchOverlay(page).isVisibl
 await searchBox(page).fill("camera");
 await page.keyboard.press("Enter");
 await page.waitForURL(/\/s\?/, { timeout: 15000 });
+/* Wait for a card rather than a fixed interval: results are now rendered from
+   PostgreSQL, so the page arrives after a real round trip. */
+await byTestId(page, TID.productCard)
+  .first()
+  .waitFor({ state: "visible", timeout: 20000 })
+  .catch(() => {});
 await settle(page);
 check("search returns results", (await byTestId(page, TID.productCard).count()) > 0);
 check("the overlay closes after searching", !(await searchOverlay(page).isVisible()));

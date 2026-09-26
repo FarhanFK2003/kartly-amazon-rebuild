@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import type { FacetModel, Facets } from "@/lib/search";
+import type { FacetModel, Facets } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
 import { TID } from "@/lib/testids";
 import { FacetGroup, FACET_LABELS, facetHasOptions, type FacetKey } from "@/components/search/FacetGroup";

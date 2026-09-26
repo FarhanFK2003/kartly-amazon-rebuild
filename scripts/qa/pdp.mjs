@@ -276,7 +276,9 @@ check("related products use the canonical card",
 
 /* ================= 2. invalid product =================================== */
 expecting404 = true;
-const missing = await page.goto(`${BASE}/dp/not-a-real-product-xyz`, { waitUntil: "domcontentloaded" });
+/* networkidle, not domcontentloaded: the not-found page is now server-rendered
+   against the database, so its content arrives after the initial document. */
+const missing = await page.goto(`${BASE}/dp/not-a-real-product-xyz`, { waitUntil: "networkidle" });
 check("an invalid product returns 404", missing.status() === 404, String(missing.status()));
 const notFoundText = await page.locator("main, body").first().innerText();
 check("the 404 is a designed page, not a raw error", /can't find|not found|Popular/i.test(notFoundText));

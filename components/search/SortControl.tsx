@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowUpDown, Check, ChevronDown } from "lucide-react";
-import { SORT_OPTIONS, facetsToHref, setFacet, type Facets } from "@/lib/search";
+import { SORT_OPTIONS, facetsToHref, setFacet, type Facets } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
 import { TID } from "@/lib/testids";
 

@@ -1,4 +1,4 @@
-import { getAllProducts, getCategories } from "./catalog";
+import { getDepartmentStats } from "./data/products";
 
 export interface NavDepartment {
   id: string;
@@ -26,26 +26,17 @@ export interface NavGroup {
  * are brands actually stocked in that department, so every row in the drawer
  * lands on a result set with something in it.
  */
-export function getNavDepartments(): NavDepartment[] {
-  const products = getAllProducts();
-
-  return getCategories().map((c) => {
-    const inCategory = products.filter((p) => p.categoryId === c.id);
-
-    const byBrand = new Map<string, number>();
-    for (const p of inCategory) byBrand.set(p.brand, (byBrand.get(p.brand) ?? 0) + 1);
-
-    return {
-      id: c.id,
-      name: c.name,
-      blurb: c.blurb,
-      count: inCategory.length,
-      brands: [...byBrand.entries()]
-        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-        .slice(0, 5)
-        .map(([brand]) => brand),
-    };
-  });
+export async function getNavDepartments(): Promise<NavDepartment[]> {
+  // Counts and stocked brands are grouped queries in the read layer rather
+  // than a scan over every product here.
+  const stats = await getDepartmentStats();
+  return stats.map((d) => ({
+    id: d.id,
+    name: d.name,
+    blurb: d.blurb,
+    count: d.count,
+    brands: d.brands,
+  }));
 }
 
 /**

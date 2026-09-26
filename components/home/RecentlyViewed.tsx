@@ -3,14 +3,14 @@
 import { useIsMounted } from "@/lib/store/cart";
 import { useRecentlyViewed } from "@/lib/store/recentlyViewed";
 import { Shelf } from "@/components/ui/Shelf";
-import type { Product } from "@/lib/types";
+import type { ProductCardData } from "@/lib/types";
 
 /**
  * Renders nothing until something has actually been viewed, so a first-time
  * visitor never sees an empty shelf. Ids come from localStorage and are joined
  * against the catalogue the server already sent.
  */
-export function RecentlyViewed({ catalog }: { catalog: Product[] }) {
+export function RecentlyViewed({ catalog }: { catalog: ProductCardData[] }) {
   const mounted = useIsMounted();
   const ids = useRecentlyViewed((s) => s.ids);
 
@@ -18,7 +18,7 @@ export function RecentlyViewed({ catalog }: { catalog: Product[] }) {
 
   const products = ids
     .map((id) => catalog.find((p) => p.id === id))
-    .filter((p): p is Product => Boolean(p));
+    .filter((p): p is ProductCardData => Boolean(p));
 
   if (products.length === 0) return null;
 

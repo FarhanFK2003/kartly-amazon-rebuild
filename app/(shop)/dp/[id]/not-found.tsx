@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
-import { getBestSellers } from "@/lib/catalog";
+import { getBestSellers } from "@/lib/data/products";
 import { Shelf } from "@/components/ui/Shelf";
 
 /** Shown for an unknown product id rather than a bare 404. */
-export default function ProductNotFound() {
+export default async function ProductNotFound() {
   return (
     <div className="bg-white">
       <div className="shell py-16">
@@ -24,7 +24,7 @@ export default function ProductNotFound() {
         </div>
 
         <div className="mt-12">
-          <Shelf products={getBestSellers(10)} title="Popular right now" showCta={false} />
+          <Shelf products={await getBestSellers(10)} title="Popular right now" showCta={false} />
         </div>
       </div>
     </div>

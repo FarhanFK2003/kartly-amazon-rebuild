@@ -108,7 +108,7 @@ function OrderCard({ order }: { order: Order }) {
           aria-expanded={open}
           className="link mt-3 flex items-center gap-1 text-[13px]"
         >
-          {open ? "Hide" : "Show"} {order.items.length} {pluralize(order.items.length, "line")}
+          {open ? "Hide" : "Show"} description
           <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
         </button>
 

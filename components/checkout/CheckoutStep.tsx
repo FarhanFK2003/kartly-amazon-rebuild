@@ -43,11 +43,14 @@ export function CheckoutStepPanel({
       <div className="flex items-start gap-3">
         <span
           className={cn(
-            "mt-[2px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-label font-semibold",
+            /* h-7 and no top nudge: the badge centres against the display-sized
+               heading beside it instead of floating above its cap height, which
+               is what made the row read as misaligned. */
+            "-mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-label font-semibold",
             complete
-              ? "bg-success text-white"
+              ? "bg-success [color:var(--color-surface)]"
               : state === "active"
-                ? "bg-brand text-white"
+                ? "bg-brand [color:var(--color-on-brand)]"
                 : "border border-line-strong bg-surface text-ink-3"
           )}
           aria-hidden

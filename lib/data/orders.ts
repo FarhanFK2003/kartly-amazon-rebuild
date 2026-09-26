@@ -11,6 +11,7 @@ import {
   type OrderPayment,
 } from "@/lib/commerce";
 import { getCart, clearCart } from "./cart";
+import { getCurrentUser } from "@/lib/auth";
 
 /*
   Placing and reading orders.
@@ -67,12 +68,21 @@ function validateInput(input: PlaceOrderInput) {
 export async function placeOrder(sessionId: string, input: PlaceOrderInput): Promise<Order> {
   validateInput(input);
 
+  /*
+    Who the order belongs to. An account when there is one, and the guest
+    session otherwise - the two are not interchangeable, which is why both are
+    recorded and why reads check whichever applies.
+  */
+  const account = await getCurrentUser();
+
   const already = await prisma.order.findUnique({
     where: { idempotencyKey: input.idempotencyKey },
     include: { items: { orderBy: { position: "asc" } } },
   });
   if (already) {
-    if (already.sessionId !== sessionId) throw new ClientError("Order not found", 404);
+    if (!ownsOrder(already, sessionId, account?.id ?? null)) {
+      throw new ClientError("Order not found", 404);
+    }
     return toOrder(already);
   }
 
@@ -104,6 +114,7 @@ export async function placeOrder(sessionId: string, input: PlaceOrderInput): Pro
         data: {
           id,
           sessionId,
+          userId: account?.id ?? null,
           subtotal: totals.subtotal,
           shipping: totals.shipping,
           tax: totals.tax,
@@ -152,7 +163,7 @@ export async function placeOrder(sessionId: string, input: PlaceOrderInput): Pro
         where: { idempotencyKey: input.idempotencyKey },
         include: { items: { orderBy: { position: "asc" } } },
       });
-      if (winner && winner.sessionId === sessionId) return toOrder(winner);
+      if (winner && ownsOrder(winner, sessionId, account?.id ?? null)) return toOrder(winner);
     }
     throw error;
   }
@@ -174,23 +185,54 @@ function isUniqueViolation(error: unknown): boolean {
  * people's orders - and those carry a name, address and phone number.
  */
 export async function getOrder(sessionId: string | null, id: string): Promise<Order | null> {
-  if (!sessionId) return null;
+  const where = await ownerFilter(sessionId);
+  if (!where) return null;
+
   const row = await prisma.order.findFirst({
-    where: { id, sessionId },
+    where: { id, ...where },
     include: { items: { orderBy: { position: "asc" } } },
   });
   return row ? toOrder(row) : null;
 }
 
-/** The session's orders, newest first. */
+/** The current owner's orders, newest first. */
 export async function listOrders(sessionId: string | null): Promise<Order[]> {
-  if (!sessionId) return [];
+  const where = await ownerFilter(sessionId);
+  if (!where) return [];
+
   const rows = await prisma.order.findMany({
-    where: { sessionId },
+    where,
     orderBy: { placedAt: "desc" },
     include: { items: { orderBy: { position: "asc" } } },
   });
   return rows.map(toOrder);
+}
+
+/**
+ * Which orders the current visitor may see.
+ *
+ * Signed in, that is their account's orders and nothing else - not the guest
+ * orders that happen to share the browser, because the guest cookie survives a
+ * sign-out and would otherwise hand the next person the previous one's
+ * history. Signed out, it is the guest session's own orders, excluding any
+ * that have since been claimed by an account.
+ */
+async function ownerFilter(
+  sessionId: string | null
+): Promise<{ userId: string } | { sessionId: string; userId: null } | null> {
+  const account = await getCurrentUser();
+  if (account) return { userId: account.id };
+  if (!sessionId) return null;
+  return { sessionId, userId: null };
+}
+
+/** Whether an already-created order belongs to the current visitor. */
+function ownsOrder(
+  order: { sessionId: string; userId: string | null },
+  sessionId: string,
+  userId: string | null
+): boolean {
+  return userId ? order.userId === userId : order.sessionId === sessionId && order.userId === null;
 }
 
 /* ------------------------------------------------------------------ */

@@ -253,7 +253,73 @@ try {
   const cartAfter = await page.evaluate(async () => (await (await fetch("/api/cart")).json()).lines.length);
   check("25. signing out does not empty the guest cart", cartAfter === 1, `${cartAfter} line(s)`);
 
-  /* ---- 26. the yellow primary is actually rendered --------------------- */
+  /* ---- 26-29. orders belong to the account, not the browser ------------ */
+
+  /*
+    The bug this guards against: orders were scoped to the guest cookie, which
+    does not change when an account does. Two people signing into the same
+    browser inherited each other's order history - including the name, address
+    and phone number on it.
+  */
+  const shared = client();
+  const emailA = `a-${randomUUID().slice(0, 8)}@${QA_DOMAIN}`;
+  const emailB = `b-${randomUUID().slice(0, 8)}@${QA_DOMAIN}`;
+
+  await shared("/api/auth/signup", {
+    method: "POST",
+    body: JSON.stringify({ email: emailA, password: PASSWORD }),
+  });
+  await shared("/api/cart", {
+    method: "POST",
+    body: JSON.stringify({ action: "add", productId: "electronics-03", qty: 1 }),
+  });
+  const placed = await shared("/api/orders", {
+    method: "POST",
+    body: JSON.stringify({
+      address: {
+        fullName: "Ada Lovelace",
+        line1: "12 Analytical Way",
+        city: "San Francisco",
+        state: "CA",
+        zip: "94103",
+        phone: "5550192837",
+      },
+      payment: { method: "on-delivery" },
+      idempotencyKey: `qa-iso-${randomUUID()}`,
+    }),
+  });
+  const orderId = placed.json?.order?.id;
+  check("26. the signed-in shopper can place an order", placed.status === 201, `${placed.status}`);
+
+  const listA = await shared("/api/orders");
+  check(
+    "27. the placing account sees its own order",
+    (listA.json?.orders ?? []).some((o) => o.id === orderId),
+    `${listA.json?.orders?.length} order(s)`
+  );
+
+  /* Same cookie jar - same browser, same guest session - different account. */
+  await shared("/api/auth/logout", { method: "POST" });
+  await shared("/api/auth/signup", {
+    method: "POST",
+    body: JSON.stringify({ email: emailB, password: PASSWORD }),
+  });
+
+  const listB = await shared("/api/orders");
+  check(
+    "28. a second account in the same browser does NOT see the first's orders",
+    !(listB.json?.orders ?? []).some((o) => o.id === orderId),
+    `${listB.json?.orders?.length} order(s) leaked`
+  );
+
+  const directB = await shared(`/api/orders/${orderId}`);
+  check(
+    "29. nor can it fetch that order by id",
+    directB.status === 404,
+    `${directB.status}`
+  );
+
+  /* ---- 30-31. the yellow primary is actually rendered ------------------- */
 
   await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
   const swatch = await page.evaluate(() => {
@@ -269,19 +335,34 @@ try {
     };
   });
   check(
-    "26. the primary token is the new yellow and CTAs render it",
+    "30. the primary token is the new yellow and CTAs render it",
     swatch.brand.toLowerCase() === "#f4b942" && swatch.ctaBg === "rgb(244, 185, 66)",
     JSON.stringify(swatch)
   );
   check(
-    "27. primary CTAs use near-black text on the yellow",
+    "31. primary CTAs use near-black text on the yellow",
     swatch.ctaColor === "rgb(23, 23, 23)",
     `${swatch.ctaColor}`
   );
 
   await browser.close();
 } finally {
-  /* Deletes only qa-auth.invalid accounts; sessions cascade with the user. */
+  /*
+    Orders first, then the accounts.
+
+    Order.userId is SET NULL on delete, so removing the user would orphan the
+    order the isolation test places rather than remove it - and its session id
+    is server-minted, so nothing else would match it afterwards.
+  */
+  const qaUsers = await prisma.user
+    .findMany({ where: { email: { endsWith: `@${QA_DOMAIN}` } }, select: { id: true } })
+    .catch(() => []);
+  if (qaUsers.length > 0) {
+    await prisma.order
+      .deleteMany({ where: { userId: { in: qaUsers.map((u) => u.id) } } })
+      .catch(() => {});
+  }
+  /* Sessions cascade with the user. */
   await prisma.user.deleteMany({ where: { email: { endsWith: `@${QA_DOMAIN}` } } }).catch(() => {});
   await prisma.cart.deleteMany({ where: { sessionId: { startsWith: "qa-" } } }).catch(() => {});
   await prisma.$disconnect();

@@ -18,11 +18,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <main className="flex-1 px-4">{children}</main>
 
       <footer className="border-t border-line-soft py-6">
-        <div className="mx-auto max-w-[700px] px-4 text-center">
+        {/* Wide enough to hold the demo notice on one line from tablet width up;
+           it still wraps normally on phones. */}
+        <div className="mx-auto max-w-[860px] px-4 text-center">
           <p className="text-[12px] text-muted">
-            Kartly is a demo storefront. Sign-in is simulated: no account is created, no
-            credentials are transmitted, and nothing is stored beyond a display name in this
-            browser.
+            Kartly is a demo storefront. The accounts are real. No payment is processed
+            and no card details are collected or stored.
           </p>
           <p className="mt-2 text-[12px] text-muted">
             <Link href="/help" className="link">Conditions of Use</Link>

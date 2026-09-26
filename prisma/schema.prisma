@@ -203,9 +203,15 @@ enum OrderStatus {
 model Order {
   /// The KTL-XXXXXX-XXX id the UI already shows.
   id        String      @id
-  /// Owning session. Order lookup is scoped to this, so an order id alone is
-  /// not enough to read someone else's order.
+  /// Owning guest session. Set for every order; it is what a signed-out
+  /// shopper is identified by.
   sessionId String
+  /// Owning account, when the order was placed while signed in.
+  ///
+  /// Without this, orders belonged to the browser rather than the person: two
+  /// people signing into the same browser inherited each other's history,
+  /// because the guest cookie does not change when an account does.
+  userId    String?
   status    OrderStatus @default(placed)
 
   subtotal  Int
@@ -235,8 +241,10 @@ model Order {
   placedAt DateTime @default(now())
 
   items OrderItem[]
+  user  User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([sessionId])
+  @@index([userId])
   @@index([placedAt])
   @@map("orders")
 }
@@ -282,6 +290,7 @@ model User {
   /// A bcrypt hash. The plaintext is never stored, logged or returned.
   passwordHash String
   sessions     AuthSession[]
+  orders       Order[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 

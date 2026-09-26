@@ -42,7 +42,7 @@ export function FreeShippingMeter({
         aria-label="Progress toward free shipping"
       >
         <div
-          className={`h-full rounded-full transition-[width] duration-300 ${qualified ? "bg-success" : "bg-[#ffa41c]"}`}
+          className={`h-full rounded-full transition-[width] duration-300 ${qualified ? "bg-brand" : "bg-line-strong"}`}
           style={{ width: `${pct}%` }}
         />
       </div>

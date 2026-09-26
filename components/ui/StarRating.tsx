@@ -69,7 +69,7 @@ export function StarRating({
         role="img"
         aria-label={`${rating} out of 5 stars${typeof count === "number" ? `, ${count} ratings` : ""}`}
       >
-        <svg viewBox="0 0 24 24" fill="currentColor" className="h-[13px] w-[13px] shrink-0 text-brand-ink" aria-hidden>
+        <svg viewBox="0 0 24 24" fill="currentColor" className="h-[13px] w-[13px] shrink-0 text-star" aria-hidden>
           <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
         </svg>
         <span className="tnum text-ink">{rating.toFixed(1)}</span>

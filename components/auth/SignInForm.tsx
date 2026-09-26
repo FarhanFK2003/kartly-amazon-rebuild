@@ -149,10 +149,6 @@ export function SignInForm() {
           </Button>
         </form>
 
-        <p className="mt-4 text-[12px] leading-4 text-muted">
-          Accounts are real and your password is stored only as a hash. This is still a demo
-          storefront: no payment is ever processed.
-        </p>
       </div>
 
       {/* mode switch */}
@@ -175,7 +171,7 @@ export function SignInForm() {
 
       <p className="mt-6 flex items-center justify-center gap-1 text-[12px] text-muted">
         <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-        Passwords are hashed, never stored in the browser
+        Hashed passwords, secure session cookie
       </p>
 
       <p className="mt-2 text-center text-[13px]">

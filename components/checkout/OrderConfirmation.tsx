@@ -72,7 +72,7 @@ export function OrderConfirmation({ orderId, order }: { orderId: string; order: 
                 </span>
               </Meta>
               <Meta label="Order date">{placed.toLocaleDateString("en-US", LONG_DATE)}</Meta>
-              <Meta label="Order total">
+              <Meta label="Total">
                 <span className="font-bold">{formatPrice(order.totals.total)}</span>
               </Meta>
             </dl>
@@ -142,8 +142,8 @@ export function OrderConfirmation({ orderId, order }: { orderId: string; order: 
               />
               <Row label="Estimated tax" value={formatPrice(order.totals.tax)} />
             </dl>
-            <div className="mt-2 flex justify-between border-t border-line pt-2 text-display-sm font-bold text-accent">
-              <span>Order total</span>
+            <div className="mt-2 flex justify-between border-t border-line pt-2 text-display-sm font-bold text-ink">
+              <span>Total</span>
               <span>{formatPrice(order.totals.total)}</span>
             </div>
 

@@ -51,7 +51,10 @@
   --color-accent: #b4443a;
   --color-accent-tint: #fbeeec;
 
-  --color-success: #1e7a4c;
+  /* Affirmative states. Retuned from a cold green, which sat outside the warm
+     paper-and-amber palette everywhere it appeared - the free-shipping meter,
+     the delivery estimate, the "Free" shipping row. */
+  --color-success: #8a5a00;
   /* The focus ring is drawn at 45% opacity, so it takes the readable tone. */
   --color-focus: #8a5a00;
 
@@ -109,7 +112,7 @@
   --color-line-soft: #e7e7e7; /* wave 6 - superseded by line */
   --color-link: #007185; /* wave 6 - superseded by brand */
   --color-link-hover: #c7511f; /* wave 6 - superseded by brand-hover */
-  --color-star: #de7921; /* wave 2 - star fill */
+  --color-star: #f4b942; /* golden, matching the primary */
   --color-deal: #cc0c39; /* wave 5 - superseded by accent */
   --color-cta: #ffd814; /* wave 2 - replica CTA yellow */
   --color-cta-hover: #f7ca00; /* wave 2 */

@@ -184,7 +184,7 @@ function NoOrders({ recommended }: { recommended: Product[] }) {
           <div className="no-scrollbar -mx-1 flex gap-4 overflow-x-auto px-1 pb-2">
             {recommended.map((p) => (
               <div key={p.id} className="w-[160px] shrink-0 sm:w-[190px]">
-                <ProductCard product={p} variant="grid" />
+                <ProductCard product={p} />
               </div>
             ))}
           </div>

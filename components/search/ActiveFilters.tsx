@@ -9,11 +9,15 @@ import {
   type Facets,
 } from "@/lib/search";
 import { getCategory } from "@/lib/catalog";
+import { TID } from "@/lib/testids";
 
 /**
- * Chips for everything currently applied, each removable on its own, plus a
- * clear-all. Without this a shopper who scrolled past the rail has no idea why
- * the result count dropped.
+ * Everything currently applied, each removable on its own, plus a clear-all.
+ *
+ * With filters in dropdowns rather than a permanent rail, this row is the only
+ * standing statement of what is narrowing the results, so it earns its place
+ * more than it did when a rail was on screen anyway. Each chip is a link to the
+ * same view minus that one refinement.
  */
 export function ActiveFilters({ facets }: { facets: Facets }) {
   const chips: { label: string; href: string }[] = [];
@@ -50,19 +54,22 @@ export function ActiveFilters({ facets }: { facets: Facets }) {
   if (chips.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 py-3" aria-label="Active filters">
-      <span className="text-[13px] font-bold text-ink">Filters:</span>
+    <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
       {chips.map((chip) => (
         <Link
           key={chip.label + chip.href}
           href={chip.href}
-          className="inline-flex items-center gap-1 rounded-full border border-line bg-white py-[3px] pl-3 pr-2 text-[12px] text-ink hover:border-[#007185] hover:text-link"
+          data-testid={TID.activeFilterChip}
+          className="inline-flex items-center gap-[6px] rounded-[var(--radius-btn)] border border-brand bg-brand-tint py-[5px] pl-3 pr-2 text-body-sm font-medium text-brand transition-colors hover:bg-[#dbe7e4]"
         >
           {chip.label}
-          <X className="h-3 w-3" aria-label={`Remove ${chip.label} filter`} />
+          <X className="h-[14px] w-[14px]" aria-label={`Remove ${chip.label} filter`} />
         </Link>
       ))}
-      <Link href={facetsToHref(clearedFacets(facets))} className="link ml-1 text-[13px]">
+      <Link
+        href={facetsToHref(clearedFacets(facets))}
+        className="ml-1 text-body-sm font-medium text-ink-2 underline-offset-2 hover:text-ink hover:underline"
+      >
         Clear all
       </Link>
     </div>

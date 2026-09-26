@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { facetsToHref, setFacet, type Facets } from "@/lib/search";
 import { cn } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 
 /** Numbered pager that keeps every active filter and the sort order. */
 export function Pagination({ facets, page, pageCount }: { facets: Facets; page: number; pageCount: number }) {
@@ -11,14 +12,18 @@ export function Pagination({ facets, page, pageCount }: { facets: Facets; page: 
   );
 
   return (
-    <nav className="flex flex-wrap items-center justify-center gap-2 py-8" aria-label="Search results pages">
+    <nav
+      data-testid={TID.pagination}
+      className="flex flex-wrap items-center justify-center gap-2 py-10"
+      aria-label="Search results pages"
+    >
       <PageLink href={facetsToHref(setFacet(facets, "page", page - 1))} disabled={page === 1} label="Previous page">
         Previous
       </PageLink>
 
       {pages.map((p, idx) => (
         <span key={p} className="flex items-center gap-2">
-          {idx > 0 && p - pages[idx - 1] > 1 && <span className="px-1 text-muted">&hellip;</span>}
+          {idx > 0 && p - pages[idx - 1] > 1 && <span className="px-1 text-ink-3">&hellip;</span>}
           <PageLink href={facetsToHref(setFacet(facets, "page", p))} current={p === page} label={`Page ${p}`}>
             {p}
           </PageLink>
@@ -45,11 +50,12 @@ function PageLink({
   disabled?: boolean;
   label: string;
 }) {
-  const base = "flex h-9 min-w-9 items-center justify-center rounded-[8px] border px-3 text-[14px]";
+  const base =
+    "tnum flex h-10 min-w-10 items-center justify-center rounded-[var(--radius-btn)] border px-3 text-body transition-colors";
 
   if (disabled) {
     return (
-      <span aria-disabled="true" className={cn(base, "border-line bg-[#f7f8f8] text-faint")}>
+      <span aria-disabled="true" className={cn(base, "border-line bg-surface-sunk text-ink-3")}>
         {children}
       </span>
     );
@@ -62,7 +68,9 @@ function PageLink({
       aria-current={current ? "page" : undefined}
       className={cn(
         base,
-        current ? "border-[#e77600] bg-[#fef8f2] font-bold text-ink" : "border-line bg-white text-ink hover:bg-[#f7fafa]"
+        current
+          ? "border-brand bg-brand font-semibold text-white"
+          : "border-line-strong bg-surface text-ink hover:bg-surface-sunk"
       )}
     >
       {children}

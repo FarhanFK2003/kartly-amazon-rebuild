@@ -57,18 +57,20 @@ export const TID = {
   accountArea: "account-area",
   cartLink: "cart-link",
 
+  /* Discovery. The grid and the pager are landmarks with no unique name; the
+     facet controls repeat, so each needs an id to be addressable. */
+  productGrid: "product-grid",
+  facetBar: "facet-bar",
+  facetChip: "facet-chip",
+  facetOption: "facet-option",
+  activeFilterChip: "active-filter-chip",
+  filterSheet: "filter-sheet",
+  filterSheetTrigger: "filter-sheet-trigger",
+  sortControl: "sort-control",
+  pagination: "pagination",
+
   /* --- Reserved for later waves. Declared here so the contract is written
      down once; nothing renders these yet. ---------------------------------- */
-  /** wave 2 - sticky facet bar above results */
-  facetBar: "facet-bar",
-  /** wave 2 - a facet dropdown chip in the facet bar */
-  facetChip: "facet-chip",
-  /** wave 2 - a removable applied-filter chip */
-  activeFilterChip: "active-filter-chip",
-  /** wave 2 - slide-over carrying the full facet set */
-  filterSheet: "filter-sheet",
-  /** wave 2 - grid/list density control */
-  densityToggle: "density-toggle",
   /** wave 4 - sticky PDP decision card */
   pdpDecisionCard: "pdp-decision-card",
 } as const;

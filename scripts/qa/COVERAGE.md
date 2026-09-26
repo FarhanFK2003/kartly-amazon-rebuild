@@ -30,9 +30,10 @@ loops over widths or routes, so the executed total is higher (e.g. responsive is
 | `qa-smoke-final` | 12 | 12 | **Port** | ✅ `qa/smoke-final.mjs` — 22/22 |
 | `qa-responsive` | 4 | 189 | **Port** | ✅ `qa/responsive.mjs` — 231/231 |
 | `qa-drawer` | 28 | 69 | **Re-targeted** | ✅ `qa/navigation.mjs` — 127/127 (wave 1) |
+| `qa-discovery` | 41 | 42 | **Re-targeted** | ✅ `qa/discovery.mjs` — 83/83 (wave 2) |
+| `qa-p1` (filter/sort/page half) | — | — | **Re-targeted** | ✅ `qa/discovery.mjs` (wave 2); review half still pending wave 4 |
 | `qa-purchase` | 49 | 48 | Port | wave 5 |
 | `qa-p1` | 60 | 54 | Port | wave 2 |
-| `qa-discovery` | 41 | 42 | Port | waves 2 + 4 |
 | `qa-smoke-drawer` | 29 | 49 | Port | wave 5 |
 | `qa-home` | 41 | 42 | **Rewrite** | wave 3 |
 | `qa-signin` | 37 | 36 | Port | wave 6 |
@@ -142,6 +143,26 @@ every assertion above survives; only the locators move.
 *Structural change:* results become a grid; search becomes an overlay. The
 no-JS search path must still be asserted.
 
+**Re-targeted in wave 2** by `qa/discovery.mjs`. Selector mapping:
+
+| Old selector / assumption | New | Note |
+|---|---|---|
+| `article` search rows, full width | `[data-testid="product-card"]` in `[data-testid="product-grid"]` | rows became a grid |
+| left rail `aside input[type=checkbox]` | `[data-testid="facet-chip"]` → `[data-testid="facet-option"]` | rail became top dropdowns |
+| `select` for sort | `[data-testid="sort-control"]` + `role=menuitem` links | select became a menu of links |
+| mobile filter drawer | `[data-testid="filter-sheet-trigger"]` → `[data-testid="filter-sheet"]` | one sheet at every width |
+| `.link` / class-based chips | `[data-testid="active-filter-chip"]` | no CSS-class targeting |
+| result count read from a prose string | same, `h1 + p` | unchanged contract |
+
+Assertions **kept and strengthened**: sorting is now verified by reading the
+rendered prices and checking they are genuinely ordered, not just that the URL
+changed. Filter removal is verified by the result count returning to its prior
+value, not just the chip disappearing.
+
+**Obsolete**: assertions about the left rail's position, row layout, and the
+`<select>` element. Their intent — "a filter narrows results and is reflected in
+the URL" — is carried by the new checks.
+
 ## qa-smoke-drawer — mini-cart · Port (wave 5)
 
 1. Adding opens the panel and the added line is visible immediately.
@@ -158,6 +179,35 @@ no-JS search path must still be asserted.
 
 `PENDING wave 5` — at ≥1280px the docked panel reflows the grid instead of
 overlaying it, and the page still has no horizontal overflow.
+
+## qa/discovery.mjs — product discovery · NEW in wave 2
+
+83 checks at 1440, plus mobile passes at 390/430/768.
+
+1. `/browse` loads, lists all ten departments, offers brand discovery and
+   previews real products.
+2. **Department counts on `/browse` match the real result set** — a count is
+   read off the page and compared with what that department actually returns,
+   so a hard-coded or invented figure fails.
+3. The grid renders and is paginated to one page of products.
+4. A query returns results, stays in the URL, and is stated on the page.
+5. Department filtering through the facet bar writes `i=`, narrows the set, and
+   shows a removable chip; removing the chip restores the previous total.
+6. Brand, rating, price and deals filtering each work and survive in the URL.
+7. **Availability is asserted differently on purpose**: every product in this
+   catalogue has stock, so "in stock only" correctly returns all 120. The check
+   is that it applies and excludes nothing out of stock — asserting that it
+   narrows would be asserting a fact about the data, not the filter.
+8. Two filters combine, and both appear as chips.
+9. Sorting writes `sort=` **and actually orders the grid**, verified by reading
+   rendered prices in both directions.
+10. Pagination navigates, shows different products, and **filters and sort both
+    survive it**; browser back returns to page 1.
+11. Add to cart works from a card; card titles link to a product page that
+    resolves; an unknown product still 404s.
+12. Mobile: one sheet in the DOM, facet bar hidden, sheet fills the viewport,
+    carries real options, reports `aria-expanded`, closes on Escape with focus
+    returned, applies a filter to the URL and closes; sort opens; no overflow.
 
 ## qa-home — homepage · REWRITE (wave 3)
 

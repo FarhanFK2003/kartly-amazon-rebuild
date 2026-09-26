@@ -3,256 +3,140 @@ import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { TID } from "@/lib/testids";
+import { getCategory } from "@/lib/catalog";
 import { StarRating } from "@/components/ui/StarRating";
 import { PriceBlock } from "@/components/ui/PriceBlock";
-import { Badge, DeliveryPromise, SponsoredBadge, StockWarning } from "@/components/ui/Badge";
+import { DeliveryPromise } from "@/components/ui/Badge";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
-
-export type ProductCardVariant = "grid" | "row" | "mini";
 
 interface ProductCardProps {
   product: Product;
-  variant?: ProductCardVariant;
-  /** Hide the CTA where the card is decorative (recently viewed rails). */
+  /** Renders the add-to-cart control. Off on surfaces that are purely for navigation. */
   showCta?: boolean;
+  /** Only for the first cards above the fold. */
   priority?: boolean;
   className?: string;
 }
 
-/**
- * One card, three layouts. Every listing surface in the app renders through this
- * so price, rating, badge and delivery treatment can never drift apart between
- * the homepage, search results and the cart rails.
- */
-export function ProductCard({
-  product,
-  variant = "grid",
-  showCta = true,
-  priority = false,
-  className,
-}: ProductCardProps) {
-  if (variant === "row") return <RowCard product={product} showCta={showCta} priority={priority} className={className} />;
-  if (variant === "mini") return <MiniCard product={product} className={className} />;
-  return <GridCard product={product} showCta={showCta} priority={priority} className={className} />;
-}
+/*
+  The Kartly product card.
 
-/* ---------- shared pieces ---------- */
+  One composition, used everywhere - the replica had three (a grid tile, a
+  full-width search row, and an unused mini), and the row was the single most
+  Amazon-shaped thing in the application: a 232px thumbnail beside a wall of
+  eight stacked metadata lines at more or less equal weight.
 
-/**
- * Product thumbnail.
- *
- * fit is "contain" by default, which is right where the product needs to be
- * read in full - a search row, the buy box, the cart.
- *
- * Carousels and grids pass "cover". The catalogue is photographs rather than
- * cut-outs on white, so contained inside a square box every one rendered at a
- * different size: a wide shot sat short and letterboxed, a tall one narrow, and
- * a row of cards had no common edge to scan down. Filling the square makes the
- * row uniform, which is the whole point of a grid.
- */
-function Thumb({
-  product,
-  sizes,
-  priority,
-  fit = "contain",
-  className,
-}: {
-  product: Product;
-  sizes: string;
-  priority?: boolean;
-  fit?: "contain" | "cover";
-  className?: string;
-}) {
+  This card has three tiers and a deliberate weight order:
+
+    1. the photograph, square and dominant
+    2. what it is and what it costs - brand, title, price
+    3. everything else - rating, delivery - quiet, and last
+
+  Metadata that used to compete with the title is demoted to one 12px line
+  above it. The rating collapses from five drawn glyphs, a caret and a
+  parenthesised count into "4.2 (2,823)" on a single line. The discount moves
+  off the price and onto the image, where it reads as a property of the product
+  rather than a second number fighting the first.
+
+  Separation is a hairline border, not a shadow, and hover darkens that border
+  rather than lifting the card. Cards are uniform height, so a grid row has one
+  baseline for titles and one for prices instead of a ragged edge.
+*/
+export function ProductCard({ product, showCta = true, priority, className }: ProductCardProps) {
+  const category = getCategory(product.categoryId);
+  const outOfStock = product.stock <= 0;
+
   return (
-    <div className={cn("relative overflow-hidden rounded-[4px] bg-white", className)}>
-      {product.image && (
-        <Image
-          src={product.image}
-          alt={product.title}
-          fill
-          sizes={sizes}
-          priority={priority}
-          className={fit === "cover" ? "object-cover" : "object-contain"}
-        />
+    <article
+      data-testid={TID.productCard}
+      className={cn(
+        "group flex h-full flex-col overflow-hidden rounded-[var(--radius-md)] border border-line bg-surface",
+        "transition-colors duration-150 focus-within:border-line-strong hover:border-line-strong",
+        className
       )}
-    </div>
-  );
-}
+    >
+      <Link
+        href={`/dp/${product.slug}`}
+        tabIndex={-1}
+        aria-hidden
+        className="relative block aspect-square w-full overflow-hidden bg-surface-sunk"
+      >
+        {product.image && (
+          <Image
+            src={product.image}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 260px"
+            priority={priority}
+            className="object-cover transition-transform duration-200 motion-safe:group-hover:scale-[1.03]"
+          />
+        )}
 
-function TopBadge({ product }: { product: Product }) {
-  if (product.badges.includes("bestSeller")) return <Badge variant="bestSeller">Best Seller</Badge>;
-  if (product.badges.includes("choice")) return <Badge variant="choice">Kartly&apos;s Choice</Badge>;
-  return null;
-}
+        {product.dealPercent > 0 && (
+          <span className="tnum absolute bottom-2 left-2 rounded-[var(--radius-sm)] bg-accent px-[7px] py-[2px] text-label font-semibold text-white">
+            &minus;{product.dealPercent}%
+          </span>
+        )}
 
-/* ---------- grid: homepage carousels and category grids ---------- */
-
-function GridCard({ product, showCta, priority, className }: Required<Pick<ProductCardProps, "product">> & { showCta?: boolean; priority?: boolean; className?: string }) {
-  return (
-    <div className={cn("flex h-full flex-col", className)} data-testid={TID.productCard}>
-      <Link href={`/dp/${product.slug}`} className="block">
-        <Thumb
-          product={product}
-          sizes="(max-width: 640px) 45vw, 200px"
-          priority={priority}
-          fit="cover"
-          className="mb-2 aspect-square w-full"
-        />
+        {outOfStock && (
+          <span className="absolute inset-x-0 bottom-0 bg-ink/75 px-2 py-1 text-center text-label font-medium text-white">
+            Out of stock
+          </span>
+        )}
       </Link>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex flex-wrap gap-1 empty:hidden">
-          <TopBadge product={product} />
-        </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-1 p-3 sm:p-4">
+        {/* Tier 2: what it is. Brand and department, one quiet line. */}
+        <p className="truncate text-label uppercase tracking-wide text-ink-3">
+          {product.brand}
+          {category && <span className="normal-case tracking-normal"> &middot; {category.name}</span>}
+        </p>
 
-        <StockWarning stock={product.stock} />
-
-        <Link href={`/dp/${product.slug}`} data-testid={TID.productCardTitle} className="clamp-2 text-[13px] leading-[18px] text-link hover:text-link-hover hover:underline">
-          {product.title}
-        </Link>
-
-        <StarRating rating={product.rating} count={product.reviewCount} size="sm" />
-
-        <PriceBlock cents={product.price} listPrice={product.listPrice} dealPercent={product.dealPercent} size="sm" testId={TID.productCardPrice} />
-
-        <DeliveryPromise days={product.deliveryDays} />
-
-        {showCta && (
-          <div className="mt-auto pt-2">
-            <AddToCartButton
-              productId={product.id}
-              size="sm"
-              outOfStock={product.stock <= 0}
-              maxQty={Math.max(1, Math.min(30, product.stock))}
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ---------- row: search results ---------- */
-
-function RowCard({ product, showCta, priority, className }: Required<Pick<ProductCardProps, "product">> & { showCta?: boolean; priority?: boolean; className?: string }) {
-  /*
-    Mobile is a genuine re-layout, not a squeezed desktop row: the image shrinks
-    to a 128px square and stays beside the text so the list keeps its scannable
-    rhythm, while the secondary lines (subtitle, social proof, variant link)
-    drop away rather than wrapping into a wall of text.
-  */
-  return (
-    <article className={cn("flex gap-3 py-4 sm:gap-4 sm:py-5", className)} data-testid={TID.productCard}>
-      <Link href={`/dp/${product.slug}`} className="shrink-0">
-        <Thumb
-          product={product}
-          sizes="(max-width: 640px) 128px, 232px"
-          priority={priority}
-          className="h-[128px] w-[128px] sm:h-[232px] sm:w-[232px]"
-        />
-      </Link>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-[4px] sm:gap-[6px]">
-        {product.badges.includes("sponsored") && <SponsoredBadge />}
-
-        <div className="flex flex-wrap gap-1 empty:hidden">
-          <TopBadge product={product} />
-        </div>
-
-        <Link
-          href={`/dp/${product.slug}`}
-          data-testid={TID.productCardTitle}
-          className="clamp-2 text-[15px] leading-5 text-ink hover:text-link-hover hover:underline sm:clamp-2 sm:text-[18px] sm:leading-6"
-        >
-          {product.title}
-        </Link>
-
-        <p className="clamp-1 hidden text-[13px] text-muted sm:block">{product.bullets[0]}</p>
-
-        <StarRating
-          rating={product.rating}
-          count={product.reviewCount}
-          size="sm"
-          showValue
-          showCaret
-          parenthesised
-          href={`/dp/${product.slug}#reviews`}
-          className="sm:hidden"
-        />
-        <StarRating
-          rating={product.rating}
-          count={product.reviewCount}
-          size="md"
-          showValue
-          showCaret
-          parenthesised
-          href={`/dp/${product.slug}#reviews`}
-          className="hidden sm:inline-flex"
-        />
-
-        {product.boughtLastMonth > 0 && (
-          <p className="hidden text-[13px] text-muted sm:block">
-            {product.boughtLastMonth.toLocaleString("en-US")}+ bought in past month
-          </p>
-        )}
-
-        <PriceBlock
-          cents={product.price}
-          listPrice={product.listPrice}
-          dealPercent={product.dealPercent}
-          size="md"
-          testId={TID.productCardPrice}
-          className="mt-[2px] sm:hidden"
-        />
-        <PriceBlock
-          cents={product.price}
-          listPrice={product.listPrice}
-          dealPercent={product.dealPercent}
-          size="lg"
-          className="mt-1 hidden sm:block"
-        />
-
-        <DeliveryPromise days={product.deliveryDays} />
-
-        <StockWarning stock={product.stock} />
-
-        {showCta && (
-          <div className="mt-2">
-            <AddToCartButton
-              productId={product.id}
-              size="sm"
-              outOfStock={product.stock <= 0}
-              maxQty={Math.max(1, Math.min(30, product.stock))}
-              className="w-full sm:w-[220px]"
-            />
-          </div>
-        )}
-
-        {product.variants.length > 1 && (
-          <Link href={`/dp/${product.slug}`} className="link mt-1 hidden w-fit text-[13px] underline sm:block">
-            +{product.variants.length - 1} other {product.variants[0].type === "color" ? "colours" : "options"}
+        <h3 className="text-body leading-[19px]">
+          <Link
+            href={`/dp/${product.slug}`}
+            data-testid={TID.productCardTitle}
+            className="clamp-2 font-medium text-ink transition-colors hover:text-brand"
+          >
+            {product.title}
           </Link>
+        </h3>
+
+        <StarRating
+          rating={product.rating}
+          count={product.reviewCount}
+          compact
+          className="mt-[2px] text-ink-2"
+        />
+
+        <PriceBlock
+          cents={product.price}
+          listPrice={product.listPrice}
+          dealPercent={0}
+          size="sm"
+          testId={TID.productCardPrice}
+          className="mt-1"
+        />
+
+        {/* Tier 3: the promise, quietest line on the card. */}
+        <DeliveryPromise days={product.deliveryDays} className="text-body-sm text-ink-3" />
+
+        {product.stock > 0 && product.stock <= 3 && (
+          <p className="text-body-sm text-accent">Only {product.stock} left</p>
+        )}
+
+        {showCta && (
+          <div className="mt-auto pt-3">
+            <AddToCartButton
+              productId={product.id}
+              size="sm"
+              outOfStock={outOfStock}
+              maxQty={Math.max(1, Math.min(30, product.stock))}
+              className="w-full"
+            />
+          </div>
         )}
       </div>
     </article>
-  );
-}
-
-/* ---------- mini: sidebar rails and recently viewed ---------- */
-
-function MiniCard({ product, className }: { product: Product; className?: string }) {
-  return (
-    <div className={cn("flex gap-3", className)} data-testid={TID.productCard}>
-      <Link href={`/dp/${product.slug}`} className="shrink-0">
-        <Thumb product={product} sizes="72px" className="h-[72px] w-[72px]" />
-      </Link>
-      <div className="flex min-w-0 flex-col gap-[2px]">
-        <Link href={`/dp/${product.slug}`} data-testid={TID.productCardTitle} className="clamp-2 text-[13px] leading-[17px] text-link hover:text-link-hover hover:underline">
-          {product.title}
-        </Link>
-        <StarRating rating={product.rating} count={product.reviewCount} size="sm" />
-        <PriceBlock cents={product.price} size="xs" />
-      </div>
-    </div>
   );
 }

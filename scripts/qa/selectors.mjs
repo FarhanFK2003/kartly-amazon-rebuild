@@ -34,12 +34,17 @@ export const TID = {
   accountArea: "account-area",
   cartLink: "cart-link",
 
-  /* reserved for later waves - nothing renders these yet */
+  productGrid: "product-grid",
   facetBar: "facet-bar",
   facetChip: "facet-chip",
+  facetOption: "facet-option",
   activeFilterChip: "active-filter-chip",
   filterSheet: "filter-sheet",
-  densityToggle: "density-toggle",
+  filterSheetTrigger: "filter-sheet-trigger",
+  sortControl: "sort-control",
+  pagination: "pagination",
+
+  /* reserved for later waves - nothing renders these yet */
   pdpDecisionCard: "pdp-decision-card",
 };
 
@@ -58,6 +63,10 @@ export const LIVE_TIDS = [
   TID.bottomTabs,
   TID.browseTrigger,
   TID.cartLink,
+  TID.productGrid,
+  TID.sortControl,
+  TID.filterSheetTrigger,
+  TID.pagination,
 ];
 
 export const byTestId = (page, id) => page.locator(`[data-testid="${id}"]`);

@@ -76,7 +76,7 @@ export function ProductRail({
         >
           {products.map((p) => (
             <div key={p.id} className="w-[148px] shrink-0 snap-start sm:w-[164px]">
-              <ProductCard product={p} variant="grid" showCta={showCta} />
+              <ProductCard product={p} showCta={showCta} />
             </div>
           ))}
         </div>

@@ -1,135 +1,140 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Check, Lock } from "lucide-react";
+import { Check, Truck, RotateCcw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Field";
+import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { PriceBlock } from "@/components/ui/PriceBlock";
-import { DeliveryPromise } from "@/components/ui/Badge";
+import { TID } from "@/lib/testids";
+import { COMMERCE } from "@/lib/commerce";
 import { useCart } from "@/lib/store/cart";
-import { ADD_FEEDBACK_MS, useCartDrawer } from "@/lib/store/cartDrawer";
+import { useCartDrawer } from "@/lib/store/cartDrawer";
 import { usePdp } from "@/components/product/PdpContext";
-import { deliveryDate } from "@/lib/utils";
+import { deliveryDate, formatPriceShort } from "@/lib/utils";
 
 /**
- * The buy box is the commercial centre of the page: price, promise, stock and
- * the two CTAs, boxed and separated from the description so it reads as the
- * place where the decision happens.
+ * The decision.
+ *
+ * Not a box. The replica pinned a bordered panel to the right edge with a
+ * yellow and an orange call to action stacked inside it, a lock icon, and a
+ * three-row seller table - a dense utility block competing with the product
+ * for attention. This is the same information, unboxed, in the reading order
+ * of the decision itself: what it costs, whether it is available, when it
+ * arrives, which one, how many, and then the two actions.
+ *
+ * The behaviour is unchanged from the version it replaces. Add to cart writes
+ * to the same store and opens the same mini-cart; Buy now adds and routes to
+ * the cart rather than jumping to payment, so nobody commits to something they
+ * have not seen. Quantity still caps at ten or the stock on hand, whichever is
+ * lower. No commerce logic lives here - the delivery threshold comes from the
+ * commerce constants, not a second copy of the number.
  */
-export function BuyBox() {
+export function BuyBox({ children }: { children?: React.ReactNode }) {
   const { product, variant, qty, setQty, effectivePrice } = usePdp();
   const add = useCart((s) => s.add);
   const openDrawer = useCartDrawer((s) => s.openDrawer);
   const router = useRouter();
-  const [added, setAdded] = useState(false);
 
   const inStock = product.stock > 0;
+  const maxQty = Math.max(1, Math.min(10, product.stock));
+  const arrives = deliveryDate(product.deliveryDays);
   const fastest = deliveryDate(Math.max(1, product.deliveryDays - 1));
+  const qualifiesForFreeShipping = effectivePrice * qty >= COMMERCE.freeShippingThreshold;
 
   function addToCart() {
     add(product.id, qty, variant?.id ?? null);
-    setAdded(true);
-    // Same drawer, same confirmation and same timing as a listing card: the buy
-    // box used to run its own 1600ms flash with its own wording.
     openDrawer(product.id);
-    window.setTimeout(() => setAdded(false), ADD_FEEDBACK_MS);
   }
 
   function buyNow() {
     add(product.id, qty, variant?.id ?? null);
-    // Buy Now routes through the cart rather than jumping straight to payment,
-    // so the shopper can see what they are about to buy before committing.
+    // Routes through the cart rather than straight to payment, so the shopper
+    // sees what they are about to buy before committing.
     router.push("/cart");
   }
 
   return (
-    <div className="rounded-[8px] border border-line bg-white p-4">
+    <div className="mt-6 border-t border-line pt-6">
       <PriceBlock
         cents={effectivePrice}
         listPrice={product.listPrice}
         dealPercent={product.dealPercent}
         size="lg"
+        testId={TID.pdpPrice}
       />
 
-      <div className="mt-3 space-y-1">
-        <DeliveryPromise days={product.deliveryDays} />
-        <p className="text-[13px] text-muted">
-          Or fastest delivery <span className="font-bold text-ink">{fastest.long}</span>
-        </p>
-      </div>
-
-      <p className={`mt-3 text-[18px] ${inStock ? "text-success" : "text-deal"}`}>
-        {inStock ? "In Stock" : "Currently unavailable"}
+      <p className="mt-2 flex items-center gap-[6px] text-body">
+        {inStock ? (
+          <>
+            <Check className="h-4 w-4 shrink-0 text-success" strokeWidth={2.5} aria-hidden />
+            <span className="font-medium text-success">In stock</span>
+          </>
+        ) : (
+          <span className="font-medium text-accent">Currently unavailable</span>
+        )}
       </p>
-      {inStock && product.stock <= 9 && (
-        <p className="text-[13px] text-deal">Only {product.stock} left in stock - order soon.</p>
-      )}
+
+      {/* Variant selection, passed in so the picker keeps its own component. */}
+      {children}
 
       {inStock && (
         <>
-          <label className="mt-3 flex items-center gap-2 text-[13px] text-ink">
-            <span>Qty:</span>
-            {/* The select is appearance:none, so it needs its own caret or it
-                reads as a plain text box rather than a dropdown. */}
-            <span className="relative inline-block">
-              <Select
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-3 text-body text-ink-2">
+              <span>Quantity</span>
+              <QuantityStepper
                 value={qty}
-                onChange={(e) => setQty(Number(e.target.value))}
-                aria-label="Quantity"
-                className="w-[76px] pr-7"
-              >
-                {Array.from({ length: Math.min(10, product.stock) }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </Select>
-              <svg
-                viewBox="0 0 12 12"
-                className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-ink"
-                aria-hidden
-              >
-                <path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-            </span>
-          </label>
+                onChange={setQty}
+                min={1}
+                max={maxQty}
+                testId={TID.pdpQuantity}
+              />
+            </label>
+            {product.stock <= 3 && (
+              <span className="tnum text-body-sm text-accent">Only {product.stock} left</span>
+            )}
+          </div>
 
-          <div className="mt-4 space-y-2">
-            <Button variant="primary" size="lg" fullWidth onClick={addToCart}>
-              {added ? (
-                <>
-                  <Check className="h-4 w-4" /> Added
-                </>
-              ) : (
-                "Add to Cart"
-              )}
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={addToCart}
+              data-testid={TID.pdpAddToCart}
+              className="flex-1"
+            >
+              Add to cart
             </Button>
-            <Button variant="secondary" size="lg" fullWidth onClick={buyNow}>
-              Buy Now
+            <Button variant="outline" size="lg" onClick={buyNow} className="flex-1">
+              Buy now
             </Button>
           </div>
         </>
       )}
 
-      <p className="mt-4 flex items-center justify-center gap-1 text-[12px] text-link">
-        <Lock className="h-3 w-3" /> Secure transaction
-      </p>
-
-      <dl className="mt-3 space-y-1 border-t border-line-soft pt-3 text-[12px]">
-        <div className="flex justify-between gap-3">
-          <dt className="text-muted">Ships from</dt>
-          <dd className="text-ink">Kartly</dd>
-        </div>
-        <div className="flex justify-between gap-3">
-          <dt className="text-muted">Sold by</dt>
-          <dd className="text-ink">Kartly</dd>
-        </div>
-        <div className="flex justify-between gap-3">
-          <dt className="text-muted">Returns</dt>
-          <dd className="text-ink">30-day refund</dd>
-        </div>
-      </dl>
+      {/* Delivery and policy, stated once and quietly. */}
+      <ul className="mt-7 flex flex-col gap-3 border-t border-line pt-6 text-body-sm text-ink-2">
+        <li className="flex gap-3">
+          <Truck className="mt-[2px] h-4 w-4 shrink-0 text-ink-3" strokeWidth={1.8} aria-hidden />
+          <span>
+            Arrives <span className="font-medium text-ink">{arrives.long}</span>, or{" "}
+            {fastest.long} at the fastest.{" "}
+            {qualifiesForFreeShipping ? (
+              <span className="font-medium text-success">Delivery is free on this order.</span>
+            ) : (
+              <>Free over {formatPriceShort(COMMERCE.freeShippingThreshold)}.</>
+            )}
+          </span>
+        </li>
+        <li className="flex gap-3">
+          <RotateCcw className="mt-[2px] h-4 w-4 shrink-0 text-ink-3" strokeWidth={1.8} aria-hidden />
+          <span>30-day returns, free of charge.</span>
+        </li>
+        <li className="flex gap-3">
+          <ShieldCheck className="mt-[2px] h-4 w-4 shrink-0 text-ink-3" strokeWidth={1.8} aria-hidden />
+          <span>Sold and shipped by Kartly. This is a demo store &mdash; no payment is taken.</span>
+        </li>
+      </ul>
     </div>
   );
 }

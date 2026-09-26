@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 import type { Product } from "@/lib/types";
 
 /*
@@ -34,9 +35,9 @@ export function Gallery({ product }: { product: Product }) {
   const scale = zoom ? view.scale * 1.9 : view.scale;
 
   return (
-    <div className="flex gap-3">
+    <div className="flex flex-col-reverse gap-3 sm:flex-row" data-testid={TID.pdpGallery}>
       {/* thumbnail rail */}
-      <div className="flex shrink-0 flex-col gap-2" role="tablist" aria-label="Product images">
+      <div className="flex shrink-0 gap-2 sm:flex-col" role="tablist" aria-label="Product images">
         {VIEWS.map((v, i) => (
           <button
             key={i}
@@ -44,13 +45,12 @@ export function Gallery({ product }: { product: Product }) {
             role="tab"
             aria-selected={i === active}
             aria-label={`Product image ${i + 1} of ${VIEWS.length}`}
+            data-testid={TID.pdpGalleryThumb}
             onClick={() => setActive(i)}
             onMouseEnter={() => setActive(i)}
             className={cn(
-              "relative h-[52px] w-[52px] overflow-hidden rounded-[4px] border bg-white transition-shadow sm:h-[60px] sm:w-[60px]",
-              i === active
-                ? "border-[#e77600] shadow-[0_0_3px_2px_rgba(228,121,17,.5)]"
-                : "border-line hover:border-[#a6a6a6]"
+              "relative h-14 w-14 shrink-0 overflow-hidden rounded-[var(--radius-sm)] border-2 bg-surface-sunk transition-colors sm:h-16 sm:w-16",
+              i === active ? "border-brand" : "border-line hover:border-ink-3"
             )}
           >
             <Image
@@ -68,7 +68,7 @@ export function Gallery({ product }: { product: Product }) {
       {/* main image */}
       <div
         ref={frameRef}
-        className="relative aspect-square min-w-0 flex-1 cursor-zoom-in overflow-hidden rounded-[4px] bg-white"
+        className="relative aspect-square min-w-0 flex-1 cursor-zoom-in overflow-hidden rounded-[var(--radius-md)] border border-line bg-surface-sunk"
         onMouseMove={(e) => {
           const r = frameRef.current?.getBoundingClientRect();
           if (!r) return;

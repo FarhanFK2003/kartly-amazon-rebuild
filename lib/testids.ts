@@ -75,10 +75,22 @@ export const TID = {
   reducedSection: "reduced-section",
   shelf: "shelf",
 
+  /* Product detail. The decision column, and the controls inside it that have
+     no unique accessible name of their own. */
+  pdpTitle: "pdp-title",
+  pdpDecisionCard: "pdp-decision-card",
+  pdpPrice: "pdp-price",
+  pdpQuantity: "pdp-quantity",
+  pdpAddToCart: "pdp-add-to-cart",
+  pdpVariants: "pdp-variants",
+  pdpVariantOption: "pdp-variant-option",
+  pdpSpecs: "pdp-specs",
+  pdpReviews: "pdp-reviews",
+  pdpGallery: "pdp-gallery",
+  pdpGalleryThumb: "pdp-gallery-thumb",
+
   /* --- Reserved for later waves. Declared here so the contract is written
      down once; nothing renders these yet. ---------------------------------- */
-  /** wave 4 - sticky PDP decision card */
-  pdpDecisionCard: "pdp-decision-card",
 } as const;
 
 export type TestId = (typeof TID)[keyof typeof TID];

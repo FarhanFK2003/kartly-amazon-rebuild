@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
 import { getBestSellers } from "@/lib/catalog";
-import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { Shelf } from "@/components/ui/Shelf";
 
 /** Shown for an unknown product id rather than a bare 404. */
 export default function ProductNotFound() {
@@ -24,7 +24,7 @@ export default function ProductNotFound() {
         </div>
 
         <div className="mt-12">
-          <RelatedProducts products={getBestSellers(10)} title="Best Sellers you might like" />
+          <Shelf products={getBestSellers(10)} title="Popular right now" showCta={false} />
         </div>
       </div>
     </div>

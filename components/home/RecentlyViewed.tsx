@@ -2,7 +2,7 @@
 
 import { useIsMounted } from "@/lib/store/cart";
 import { useRecentlyViewed } from "@/lib/store/recentlyViewed";
-import { Shelf } from "@/components/home/Shelf";
+import { Shelf } from "@/components/ui/Shelf";
 import type { Product } from "@/lib/types";
 
 /**

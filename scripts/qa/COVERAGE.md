@@ -32,13 +32,14 @@ loops over widths or routes, so the executed total is higher (e.g. responsive is
 | `qa-drawer` | 28 | 69 | **Re-targeted** | ✅ `qa/navigation.mjs` — 127/127 (wave 1) |
 | `qa-discovery` | 41 | 42 | **Re-targeted** | ✅ `qa/discovery.mjs` — 83/83 (wave 2) |
 | `qa-home` | 41 | 42 | **Rewritten** | ✅ `qa/home.mjs` — 60/60 (wave 3) |
+| `qa-discovery` (PDP half) | — | — | **Re-targeted** | ✅ `qa/pdp.mjs` — 108/108 (wave 4) |
+| `qa-fbt` | 29 | 23 | Port | wave 5 — bundle logic unchanged, container restyled |
 | `qa-p1` (filter/sort/page half) | — | — | **Re-targeted** | ✅ `qa/discovery.mjs` (wave 2); review half still pending wave 4 |
 | `qa-purchase` | 49 | 48 | Port | wave 5 |
 | `qa-p1` | 60 | 54 | Port | wave 2 |
 | `qa-smoke-drawer` | 29 | 49 | Port | wave 5 |
 | `qa-signin` | 37 | 36 | Port | wave 6 |
 | `qa-help` | 27 | 26 | Port | wave 6 |
-| `qa-fbt` | 29 | 23 | Port | wave 4 |
 | `qa-homepage-polish` | 22 | — | **Obsolete** | superseded by `qa/home.mjs` (wave 3); it asserted carousel and promo-row composition that no longer exists |
 | `visual-qa` | — | JSON | Re-target | wave 3 |
 | `audit-design` | — | tally | **Re-target** | wave 7 — becomes the design-system conformance gate |
@@ -231,6 +232,75 @@ the mapping is recorded assertion by assertion.
 **New in wave 3**, with no predecessor: one H1, heading hierarchy does not skip a
 level, hero actions reach real URLs, discount treatments are backed by a real
 struck list price, and the mobile tab bar does not cover the end of the page.
+
+## qa-discovery (PDP half) · RE-TARGETED in wave 4
+
+The PDP assertions in `qa-discovery`, plus the buy-box assertions scattered
+through `qa-purchase`, are replaced by `qa/pdp.mjs`.
+
+| Old selector / assumption | New | Note |
+|---|---|---|
+| three-column grid, right-hand buy box | `[data-testid="pdp-decision-card"]` | two columns; the decision is one unbroken column |
+| `<select aria-label="Quantity">` | `[data-testid="pdp-quantity"]` + `role=button` steppers | the select became the app's canonical stepper |
+| `button` named `/^Add to Cart$/` | `[data-testid="pdp-add-to-cart"]` | the buy box and the cards disagreed on casing; they no longer do, so the label is not a selector |
+| variant swatch identified by orange focus glow | `[data-testid="pdp-variant-option"]` + `aria-pressed` | selection is state, not a shadow |
+| spec table rows by `odd:bg-` striping | `[data-testid="pdp-specs"] dt` | striping is not a contract |
+| "Product information" / "Product description" headings | one "About this product" section | two generated prose paragraphs were removed; see below |
+
+**Assertions kept and strengthened.** Title, price, rating and review count are
+no longer merely *present* — each is read from `data/catalog.json` at the start
+of the run and compared with what the page renders, so a page that invents or
+mis-renders a figure fails. The specification check asserts the rendered keys
+are **exactly** the product's real keys, neither more nor fewer.
+
+**Two assertions I wrote were wrong and were corrected against real behaviour,
+not weakened:**
+
+1. *Price* — I compared the rendered price with the bare catalogue price. The
+   first variant is selected by default, so a product whose default variant
+   carries a delta (the 2TB SSD's default is 1TB at −$60) correctly shows $99
+   against a $159 base. The expectation now includes the default variant's
+   delta.
+2. *Recently viewed* — I asserted a recently-viewed section on the PDP. There
+   has never been one: the PDP mounts `RecordView`, which records the visit, and
+   the **homepage** shelf displays it. The assertion now checks the real
+   contract — visiting a product records it, and it then appears on the
+   homepage.
+
+**Obsolete**: the "Product description" section. It was two generated prose
+paragraphs asserting a house style ("built for people who would rather buy
+once") around real bullet text. The bullets are shown directly instead, so
+nothing that describes the product is lost and nothing is asserted that the
+catalogue does not contain.
+
+## qa/pdp.mjs — product detail · NEW in wave 4
+
+108 checks against four real products, chosen for what they exercise: one with
+colour variants, one with size variants, one with none, and the lowest-stock
+product in the catalogue as a boundary. No fixture data — expectations are read
+from the catalogue at runtime.
+
+1. Each product loads, has exactly one H1, and renders its real title, price
+   (including the default variant's delta), rating and review count.
+2. A real product image loads from `/products/`.
+3. The specification renders exactly the keys that product has.
+4. Reviews show the real rating, count and review text.
+5. Variants: every real variant renders, the first is selected, `aria-pressed`
+   moves on selection, the selected label is written out in text (so state is
+   not carried by colour alone), and a variant's price delta is applied.
+6. A product with no variants renders **no** variant section.
+7. Quantity starts at 1, cannot go below the minimum, increments and
+   decrements, and caps at ten or the real stock, whichever is lower.
+8. Add to cart increments the cart, opens the mini-cart, and the panel subtotal
+   equals the product price; adding with quantity 3 adds 3.
+9. Buy now routes to the cart, not to payment.
+10. Breadcrumbs link to `/browse` and the product's real department, and that
+    department link resolves to a page with results.
+11. Related products render, use the canonical card, and link to a PDP that
+    resolves. No PDP-specific card variant exists.
+12. An invalid product returns a real **404** with a designed page.
+13. At all seven widths: no horizontal overflow, gallery and decision column
+    render, and the purchase controls never sit under the fixed tab bar.
 
 ## qa/home.mjs — storefront homepage · NEW in wave 3
 

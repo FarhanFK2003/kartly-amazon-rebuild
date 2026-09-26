@@ -8,17 +8,18 @@ import {
   getProductByIdOrSlug,
   getRelatedProducts,
 } from "@/lib/catalog";
-import { StarRating } from "@/components/ui/StarRating";
-import { Badge } from "@/components/ui/Badge";
+import { getBundle } from "@/lib/bundles";
+import { TID } from "@/lib/testids";
 import { Gallery } from "@/components/product/Gallery";
 import { BuyBox } from "@/components/product/BuyBox";
 import { VariantPicker } from "@/components/product/VariantPicker";
 import { PdpProvider } from "@/components/product/PdpContext";
 import { Reviews } from "@/components/product/Reviews";
-import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { RecordView } from "@/components/product/RecordView";
 import { FrequentlyBoughtTogether } from "@/components/product/FrequentlyBoughtTogether";
-import { getBundle } from "@/lib/bundles";
+import { Shelf } from "@/components/ui/Shelf";
+import { StarRating } from "@/components/ui/StarRating";
+import { Badge } from "@/components/ui/Badge";
 
 /** All 120 products are known at build time, so every PDP is prerendered. */
 export function generateStaticParams() {
@@ -39,6 +40,24 @@ export async function generateMetadata({
   };
 }
 
+/*
+  Product detail.
+
+  Two columns, not three. The replica put the gallery left, a wall of
+  specification text in the middle and a boxed purchase panel pinned right -
+  three competing centres of attention, with the decision itself trapped in the
+  narrowest column at the edge of the screen.
+
+  Kartly puts the product on the left and the whole decision on the right, in
+  one uninterrupted column: what it is, what people think of it, what it costs,
+  which one, how many, and the two actions. Everything that is reference rather
+  than decision - the bullets, the specification, the description, the reviews -
+  sits below the fold where it can have the full width and be read properly.
+
+  Nothing on this page is invented. Every figure comes from the catalogue entry
+  or from the commerce constants; the specification renders only the keys that
+  product actually has.
+*/
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const product = getProductByIdOrSlug(id);
@@ -48,134 +67,148 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const related = getRelatedProducts(product, 10);
   const bundle = getBundle(product);
   const alsoViewed = getRelatedProducts(product, 18).slice(8);
+  const shortTitle = product.title.split(",")[0];
 
   return (
     <PdpProvider product={product}>
       <RecordView productId={product.id} />
-      <div className="bg-white">
-        <div className="shell pb-10">
-          {/* breadcrumbs */}
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1 py-3 text-[12px] text-muted">
-            <Link href="/s" className="tap-target hover:text-link-hover hover:underline">
-              All
-            </Link>
-            {category && (
-              <>
-                <ChevronRight className="h-3 w-3" aria-hidden />
-                <Link href={`/s?i=${category.id}`} className="tap-target hover:text-link-hover hover:underline">
-                  {category.name}
-                </Link>
-              </>
-            )}
-            <ChevronRight className="h-3 w-3" aria-hidden />
-            <span className="clamp-1 text-ink">{product.title.split(",")[0]}</span>
-          </nav>
 
-          {/* main three-column block */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)_300px] lg:gap-8">
-            <div className="lg:sticky lg:top-[115px] lg:self-start">
-              <Gallery product={product} />
-            </div>
+      <div className="shell pb-16">
+        {/* context ----------------------------------------------------- */}
+        <nav
+          aria-label="Breadcrumb"
+          className="no-scrollbar flex items-center gap-1 overflow-x-auto whitespace-nowrap py-4 text-body-sm text-ink-3"
+        >
+          <Link href="/browse" className="tap-target shrink-0 transition-colors hover:text-brand">
+            Browse
+          </Link>
+          {category && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <Link
+                href={`/s?i=${category.id}`}
+                className="tap-target shrink-0 transition-colors hover:text-brand"
+              >
+                {category.name}
+              </Link>
+            </>
+          )}
+          <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          <span className="min-w-0 truncate text-ink-2">{shortTitle}</span>
+        </nav>
 
-            <div className="min-w-0">
-              <h1 className="text-[24px] font-normal leading-8 text-ink">{product.title}</h1>
+        {/* product + decision ------------------------------------------ */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-14">
+          <div className="lg:sticky lg:top-[72px] lg:self-start">
+            <Gallery product={product} />
+          </div>
 
-              <Link href={`/s?q=${encodeURIComponent(product.brand)}`} className="link mt-1 inline-block text-[14px]">
-                Visit the {product.brand} Store
+          <div className="min-w-0" data-testid={TID.pdpDecisionCard}>
+            <p className="text-label font-semibold uppercase tracking-wide text-ink-3">
+              <Link
+                href={`/s?brand=${encodeURIComponent(product.brand)}`}
+                className="transition-colors hover:text-brand"
+              >
+                {product.brand}
+              </Link>
+              {category && (
+                <>
+                  <span className="px-1">&middot;</span>
+                  <Link
+                    href={`/s?i=${category.id}`}
+                    className="normal-case tracking-normal transition-colors hover:text-brand"
+                  >
+                    {category.name}
+                  </Link>
+                </>
+              )}
+            </p>
+
+            <h1
+              data-testid={TID.pdpTitle}
+              className="mt-2 font-display text-[28px] font-medium leading-[1.15] text-ink sm:text-display-md lg:text-[34px]"
+            >
+              {product.title}
+            </h1>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Link href="#reviews" className="group inline-flex items-center gap-2">
+                <StarRating rating={product.rating} size="sm" />
+                <span className="tnum text-body-sm text-ink-2 group-hover:text-brand group-hover:underline">
+                  {product.rating.toFixed(1)} &middot;{" "}
+                  {product.reviewCount.toLocaleString("en-US")} reviews
+                </span>
               </Link>
 
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <StarRating
-                  rating={product.rating}
-                  count={product.reviewCount}
-                  size="md"
-                  showValue
-                  showCaret
-                  parenthesised
-                  href="#reviews"
-                />
-                {product.badges.includes("bestSeller") && <Badge variant="bestSeller">Best Seller</Badge>}
-                {product.badges.includes("choice") && <Badge variant="choice">Kartly&apos;s Choice</Badge>}
-              </div>
+              {product.badges.includes("bestSeller") && <Badge variant="bestSeller">Best Seller</Badge>}
+              {product.badges.includes("choice") && <Badge variant="choice">Kartly&apos;s Choice</Badge>}
+            </div>
 
-              {product.boughtLastMonth > 0 && (
-                <p className="mt-2 text-[13px] text-muted">
-                  {product.boughtLastMonth.toLocaleString("en-US")}+ bought in past month
-                </p>
-              )}
-
-              <hr className="my-3 border-line-soft" />
-
+            {/* Price, stock, variant, quantity and the two actions. */}
+            <BuyBox>
               <VariantPicker />
+            </BuyBox>
+          </div>
+        </div>
 
-              <div className="mt-5">
-                <h2 className="text-[16px] font-bold text-ink">About this item</h2>
-                <ul className="mt-2 list-disc space-y-[6px] pl-5 text-[14px] leading-5 text-ink">
+        {/* reference --------------------------------------------------- */}
+        <div className="mt-14 flex flex-col gap-12 sm:mt-20 sm:gap-16">
+          <FrequentlyBoughtTogether bundle={bundle} />
+
+          <section aria-labelledby="about-heading" className="border-t border-line pt-6">
+            <h2 id="about-heading" className="font-display text-display-md font-medium text-ink">
+              About this product
+            </h2>
+
+            <div className="mt-5 grid grid-cols-1 gap-x-14 gap-y-8 lg:grid-cols-2">
+              <div>
+                <h3 className="text-label font-semibold uppercase tracking-wide text-ink-3">
+                  Highlights
+                </h3>
+                <ul className="mt-3 space-y-2">
                   {product.bullets.map((b) => (
-                    <li key={b}>{b}</li>
+                    <li key={b} className="flex gap-3 text-body-lg leading-[26px] text-ink">
+                      <span aria-hidden className="mt-[11px] h-[3px] w-[3px] shrink-0 rounded-full bg-ink-3" />
+                      {b}
+                    </li>
                   ))}
                 </ul>
               </div>
 
+              {/* Only the keys this product actually has. */}
+              <div>
+                <h3 className="text-label font-semibold uppercase tracking-wide text-ink-3">
+                  Specification
+                </h3>
+                <dl data-testid={TID.pdpSpecs} className="mt-3">
+                  {Object.entries(product.specs).map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex gap-4 border-b border-line py-[10px] text-body last:border-b-0"
+                    >
+                      <dt className="w-[42%] shrink-0 text-ink-2">{key}</dt>
+                      <dd className="min-w-0 text-ink">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
             </div>
+          </section>
 
-            {/*
-              One BuyBox, not two. Source order is gallery -> info -> buy box, so
-              a single-column grid stacks it under the bullets on mobile and the
-              three-column grid places it in the right rail on desktop. Rendering
-              a second copy behind a media query would duplicate the quantity
-              control and its aria-label in the accessibility tree.
-            */}
-            <div className="lg:sticky lg:top-[115px] lg:self-start">
-              <BuyBox />
-            </div>
-          </div>
+          <Reviews product={product} />
 
-          {/* details */}
-          <div className="mt-10 space-y-8">
-            <FrequentlyBoughtTogether bundle={bundle} />
+          <Shelf
+            title="Related products"
+            subtitle={category ? `More from ${category.name}` : undefined}
+            products={related}
+            href={category ? `/s?i=${category.id}` : "/s"}
+          />
 
-            <section className="border-t border-line-soft pt-6">
-              <h2 className="text-[21px] font-bold text-ink">Product information</h2>
-              <dl className="mt-3 max-w-[760px] divide-y divide-line-soft rounded-[8px] border border-line">
-                {Object.entries(product.specs).map(([key, value]) => (
-                  <div key={key} className="flex gap-4 px-4 py-[10px] text-[14px] odd:bg-[#f7f8f8]">
-                    <dt className="w-[45%] shrink-0 font-bold text-ink">{key}</dt>
-                    <dd className="text-ink">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-
-            <section className="border-t border-line-soft pt-6">
-              <h2 className="text-[21px] font-bold text-ink">Product description</h2>
-              <p className="mt-3 max-w-[820px] text-[14px] leading-6 text-ink">
-                The {product.title.split(",")[0]} from {product.brand} is built for people who would
-                rather buy once. {product.bullets[0]}, and {lowerFirst(product.bullets[1] ?? "")}
-                {product.bullets[2] ? ` It also ${lowerFirst(product.bullets[2])}.` : "."}
-              </p>
-              <p className="mt-3 max-w-[820px] text-[14px] leading-6 text-ink">
-                Every Kartly order ships with a 30-day refund window and free returns, so you can
-                try it at home and send it back if it is not right.
-              </p>
-            </section>
-
-            <RelatedProducts
-              products={related}
-              title="Products related to this item"
-              subtitle={category ? `More from ${category.name}` : undefined}
-            />
-
-            <Reviews product={product} />
-
-            <RelatedProducts products={alsoViewed} title="Customers who viewed this item also viewed" />
-          </div>
+          {alsoViewed.length > 0 && (
+            <Shelf title="Shoppers also viewed" products={alsoViewed} showCta={false} />
+          )}
         </div>
       </div>
     </PdpProvider>
   );
-}
-
-function lowerFirst(s: string) {
-  return s ? s.charAt(0).toLowerCase() + s.slice(1) : s;
 }

@@ -12,7 +12,7 @@ import { formatPriceShort } from "@/lib/utils";
 import { TID } from "@/lib/testids";
 import { Hero } from "@/components/home/Hero";
 import { CategoryMosaic, type MosaicTile } from "@/components/home/CategoryMosaic";
-import { Shelf } from "@/components/home/Shelf";
+import { Shelf } from "@/components/ui/Shelf";
 import { RecentlyViewed } from "@/components/home/RecentlyViewed";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ButtonLink } from "@/components/ui/Button";

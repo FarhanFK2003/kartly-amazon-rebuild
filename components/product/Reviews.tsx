@@ -5,6 +5,7 @@ import { ThumbsUp, Check } from "lucide-react";
 import { StarRating } from "@/components/ui/StarRating";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import { TID } from "@/lib/testids";
 import type { Product, Review } from "@/lib/types";
 
 type ReviewSort = "helpful" | "recent" | "highest" | "lowest";
@@ -45,18 +46,22 @@ export function Reviews({ product }: { product: Product }) {
   const shown = expanded ? visible : visible.slice(0, INITIAL_VISIBLE);
 
   return (
-    <section id="reviews" className="scroll-mt-[120px] border-t border-line-soft pt-6">
-      <h2 className="text-[18px] font-bold text-ink sm:text-[21px]">Customer reviews</h2>
+    <section
+      id="reviews"
+      data-testid={TID.pdpReviews}
+      className="scroll-mt-[96px] border-t border-line pt-6"
+    >
+      <h2 className="font-display text-display-md font-medium text-ink">Reviews</h2>
 
       <div className="mt-4 flex flex-col gap-8 lg:flex-row">
         {/* ---------- summary ---------- */}
         <div className="lg:w-[300px] lg:shrink-0">
           <div className="flex items-center gap-2">
             <StarRating rating={rating} size="lg" />
-            <span className="text-[17px] text-ink sm:text-[18px]">{rating.toFixed(1)} out of 5</span>
+            <span className="tnum text-body-lg font-medium text-ink">{rating.toFixed(1)} out of 5</span>
           </div>
-          <p className="mt-1 text-[13px] text-muted">
-            {reviewCount.toLocaleString("en-US")} global ratings
+          <p className="tnum mt-1 text-body-sm text-ink-2">
+            {reviewCount.toLocaleString("en-US")} ratings
           </p>
 
           <ul className="mt-4 space-y-[6px]">

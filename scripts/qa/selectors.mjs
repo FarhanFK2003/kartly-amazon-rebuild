@@ -49,6 +49,18 @@ export const TID = {
   reducedSection: "reduced-section",
   shelf: "shelf",
 
+  pdpTitle: "pdp-title",
+  pdpDecisionCard: "pdp-decision-card",
+  pdpPrice: "pdp-price",
+  pdpQuantity: "pdp-quantity",
+  pdpAddToCart: "pdp-add-to-cart",
+  pdpVariants: "pdp-variants",
+  pdpVariantOption: "pdp-variant-option",
+  pdpSpecs: "pdp-specs",
+  pdpReviews: "pdp-reviews",
+  pdpGallery: "pdp-gallery",
+  pdpGalleryThumb: "pdp-gallery-thumb",
+
   /* reserved for later waves - nothing renders these yet */
   pdpDecisionCard: "pdp-decision-card",
 };
@@ -87,7 +99,10 @@ export const cartLink = (page) => page.locator("a[aria-label^='Cart,']").first()
 export const miniCart = (page) => page.getByRole("dialog", { name: "Shopping cart" });
 export const goToCart = (page) => page.getByRole("link", { name: "Go to Cart" });
 export const addToCartCta = (page) => page.getByRole("button", { name: /^Add to cart$/i });
-export const buyBoxAddToCart = (page) => page.getByRole("button", { name: /^Add to Cart$/ });
+/* The PDP's add-to-cart, by id rather than label: the buy box and the product
+   cards used to disagree on casing ("Add to Cart" vs "Add to cart") and now do
+   not, so targeting the label would have coupled the suite to that detail. */
+export const buyBoxAddToCart = (page) => byTestId(page, TID.pdpAddToCart);
 export const proceedToCheckout = (page) => page.getByRole("link", { name: /Proceed to checkout/i });
 export const placeOrder = (page) => page.getByRole("button", { name: /Place your order/i });
 /* The overlay's input implements the combobox pattern, so its explicit

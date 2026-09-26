@@ -21,6 +21,7 @@ import { chromium } from "playwright";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { TID, byTestId } from "./selectors.mjs";
+import { startQaSession } from "./qa-session.mjs";
 
 const BASE = process.env.KARTLY_BASE ?? "http://127.0.0.1:3000";
 const ROOT = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
@@ -43,8 +44,13 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 });
 
+/* The add-to-cart check creates a cart row; the QA session makes it
+   identifiable and guarantees it is purged afterwards. */
+const qa = await startQaSession("storefront", BASE);
+
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+await ctx.addCookies([qa.cookie]);
 const page = await ctx.newPage();
 
 const errors = [];
@@ -349,6 +355,7 @@ check(
 
 await prisma.$disconnect();
 await browser.close();
+await qa.cleanup();
 
 console.log(`\n${total - problems.length}/${total} storefront database checks passed`);
 if (problems.length) {

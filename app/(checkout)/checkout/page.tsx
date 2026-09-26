@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { getCartIndex } from "@/lib/commerce";
 import { CheckoutView } from "@/components/checkout/CheckoutView";
+import { getCart } from "@/lib/data/cart";
+import { getSessionId } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Secure checkout" };
 
@@ -12,6 +13,7 @@ export const metadata: Metadata = { title: "Secure checkout" };
 */
 export const dynamic = "force-dynamic";
 
-export default function CheckoutPage() {
-  return <CheckoutView index={getCartIndex()} />;
+export default async function CheckoutPage() {
+  // Same reason as the cart page: first paint must show the real cart.
+  return <CheckoutView initial={await getCart(await getSessionId())} />;
 }

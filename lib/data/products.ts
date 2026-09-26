@@ -114,7 +114,15 @@ function toProduct(p: ProductRow): Product {
  * database can rank rows far more cheaply than we can.
  */
 export const getCategories = cache(async (): Promise<Category[]> => {
-  const [rows, covers] = await prisma.$transaction([
+  /*
+    Promise.all, not $transaction.
+
+    These two reads have no consistency requirement between them, and Prisma's
+    array form still opens a real transaction with a five second ceiling. Under
+    load, against a database this far away, that ceiling is reachable - and when
+    it is reached the page 500s. Concurrency was the only thing wanted here.
+  */
+  const [rows, covers] = await Promise.all([
     prisma.category.findMany({ orderBy: { position: "asc" } }),
     // The most-reviewed product of each department, as its cover. Fetching a
     // narrow projection of all products and picking per category costs one

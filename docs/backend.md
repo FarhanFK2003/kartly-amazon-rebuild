@@ -352,39 +352,132 @@ build` succeeds with no database at all.**
 
 ---
 
-## 8. What is not in the database yet
+## 8. Cart, checkout and orders
 
-Deliberately still client-side, in `localStorage` via Zustand:
+The cart and orders live in PostgreSQL, owned by a guest session rather than an
+account. Authentication is still out of scope.
 
-- the cart
-- orders and order history
-- authentication
-- checkout state
+### Guest identity
 
-Two runtime references to the static catalogue remain, both deliberate:
+An opaque cookie, `kartly_sid`: 32 bytes from the system CSPRNG, base64url
+encoded. It carries no meaning — not an email, not a user id, nothing derived
+from the database — so learning one reveals nothing beyond the cart it points
+at. It is `httpOnly` (an XSS bug cannot lift it), `sameSite=lax` (another origin
+cannot drive cart or order requests with it), and `secure` in production. See
+`lib/session.ts`.
 
-**`lib/commerce.ts` → `lib/catalog.ts`.** `getCartIndex()` resolves cart lines
-from the catalogue, synchronously. `lib/commerce.ts` is the authoritative source
-of commerce calculations and is a protected file, and cart persistence belongs
-to a later wave — so this stays. It means `data/catalog.json` is still in the
-*server* bundle for routes that import commerce constants, including the
-homepage and the product page. Neither reads product data through it: the
-homepage takes the free-shipping threshold, the product page takes the buy box's
-constants. `/s` and `/browse` have no path to the catalogue at all.
+A visitor with no cookie has no cart. One is minted on the first write, not on
+the first page view.
 
-**`lib/search.ts`.** Superseded by `lib/data/search.ts` and no longer on any
-storefront path. It is a protected file, so it is left exactly as it was; the
-live URL contract moved to `lib/search-params.ts`, which carries compile-time
-assertions against it so the two cannot drift apart silently.
+### Server authority over money
 
-The catalogue no longer reaches the browser at all. Before this stage a 318 KB
-client chunk containing all 120 products shipped on every visit, because the
-filter sheet and sort control imported values from `lib/search.ts`, which builds
-a Fuse index over the catalogue at module scope.
+The browser may say *which* product and *how many*. It may never say what
+anything costs.
+
+`lib/data/cart.ts` resolves every price, discount, variant delta and stock level
+from the product rows, and runs them through `resolveLines()` and
+`computeTotals()` in `lib/commerce.ts` — the same functions the cart page has
+always used, so there is no second pricing formula. The cart API accepts a
+product id, an optional variant id and a quantity; there is no price, subtotal
+or total field anywhere in the request shape, so a client that sends one is not
+rejected so much as unheard.
+
+Order creation works the same way: `POST /api/orders` takes an address, a
+payment method and a checkout-attempt id, then reads the cart from the database
+and reprices it. Nothing the browser believes about the total reaches storage.
+
+### Order items are snapshots
+
+`OrderItem.productId` and `variantId` are plain columns, not foreign keys. A
+past order must keep showing what was bought, at the price it was bought for,
+even if the catalogue later changes or the product is removed — a cascade or a
+`SET NULL` would let a catalogue edit rewrite history.
+
+### Idempotency
+
+Each checkout attempt mints a UUID, reused on retry. `Order.idempotencyKey` is
+unique, so a resubmitted form returns the original order instead of creating a
+second one. Two requests racing each other end with one order: the loser catches
+the constraint violation and reads the winner's row, which is why this needs no
+lock.
+
+### Order access control
+
+An order id is not authorisation. Lookups are scoped to the session that placed
+the order, and someone else's order is a `404` rather than a `403`, so the
+endpoint cannot be used to discover which ids exist. These records carry a name,
+address and phone number.
+
+### No card data
+
+No card number, expiry or CVV is accepted, transmitted or stored. Only the
+method and — for a simulated card — the brand and last four digits the
+confirmation screen displays. The card draft never leaves the checkout
+component; it is excluded from `localStorage` persistence and wiped on reset.
+
+### First paint
+
+The cart page and checkout read the cart **on the server** from the session
+cookie and pass it in for the first render. Leaving it to the client would show
+the empty-cart state on every load and then replace it once a fetch returned — a
+visible flash on the page where it matters most. The client store takes over as
+soon as it has its own copy.
+
+The store is never seeded directly, because it is module scope: on the server
+that is shared between requests, and one shopper's cart must never appear in
+another's response.
+
+### Ordering
+
+Cart mutations apply optimistically and are then replaced by the server's
+answer. Requests are numbered and only the newest answer is allowed to win —
+without that, two quick quantity clicks followed by Remove could put the line
+back, because an older reply still containing it lands last.
 
 ---
 
-## 9. Secrets
+## 9. What is not in the database yet
+
+Deliberately still client-side, in `localStorage` via Zustand:
+
+- authentication (`kartly.auth`)
+- checkout draft (`kartly.checkout`) — step, address and payment method, so a
+  refresh mid-flow does not empty the form. It is **not** migrated on purpose:
+  it is transient UI state, the server recalculates everything at order time so
+  it carries no authority, and persisting a half-typed address server-side would
+  add a round trip per keystroke for no benefit. The card draft is excluded from
+  persistence entirely.
+- recently viewed products (`kartly.recentlyViewed`) — a per-device convenience
+
+### The static catalogue
+
+`data/catalog.json` is no longer loaded by anything at runtime, on the server or
+in the browser. It remains in the repository as the seed source, and
+`scripts/qa/backend.mjs` checks the built output on every run.
+
+Two files still reference it in source, both superseded and both protected, so
+both are left exactly as they are:
+
+**`lib/commerce.ts` → `lib/catalog.ts`.** `getCartIndex()` built a product index
+from the catalogue for a cart the server could not see. With the cart in
+PostgreSQL the server builds that index from the product rows instead, so the
+function has no callers left and is tree-shaken out of every bundle. The rest of
+the module — the constants, `resolveLines()`, `computeTotals()`,
+`toOrderItems()` — is used more than ever, and is what prices every cart and
+every order.
+
+**`lib/search.ts`.** Superseded by `lib/data/search.ts`. The live URL contract
+moved to `lib/search-params.ts`, which carries compile-time assertions against
+it so the two cannot drift apart silently.
+
+The catalogue stopped reaching the browser in the previous stage: a 318 KB
+client chunk containing all 120 products used to ship on every visit, because
+the filter sheet and sort control imported values from `lib/search.ts`, which
+builds a Fuse index over the catalogue at module scope.
+
+---
+
+## 10. Secrets
 
 - `.env` and `.env.*` are git-ignored; `.env.example` is the only tracked
   template and contains placeholders.

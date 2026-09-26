@@ -4,8 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Package, ChevronDown } from "lucide-react";
-import { useOrders } from "@/lib/store/orders";
-import { useIsMounted } from "@/lib/store/cart";
 import { ButtonLink } from "@/components/ui/Button";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -16,18 +14,16 @@ import type { Product } from "@/lib/types";
 
 const DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
 
-export function OrdersView({ recommended }: { recommended: Product[] }) {
-  const mounted = useIsMounted();
-  const orders = useOrders((s) => s.orders);
-
-  if (!mounted) return <OrdersSkeleton />;
+export function OrdersView({ recommended, orders }: { recommended: Product[]; orders: Order[] }) {
+  // Orders arrive from the server, already scoped to this session, so there is
+  // no mount gate and no skeleton pass any more.
   if (orders.length === 0) return <NoOrders recommended={recommended} />;
 
   return (
     <div className="shell py-4">
       <h1 className="text-[24px] font-normal leading-9 text-ink sm:text-[28px]">Your Orders</h1>
       <p className="mt-1 text-[13px] text-muted">
-        {orders.length} simulated {pluralize(orders.length, "order")} stored in this browser.
+        {orders.length} simulated {pluralize(orders.length, "order")} on this session.
       </p>
 
       <ul className="mt-4 space-y-4">
@@ -190,26 +186,6 @@ function NoOrders({ recommended }: { recommended: Product[] }) {
           </div>
         </section>
       )}
-    </div>
-  );
-}
-
-function OrdersSkeleton() {
-  return (
-    <div className="shell py-4" aria-busy="true">
-      <div className="h-8 w-48 animate-pulse rounded bg-[#e3e6e6]" />
-      <div className="mt-4 space-y-4">
-        {[0, 1].map((i) => (
-          <div key={i} className="card p-5">
-            <div className="h-5 w-full max-w-[420px] animate-pulse rounded bg-[#e3e6e6]" />
-            <div className="mt-4 flex gap-2">
-              {[0, 1, 2].map((j) => (
-                <div key={j} className="h-[68px] w-[68px] animate-pulse rounded bg-[#eff1f1]" />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

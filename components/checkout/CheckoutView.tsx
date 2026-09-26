@@ -1,20 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CreditCard, Truck } from "lucide-react";
-import { useCart, useIsMounted } from "@/lib/store/cart";
+import { useCart, useIsMounted, type CartSnapshot } from "@/lib/store/cart";
 import { useCheckout } from "@/lib/store/checkout";
-import { useOrders } from "@/lib/store/orders";
 import {
   computeTotals,
-  generateOrderId,
   resolveLines,
-  toOrderItems,
-  type CartIndex,
-  type Order,
 } from "@/lib/commerce";
 import { validateAddress, validateCard, hasErrors, cardBrand, US_STATES, type Errors } from "@/lib/validation";
 import type { OrderAddress } from "@/lib/commerce";
@@ -25,13 +20,11 @@ import { CheckoutStepPanel } from "@/components/checkout/CheckoutStep";
 import { formatPrice, deliveryDate, pluralize } from "@/lib/utils";
 import { TID } from "@/lib/testids";
 
-export function CheckoutView({ index }: { index: CartIndex }) {
+export function CheckoutView({ initial }: { initial: CartSnapshot }) {
   const mounted = useIsMounted();
   const router = useRouter();
 
-  const lines = useCart((s) => s.lines);
-  const clearCart = useCart((s) => s.clear);
-  const addOrder = useOrders((s) => s.addOrder);
+  const hydrateCart = useCart((s) => s.hydrate);
 
   const {
     step, setStep, address, setAddress, paymentMethod, setPaymentMethod,
@@ -42,7 +35,24 @@ export function CheckoutView({ index }: { index: CartIndex }) {
   const [cardErrors, setCardErrors] = useState<Errors<CardDraft>>({});
   const [paymentError, setPaymentError] = useState<string>("");
   const [placing, setPlacing] = useState(false);
+  const [placeError, setPlaceError] = useState<string>("");
+  /* One id per checkout attempt, reused on retry so a resubmission cannot
+     create a second order. */
+  const attemptKey = useRef<string | null>(null);
 
+  /*
+    Server-rendered cart for the first paint, store-owned thereafter.
+
+    `ready` flips once the client has its own copy, so there is no window in
+    which this renders an empty cart it does not have. The store is not seeded
+    directly because it is module scope - on the server that is shared between
+    requests, and one shopper's cart must never appear in another's response.
+  */
+  const ready = useCart((s) => s.ready);
+  const storeLines = useCart((s) => s.lines);
+  const storeIndex = useCart((s) => s.index);
+  const lines = ready ? storeLines : initial.lines;
+  const index = ready ? storeIndex : initial.index;
   const resolved = resolveLines(lines, index);
   const active = resolved.filter((r) => !r.line.saved);
   const totals = computeTotals(resolved);
@@ -123,25 +133,57 @@ export function CheckoutView({ index }: { index: CartIndex }) {
     if (active.length === 0) return;
 
     setPlacing(true);
-    const digits = card.number.replace(/\D/g, "");
-    const order: Order = {
-      id: generateOrderId(),
-      placedAt: new Date().toISOString(),
-      deliveryDate: delivery.date.toISOString(),
-      items: toOrderItems(resolved),
-      address,
-      payment:
-        paymentMethod === "card"
-          ? { method: "card", brand: cardBrand(card.number), last4: digits.slice(-4) }
-          : { method: "on-delivery" },
-      totals,
-      simulated: true,
-    };
+    void submitOrder();
+  }
 
-    addOrder(order);
-    clearCart();
-    reset();
-    router.push(`/order-confirmation/${order.id}`);
+  /*
+    The order is created by the server, not here.
+
+    This function sends an address, a payment method and a checkout-attempt id.
+    It deliberately sends no prices, quantities or totals: the server reads the
+    cart from PostgreSQL, reprices it from the product rows and runs the same
+    computeTotals() this page uses for display. Whatever the browser believes
+    the total is has no effect on what gets stored.
+
+    The attempt id is minted once per submission and reused on a retry, so a
+    double-click or a refresh-and-resubmit returns the original order rather
+    than creating a second one.
+  */
+  async function submitOrder() {
+    const digits = card.number.replace(/\D/g, "");
+    const key = (attemptKey.current ??= crypto.randomUUID());
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address,
+          // Only the brand and last four are ever sent; the number, expiry and
+          // CVV stay in this component and are wiped by reset() below.
+          payment:
+            paymentMethod === "card"
+              ? { method: "card", brand: cardBrand(card.number), last4: digits.slice(-4) }
+              : { method: "on-delivery" },
+          idempotencyKey: key,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        setPlacing(false);
+        setPlaceError(body.error ?? "We could not place your order. Please try again.");
+        return;
+      }
+
+      const { order } = (await res.json()) as { order: { id: string } };
+      await hydrateCart();
+      reset();
+      router.push(`/order-confirmation/${order.id}`);
+    } catch {
+      setPlacing(false);
+      setPlaceError("We could not reach the server. Please try again.");
+    }
   }
 
   return (
@@ -454,6 +496,11 @@ export function CheckoutView({ index }: { index: CartIndex }) {
             >
               Place your order
             </Button>
+            {placeError && (
+              <p role="alert" className="mt-2 text-center text-body-sm text-accent">
+                {placeError}
+              </p>
+            )}
             {step !== 3 && (
               <p className="mt-2 text-center text-body-sm text-ink-3">
                 Complete the steps above to place your order.

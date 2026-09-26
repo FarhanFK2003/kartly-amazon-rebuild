@@ -1,11 +1,8 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { TID } from "@/lib/testids";
 import { CheckCircle2, Package } from "lucide-react";
-import { useOrders } from "@/lib/store/orders";
-import { useIsMounted } from "@/lib/store/cart";
+import type { Order } from "@/lib/commerce";
 import { ButtonLink } from "@/components/ui/Button";
 import { formatPrice, pluralize } from "@/lib/utils";
 
@@ -16,22 +13,20 @@ const LONG_DATE: Intl.DateTimeFormatOptions = {
   day: "numeric",
 };
 
-export function OrderConfirmation({ orderId }: { orderId: string }) {
-  const mounted = useIsMounted();
-  const order = useOrders((s) => s.orders.find((o) => o.id === orderId));
-
-  if (!mounted) return <div className="shell py-10" aria-busy="true" />;
-
-  // Orders live in this browser only, so a link opened elsewhere genuinely has
-  // nothing to show. Say that plainly instead of rendering an empty receipt.
+export function OrderConfirmation({ orderId, order }: { orderId: string; order: Order | null }) {
+  /*
+    The order is read on the server and scoped to the session cookie that placed
+    it, so a link opened in another browser genuinely has nothing to show. Say
+    that plainly instead of rendering an empty receipt.
+  */
   if (!order) {
     return (
       <div className="shell py-16 text-center">
         <h1 className="text-display-md font-bold text-ink">We can&apos;t find that order</h1>
         <p className="mx-auto mt-2 max-w-[480px] text-body text-ink-2">
-          Order <span className="font-mono">{orderId}</span> isn&apos;t stored in this browser.
-          Kartly keeps simulated orders on the device that placed them, so it won&apos;t appear
-          after clearing site data or on another machine.
+          Order <span className="font-mono">{orderId}</span> isn&apos;t associated with this
+          session. Kartly scopes simulated orders to the browser session that placed them, so
+          it won&apos;t appear on another machine or after clearing site data.
         </p>
         <div className="mt-6">
           <ButtonLink href="/s" variant="primary" size="md">

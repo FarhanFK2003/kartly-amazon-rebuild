@@ -19,6 +19,7 @@ import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
 import { ROUTES, WIDTHS } from "./selectors.mjs";
+import { startQaSession } from "./qa-session.mjs";
 
 const BASE = process.env.KARTLY_BASE ?? "http://127.0.0.1:3000";
 const OUT = process.argv[2] || ".";
@@ -43,6 +44,10 @@ async function settle(page) {
   await page.waitForTimeout(350);
 }
 
+/* Each viewport seeds a cart, which is a database row. The QA session makes
+   those rows identifiable and guarantees they are purged afterwards. */
+const qa = await startQaSession("responsive", BASE);
+
 const browser = await chromium.launch();
 const routes = Object.entries(ROUTES);
 
@@ -53,25 +58,38 @@ for (const width of WIDTHS) {
     isMobile: width <= 480,
     hasTouch: width <= 480,
   });
+  await ctx.addCookies([qa.cookie]);
   const page = await ctx.newPage();
   page.on("pageerror", (e) => problems.push(`[${width}] pageerror: ${String(e).slice(0, 160)}`));
 
   /* Seed a cart so cart-bearing routes render their real layout, which is the
-     one most likely to overflow, rather than their empty state. */
+     one most likely to overflow, rather than their empty state.
+
+     Seeded through the cart API rather than by writing localStorage: the cart
+     now lives in PostgreSQL behind a session cookie, so a localStorage key is
+     no longer the store and writing one seeds nothing. */
   await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
-  await page.evaluate(() => {
-    localStorage.setItem(
-      "kartly.cart",
-      JSON.stringify({
-        state: {
-          lines: [
-            { productId: "electronics-03", qty: 2, variantId: null, saved: false },
-            { productId: "home-kitchen-05", qty: 1, variantId: null, saved: false },
-          ],
-        },
-        version: 0,
-      })
-    );
+  await page.evaluate(async () => {
+    for (const productId of ["electronics-03", "home-kitchen-05"]) {
+      await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "setQty",
+          productId,
+          qty: productId === "electronics-03" ? 2 : 1,
+        }),
+      }).catch(() => {});
+      await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "add",
+          productId,
+          qty: productId === "electronics-03" ? 2 : 1,
+        }),
+      }).catch(() => {});
+    }
   });
 
   for (const [label, route] of routes) {

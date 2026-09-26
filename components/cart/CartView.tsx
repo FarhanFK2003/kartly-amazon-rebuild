@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
-import { useCart, useIsMounted } from "@/lib/store/cart";
-import { computeTotals, resolveLines, type CartIndex } from "@/lib/commerce";
+import { useCart, useIsMounted, type CartSnapshot } from "@/lib/store/cart";
+import { computeTotals, resolveLines } from "@/lib/commerce";
 import { formatPrice, pluralize } from "@/lib/utils";
 import { TID } from "@/lib/testids";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -26,11 +26,29 @@ import type { Product } from "@/lib/types";
  * wants a surprise. Every figure here comes from computeTotals - there is no
  * second pricing formula in this file.
  */
-export function CartView({ index, recommended }: { index: CartIndex; recommended: Product[] }) {
+export function CartView({
+  recommended,
+  initial,
+}: {
+  recommended: Product[];
+  initial: CartSnapshot;
+}) {
   const mounted = useIsMounted();
-  const lines = useCart((s) => s.lines);
   const clear = useCart((s) => s.clear);
 
+  /*
+    Server-rendered cart for the first paint, store-owned thereafter.
+
+    `ready` flips once the client has its own copy, so there is no window in
+    which this renders an empty cart it does not have. The store is not seeded
+    directly because it is module scope - on the server that is shared between
+    requests, and one shopper's cart must never appear in another's response.
+  */
+  const ready = useCart((s) => s.ready);
+  const storeLines = useCart((s) => s.lines);
+  const storeIndex = useCart((s) => s.index);
+  const lines = ready ? storeLines : initial.lines;
+  const index = ready ? storeIndex : initial.index;
   const resolved = resolveLines(lines, index);
   const active = resolved.filter((r) => !r.line.saved);
   const saved = resolved.filter((r) => r.line.saved);

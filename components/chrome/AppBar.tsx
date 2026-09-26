@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { CircleHelp } from "lucide-react";
 import { getCategories } from "@/lib/data/products";
 import { getNavDepartments, getNavGroups } from "@/lib/navigation";
-import { getCartIndex } from "@/lib/commerce";
 import { TID } from "@/lib/testids";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { BrowsePopover } from "@/components/chrome/BrowsePopover";
@@ -14,6 +13,7 @@ import { AccountArea } from "@/components/chrome/AccountArea";
 import { BottomTabs } from "@/components/chrome/BottomTabs";
 import { StickySentinel } from "@/components/chrome/StickySentinel";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { CartSync } from "@/components/cart/CartSync";
 
 /*
   Kartly's application chrome.
@@ -110,7 +110,8 @@ export async function AppBar() {
         <SearchOverlay categories={categories} />
       </Suspense>
 
-      <CartDrawer index={getCartIndex()} />
+      <CartSync />
+      <CartDrawer />
 
       <BottomTabs />
     </>

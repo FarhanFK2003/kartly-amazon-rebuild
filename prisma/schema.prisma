@@ -93,8 +93,9 @@ model Product {
 
   category Category         @relation(fields: [categoryId], references: [id])
   brand    Brand            @relation(fields: [brandId], references: [id])
-  variants ProductVariant[]
-  reviews  Review[]
+  variants  ProductVariant[]
+  reviews   Review[]
+  cartItems CartItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,7 +120,8 @@ model ProductVariant {
   /// is behaviour rather than presentation and has to survive the database.
   position   Int
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems CartItem[]
 
   @@index([productId])
   @@map("product_variants")
@@ -140,4 +142,128 @@ model Review {
 
   @@index([productId])
   @@map("reviews")
+}
+
+/* ------------------------------------------------------------------ */
+/* Cart and orders (wave 6C)                                           */
+/* ------------------------------------------------------------------ */
+
+/// A guest cart, owned by an opaque session cookie rather than an account.
+/// Authentication is not part of this stage, so the session id is the only
+/// identity a cart has - see lib/session.ts.
+model Cart {
+  id        String     @id @default(cuid())
+  sessionId String     @unique
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  productId String
+  variantId String?
+  /// variantId with null collapsed to "", because PostgreSQL treats NULLs as
+  /// distinct in a unique index - without it the same product could be added
+  /// twice with no variant and produce two lines instead of one.
+  variantKey String
+  qty       Int
+  /// Moved out of the active cart but kept on the cart page.
+  saved     Boolean @default(false)
+  /// Insertion order, so the cart lists the same way on every read.
+  position  Int
+
+  cart    Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([cartId, productId, variantKey])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+enum OrderStatus {
+  placed
+  confirmed
+  shipped
+  delivered
+  cancelled
+}
+
+/// A placed order. Every money column is written by the server from
+/// lib/commerce.ts; nothing here is ever taken from the browser.
+///
+/// No card number, expiry or CVV is stored - only the method and, for a
+/// simulated card, the last four digits the confirmation screen displays.
+model Order {
+  /// The KTL-XXXXXX-XXX id the UI already shows.
+  id        String      @id
+  /// Owning session. Order lookup is scoped to this, so an order id alone is
+  /// not enough to read someone else's order.
+  sessionId String
+  status    OrderStatus @default(placed)
+
+  subtotal  Int
+  shipping  Int
+  tax       Int
+  total     Int
+  itemCount Int
+
+  shipFullName String
+  shipLine1    String
+  shipLine2    String?
+  shipCity     String
+  shipState    String
+  shipZip      String
+  shipPhone    String
+
+  paymentMethod String
+  paymentBrand  String?
+  paymentLast4  String?
+
+  deliveryDate DateTime @db.Date
+
+  /// Set by the client per checkout attempt. Unique, so a resubmitted form
+  /// returns the original order instead of creating a second one.
+  idempotencyKey String? @unique
+
+  placedAt DateTime @default(now())
+
+  items OrderItem[]
+
+  @@index([sessionId])
+  @@index([placedAt])
+  @@map("orders")
+}
+
+/// A line of a placed order, stored as a snapshot.
+///
+/// productId and variantId are plain columns rather than foreign keys on
+/// purpose: a past order must keep showing what was actually bought, at the
+/// price it was bought for, even if the catalogue later changes or the product
+/// is removed. A cascade or a SET NULL would let a catalogue edit rewrite
+/// history.
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  productId    String
+  variantId    String?
+  slug         String
+  title        String
+  image        String?
+  variantLabel String?
+  qty          Int
+  /// What this unit actually cost at the moment of purchase.
+  unitPrice    Int
+  position     Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_items")
 }

@@ -17,10 +17,19 @@ import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
 import { TID, byTestId, cartCount, miniCart, goToCart } from "./selectors.mjs";
+import { startQaSession } from "./qa-session.mjs";
 
 const BASE = process.env.KARTLY_BASE ?? "http://127.0.0.1:3000";
 const OUT = process.argv[2] || ".";
 fs.mkdirSync(OUT, { recursive: true });
+
+/*
+  This suite places a real order, so it has to be able to take it back out
+  again. scripts/qa/qa-session.mjs gives it an identifiable session id and
+  guarantees that the cart and order it creates are purged afterwards - and
+  that anything a crashed earlier run left behind is purged first.
+*/
+const qa = await startQaSession("purchase", BASE);
 
 const catalog = JSON.parse(fs.readFileSync("data/catalog.json", "utf8"));
 const bySlug = (slug) => catalog.products.find((p) => p.slug === slug);
@@ -70,6 +79,9 @@ const errors = [];
 const badResponses = [];
 
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+/* Claim the identifiable session before the first request, so every cart and
+   order this suite creates is one it can find again and remove. */
+await ctx.addCookies([qa.cookie]);
 const page = await ctx.newPage();
 page.on("pageerror", (e) => errors.push(`pageerror: ${String(e).slice(0, 140)}`));
 page.on("console", (m) => {
@@ -144,9 +156,17 @@ for (const qty of [1, 3]) {
 }
 
 /* ---- 8-9. remove and empty --------------------------------------------- */
+/*
+  Removal is a server round trip now, so poll for the condition instead of
+  waiting a fixed interval.
+
+  waitFor({ state: "detached" }) is not reliable here: React re-renders the
+  list, so the handle can detach while a replacement row is still on screen.
+  Waiting for the count itself to reach zero is what the assertion is about.
+*/
 await page.getByRole("button", { name: /Remove .* from cart/i }).first().click();
-await settle(page, 700);
-check("removing the last line empties the cart", (await lines.count()) === 0);
+for (let i = 0; i < 60 && (await lines.count()) > 0; i++) await page.waitForTimeout(250);
+check("removing the last line empties the cart", (await lines.count()) === 0, `${await lines.count()}`);
 const emptyText = await page.locator("main").innerText();
 check("the empty cart state renders", /cart is empty/i.test(emptyText));
 check("the empty cart offers a way back", (await page.getByRole("link", { name: /Shop by department|Browse all/i }).count()) > 0);
@@ -198,11 +218,28 @@ if (bundleSlug) {
 /* ---- 11-13, 18-20. checkout -------------------------------------------- */
 /* Start from a clean, known cart so the expected totals are exact. */
 await page.goto(`${BASE}/cart`, { waitUntil: "domcontentloaded" });
-await page.evaluate(() => localStorage.removeItem("kartly.cart"));
+/* Empty the cart through the API. The cart now lives in PostgreSQL behind a
+   session cookie, so clearing a localStorage key clears nothing. */
+await page.evaluate(async () => {
+  await fetch("/api/cart", { method: "DELETE" });
+});
 await page.goto(`${BASE}/dp/${CHEAP.slug}`, { waitUntil: "domcontentloaded" });
-await settle(page, 700);
-await byTestId(page, TID.pdpAddToCart).click();
-await settle(page, 700);
+/*
+  Retry the click until the request it should cause actually appears. These
+  pages are server-rendered per request, so the document can arrive before
+  React attaches its handlers, and a click in that window does nothing.
+*/
+for (let attempt = 0; attempt < 12; attempt++) {
+  const posted = page
+    .waitForResponse(
+      (r) => r.url().includes("/api/cart") && r.request().method() === "POST",
+      { timeout: 1000 }
+    )
+    .catch(() => null);
+  await byTestId(page, TID.pdpAddToCart).click({ timeout: 5000 }).catch(() => {});
+  if (await posted) break;
+}
+await settle(page, 500);
 await page.keyboard.press("Escape");
 
 await page.goto(`${BASE}/checkout`, { waitUntil: "domcontentloaded" });
@@ -285,6 +322,8 @@ for (const width of [375, 390, 430, 768, 1024, 1280, 1440]) {
     isMobile: width <= 480,
     hasTouch: width <= 480,
   });
+  /* Same QA identity, so the carts these viewports create are purged too. */
+  await mctx.addCookies([qa.cookie]);
   const mp = await mctx.newPage();
   mp.on("pageerror", (e) => errors.push(`[${width}] ${String(e).slice(0, 140)}`));
   const w = `@${width}`;
@@ -303,18 +342,36 @@ for (const width of [375, 390, 430, 768, 1024, 1280, 1440]) {
     const sw = await mp.evaluate(() => document.documentElement.scrollWidth);
     check(`${w} ${label} has no horizontal overflow`, sw <= width + 1, `${sw}`);
 
-    /* the primary action must not sit under the fixed tab bar */
+    /*
+      The primary action must be reachable, not permanently trapped under the
+      fixed tab bar.
+
+      This used to compare rectangles wherever the page happened to be sitting,
+      which is not what matters: the CTA is in normal flow, so of course it can
+      be mid-scroll behind a fixed bar, and the layout carries a spacer so it
+      can always be scrolled clear. It also only ever passed vacuously, because
+      the cart the step tried to seed was usually empty and there was no CTA to
+      measure at all.
+
+      So scroll to it the way a shopper would, then ask the browser what is
+      actually at its centre. If the tab bar answers, the button cannot be
+      pressed and that is a real defect.
+    */
     if (width <= 1023) {
-      const clash = await mp.evaluate(() => {
+      const clash = await mp.evaluate(async () => {
         const nav = document.querySelector('[data-testid="bottom-tabs"]');
         if (!nav) return false;
-        const n = nav.getBoundingClientRect();
         const cta = [...document.querySelectorAll("a,button")].find((el) =>
           /checkout|place your order/i.test(el.textContent || "")
         );
         if (!cta) return false;
+
+        cta.scrollIntoView({ block: "center" });
+        await new Promise((r) => setTimeout(r, 400));
+
         const c = cta.getBoundingClientRect();
-        return c.bottom > n.top && c.top < n.bottom;
+        const hit = document.elementFromPoint(c.x + c.width / 2, c.y + c.height / 2);
+        return !(hit === cta || cta.contains(hit) || cta.contains(hit?.parentElement ?? null));
       });
       check(`${w} ${label} action clears the tab bar`, !clash);
     }

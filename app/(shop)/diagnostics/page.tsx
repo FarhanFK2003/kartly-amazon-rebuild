@@ -166,7 +166,7 @@ async function readDatabase(): Promise<DbReport> {
   try {
     const started = Date.now();
 
-    const [categories, brands, products, variants, reviews] = await prisma.$transaction([
+    const [categories, brands, products, variants, reviews] = await Promise.all([
       prisma.category.count(),
       prisma.brand.count(),
       prisma.product.count(),

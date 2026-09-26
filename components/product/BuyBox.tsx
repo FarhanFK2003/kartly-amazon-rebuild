@@ -7,7 +7,7 @@ import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { PriceBlock } from "@/components/ui/PriceBlock";
 import { TID } from "@/lib/testids";
 import { COMMERCE } from "@/lib/commerce";
-import { useCart } from "@/lib/store/cart";
+import { useCart, useIsMounted } from "@/lib/store/cart";
 import { useCartDrawer } from "@/lib/store/cartDrawer";
 import { usePdp } from "@/components/product/PdpContext";
 import { deliveryDate, formatPriceShort } from "@/lib/utils";
@@ -40,6 +40,8 @@ export function BuyBox({ children }: { children?: React.ReactNode }) {
   const arrives = deliveryDate(product.deliveryDays);
   const fastest = deliveryDate(Math.max(1, product.deliveryDays - 1));
   const qualifiesForFreeShipping = effectivePrice * qty >= COMMERCE.freeShippingThreshold;
+
+  const mounted = useIsMounted();
 
   function addToCart() {
     add(product.id, qty, variant?.id ?? null);
@@ -96,16 +98,34 @@ export function BuyBox({ children }: { children?: React.ReactNode }) {
           </div>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            {/*
+              Both actions are disabled until React has attached its handlers.
+              These pages are server-rendered per request, so the buttons are
+              painted and clickable for a moment before hydration, and a click
+              in that window used to be dropped silently - the shopper believes
+              the product is in the cart and it is not. An honest busy state is
+              better than a lost click, and it is gone the moment the page is
+              interactive.
+            */}
             <Button
               variant="primary"
               size="lg"
               onClick={addToCart}
               data-testid={TID.pdpAddToCart}
+              disabled={!mounted}
+              aria-busy={!mounted || undefined}
               className="flex-1"
             >
               Add to cart
             </Button>
-            <Button variant="outline" size="lg" onClick={buyNow} className="flex-1">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={buyNow}
+              disabled={!mounted}
+              aria-busy={!mounted || undefined}
+              className="flex-1"
+            >
               Buy now
             </Button>
           </div>

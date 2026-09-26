@@ -68,9 +68,9 @@ export function AddToCartButton({
     );
   }
 
-  // The cart is read from localStorage, so it cannot be known during the server
-  // render. Showing the plain button until mount keeps the markup identical
-  // across hydration.
+  // The cart is owned by the server and fetched after mount, so it cannot be
+  // known during the server render. Showing the plain button until mount keeps
+  // the markup identical across hydration.
   if (mounted && inCart > 0) {
     return (
       <QuantityStepper
@@ -89,12 +89,27 @@ export function AddToCartButton({
     );
   }
 
+  /*
+    Disabled until React has attached its handlers.
+
+    Pages are server-rendered per request, so the button is painted and
+    clickable for a moment before hydration - and a click in that window was
+    silently dropped, which is the worst possible outcome: the shopper believes
+    they added something and nothing happened. Marking the control busy until
+    mount turns that into an honest "not yet" instead of a lost click, and it
+    costs nothing once hydrated.
+
+    It also removes the race from automation: Playwright waits for a control to
+    be enabled before clicking it, so tests no longer have to guess.
+  */
   return (
     <Button
       variant="primary"
       size={size}
       className={className}
       data-testid={TID.addToCart}
+      disabled={!mounted}
+      aria-busy={!mounted || undefined}
       onClick={() => {
         add(productId, qty, variantId);
         openDrawer(productId);

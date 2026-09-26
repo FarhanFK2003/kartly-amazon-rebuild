@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { X, ShoppingCart, Check, ChevronLeft } from "lucide-react";
 import { cn, formatPrice, pluralize } from "@/lib/utils";
 import { TID } from "@/lib/testids";
-import { computeTotals, resolveLines, type CartIndex } from "@/lib/commerce";
+import { computeTotals, resolveLines } from "@/lib/commerce";
 import { useCart, useIsMounted } from "@/lib/store/cart";
 import { useCartDrawer } from "@/lib/store/cartDrawer";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -30,7 +30,7 @@ import { FreeShippingMeter } from "@/components/cart/FreeShippingMeter";
  * the note on the effect below. Visibility transitions alongside the transform
  * so the panel leaves the tab order when it is parked off-canvas.
  */
-export function CartDrawer({ index }: { index: CartIndex }) {
+export function CartDrawer() {
   const open = useCartDrawer((s) => s.open);
   const close = useCartDrawer((s) => s.closeDrawer);
   const openDrawer = useCartDrawer((s) => s.openDrawer);
@@ -44,6 +44,8 @@ export function CartDrawer({ index }: { index: CartIndex }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
+  /* The index comes from the server with the cart, priced from the database. */
+  const index = useCart((s) => s.index);
   const resolved = resolveLines(lines, index).filter((r) => !r.line.saved);
   const totals = computeTotals(resolved);
 

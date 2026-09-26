@@ -289,16 +289,15 @@ check(
   runs - it catches anything the source analysis is wrong about.
 
   It finds the compiled chunks that physically contain catalogue text, then asks
-  which routes load them. The control is a route that genuinely still reaches
-  the catalogue, so that a result of "no hits" cannot be confused with a broken
-  probe.
+  which routes load them. A result of "no hits" is only meaningful if the
+  matcher would have found a hit had there been one, so the control proves the
+  matcher works rather than naming a route.
 
-  That control used to be /api/suggest. Wave 6B moved suggestions onto the
-  database, so it stopped qualifying - and the check correctly failed rather
-  than quietly passing against nothing. The control is now /cart, which reaches
-  data/catalog.json through lib/commerce.ts: getCartIndex() resolves cart lines
-  from the static catalogue, lib/commerce.ts is a protected file, and cart
-  persistence is explicitly out of scope until a later wave.
+  The control has had to move twice, which is the check doing its job. It was
+  /api/suggest until wave 6B put suggestions on the database; then /cart, until
+  wave 6C removed the last runtime caller of getCartIndex() and the catalogue
+  stopped being bundled into any server chunk at all. Both times the control
+  failed loudly instead of passing against nothing.
 */
 const serverDir = path.join(ROOT, ".next", "server");
 
@@ -336,11 +335,27 @@ if (!fs.existsSync(serverDir)) {
     offenders.join(", ")
   );
 
+  /*
+    The control. The marker is read out of data/catalog.json, so it must be
+    findable in that file by the same containment test the scan uses. If this
+    fails, the marker is wrong or the file moved, and check 24's silence means
+    nothing.
+  */
+  const catalogueText = fs.readFileSync(path.join(ROOT, "data", "catalog.json"), "utf8");
   check(
-    "25. the bundle probe can detect catalogue data at all (control: /cart)",
-    catalogueChunks.length > 0 && chunksLoadedBy(path.join("(shop)", "cart")).length > 0,
-    `${catalogueChunks.length} catalogue chunks found`
+    "25. the bundle probe can detect catalogue data at all (control: the source file)",
+    marker.length > 20 && catalogueText.includes(marker),
+    `marker ${JSON.stringify(marker.slice(0, 30))}`
   );
+
+  /*
+    Recorded rather than asserted: as of wave 6C nothing bundles the catalogue,
+    so the set is empty. It is printed when it is not, because a chunk
+    reappearing is worth seeing even where no route loads it.
+  */
+  if (catalogueChunks.length > 0) {
+    console.log(`  note: catalogue text present in ${catalogueChunks.length} server chunk(s)`);
+  }
 }
 
 /* ---- 26-29. the proof: change the database, watch the API change ------- */

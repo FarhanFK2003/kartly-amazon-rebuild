@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
+import { CartSync } from "@/components/cart/CartSync";
 
 /**
  * Stripped checkout chrome: wordmark, a step label and a lock, with no nav, no
@@ -11,6 +12,12 @@ import { Wordmark } from "@/components/brand/Wordmark";
 export default function CheckoutLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      {/*
+        Checkout sits outside the (shop) group and so does not get the app bar,
+        which is where the storefront loads the server-owned cart. Without this
+        the checkout page would render an empty cart on every visit.
+      */}
+      <CartSync />
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex h-[60px] max-w-[1000px] items-center justify-between gap-4 px-4">
           <Link href="/cart" className="flex items-center text-ink" aria-label="Kartly">

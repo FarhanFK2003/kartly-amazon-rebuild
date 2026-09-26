@@ -24,7 +24,7 @@ export async function GET() {
     // A statement the planner cannot satisfy from cache or metadata.
     await prisma.$queryRaw`SELECT 1`;
 
-    const [categories, brands, products, variants, reviews] = await prisma.$transaction([
+    const [categories, brands, products, variants, reviews] = await Promise.all([
       prisma.category.count(),
       prisma.brand.count(),
       prisma.product.count(),

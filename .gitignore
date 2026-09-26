@@ -5,7 +5,12 @@ build/
 .vercel/
 *.tsbuildinfo
 next-env.d.ts
-.env*.local
+# Environment. Prisma reads a bare .env by default, which the previous
+# .env*.local pattern did not cover - so a real connection string could have
+# been committed. .env.example is the tracked template.
+.env
+.env.*
+!.env.example
 .DS_Store
 
 # NOTE: .agent-logs/ is intentionally NOT ignored. It ships with the repo.

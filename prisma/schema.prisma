@@ -1,0 +1,143 @@
+// Kartly database schema.
+//
+// Modelled from the real catalogue in data/catalog.json, which is now a seed
+// source rather than the runtime product store.
+//
+// Two decisions worth recording:
+//
+//   * Product.id is the catalogue id ("electronics-01"), not a generated key.
+//     Those ids are already in PDP URLs, cart lines, related-product links and
+//     the QA suites, so generating new ones would break the application. The
+//     slug is unique too, because /dp/[id] resolves by either.
+//
+//   * specs is Json because it is genuinely variable: 120 products carry 115
+//     distinct key sets. A spec table would be a key/value bag with no schema
+//     value. Everything else here is structured, so it is modelled relationally.
+//
+// ratingHistogram is stored rather than derived: reviewCount runs to thousands
+// while only a handful of review bodies exist per product, so the histogram
+// describes ratings the review table does not contain.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // Prisma 7 removed `url` and `directUrl` from this block. The connection
+  // string for migrations now lives in prisma.config.ts, and the one the
+  // application uses is handed to PrismaClient as a driver adapter in lib/db.ts.
+  // Nothing in this file reads an environment variable any more.
+  provider = "postgresql"
+}
+
+enum VariantType {
+  color
+  size
+}
+
+enum Badge {
+  choice
+  deal
+  sponsored
+  bestSeller
+  lowStock
+}
+
+model Category {
+  id         String    @id
+  slug       String    @unique
+  name       String
+  blurb      String
+  imageQuery String
+  /// Catalogue order, so departments list the same way every time.
+  position   Int
+  products   Product[]
+
+  @@map("categories")
+}
+
+model Brand {
+  id       String    @id
+  name     String    @unique
+  products Product[]
+
+  @@map("brands")
+}
+
+model Product {
+  /// The catalogue id. Stable, external, and already in URLs.
+  id              String   @id
+  slug            String   @unique
+  title           String
+  /// Minor units, matching lib/commerce.ts. Never a float.
+  price           Int
+  listPrice       Int?
+  dealPercent     Int      @default(0)
+  rating          Float
+  reviewCount     Int
+  ratingHistogram Json
+  image           String?
+  imageQuery      String
+  bullets         String[]
+  specs           Json
+  stock           Int
+  isPrime         Boolean  @default(false)
+  deliveryDays    Int
+  boughtLastMonth Int      @default(0)
+  badges          Badge[]
+  /// Catalogue order, so an unsorted query is still deterministic.
+  position        Int
+
+  categoryId String
+  brandId    String
+
+  category Category         @relation(fields: [categoryId], references: [id])
+  brand    Brand            @relation(fields: [brandId], references: [id])
+  variants ProductVariant[]
+  reviews  Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([price])
+  @@index([rating])
+  @@index([position])
+  @@map("products")
+}
+
+model ProductVariant {
+  /// The catalogue variant id, referenced by cart lines.
+  id         String      @id
+  productId  String
+  type       VariantType
+  label      String
+  swatch     String?
+  priceDelta Int         @default(0)
+  /// The product detail page selects the first variant by default, so order
+  /// is behaviour rather than presentation and has to survive the database.
+  position   Int
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model Review {
+  id        String   @id
+  productId String
+  author    String
+  rating    Int
+  title     String
+  body      String
+  date      DateTime @db.Date
+  verified  Boolean  @default(false)
+  helpful   Int      @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("reviews")
+}
